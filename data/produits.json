@@ -23,20 +23,19 @@
   },
   {
     "id": 2,
-    "nom": "Robe d'été fleurie",
+    "nom": "Robe d'�t� fleurie",
     "categorie": "vetements",
     "prix": 32000.0,
-    "reduction": 20,
+    "reduction": 15,
     "image": "produit-2.jpg",
-    "description": "Robe légère à motifs floraux.",
+    "description": "Robe l�g�re � motifs floraux.",
     "tailles": [
       "S",
       "M",
       "L"
     ],
     "couleurs": [
-      "Rose",
-      "Jaune"
+      "Bleu"
     ],
     "stock": 14,
     "public": "femme"

@@ -8,9 +8,21 @@
         <a href="{{ url_for('categorie', slug=produit.categorie) }}" class="fil-ariane">&larr; Retour à {{ categories[produit.categorie] }}</a>
 
         <div class="detail-grille">
-            <div class="detail-image">
-                {% if produit.reduction %}<span class="badge-reduction badge-reduction-detail">-{{ produit.reduction }}%</span>{% endif %}
-                <img src="{{ url_for('static', filename='images/' + produit.image) }}" alt="{{ produit.nom }}">
+            <div class="detail-galerie">
+                {% if galerie|length > 1 %}
+                <div class="detail-vignettes" id="detail-vignettes">
+                    {% for img in galerie %}
+                    <button type="button" class="detail-vignette {{ 'detail-vignette-actif' if loop.first else '' }}" data-image="{{ url_for('static', filename='images/' + img) }}">
+                        <img src="{{ url_for('static', filename='images/' + img) }}" alt="{{ produit.nom }}">
+                    </button>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="detail-image">
+                    {% if produit.reduction %}<span class="badge-reduction badge-reduction-detail">-{{ produit.reduction }}%</span>{% endif %}
+                    <img id="image-principale" src="{{ url_for('static', filename='images/' + produit.image) }}" alt="{{ produit.nom }}">
+                </div>
             </div>
 
             <div class="detail-info">

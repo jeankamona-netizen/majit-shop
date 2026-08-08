@@ -239,6 +239,26 @@
     background: var(--violet-100);
 }
 
+.admin-apercu-galerie {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.4rem;
+}
+
+.admin-apercu-mini {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+    background: var(--violet-100);
+}
+
+.admin-note {
+    font-size: 0.78rem;
+    color: #888;
+    margin-top: 0.3rem;
+}
+
 .admin-formulaire button {
     margin-top: 1.4rem;
     background: var(--violet-700);

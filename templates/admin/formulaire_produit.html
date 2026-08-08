@@ -41,11 +41,22 @@
     <label for="description">Description</label>
     <textarea id="description" name="description" rows="3">{{ produit.description if produit else '' }}</textarea>
 
-    <label for="photo">Photo</label>
+    <label for="photo">Photo principale</label>
     {% if produit and produit.image %}
     <img src="{{ url_for('static', filename='images/' + produit.image) }}" class="admin-apercu" alt="{{ produit.nom }}">
     {% endif %}
     <input type="file" id="photo" name="photo" accept="image/*">
+
+    <label for="photos_supplementaires">Photos supplémentaires (jusqu'à 3, pour la galerie de la fiche produit)</label>
+    {% if produit and produit.images %}
+    <div class="admin-apercu-galerie">
+        {% for img in produit.images %}
+        <img src="{{ url_for('static', filename='images/' + img) }}" class="admin-apercu-mini" alt="{{ produit.nom }}">
+        {% endfor %}
+    </div>
+    {% endif %}
+    <input type="file" id="photos_supplementaires" name="photos_supplementaires" accept="image/*" multiple>
+    <p class="admin-note">Choisir jusqu'à 3 fichiers en même temps remplace les photos supplémentaires actuelles.</p>
 
     <button type="submit">{{ 'Enregistrer' if produit else 'Ajouter' }}</button>
 </form>

@@ -205,6 +205,17 @@ def extension_autorisee(nom_fichier):
     return "." in nom_fichier and nom_fichier.rsplit(".", 1)[1].lower() in EXTENSIONS_AUTORISEES
 
 
+def enregistrer_photos_supplementaires(fichiers, produit_id):
+    noms = []
+    for i, fichier in enumerate(fichiers[:3], start=2):
+        if fichier and fichier.filename and extension_autorisee(fichier.filename):
+            extension = fichier.filename.rsplit(".", 1)[1].lower()
+            nom_fichier = f"produit-{produit_id}-{i}.{extension}"
+            fichier.save(IMAGES_DIR / nom_fichier)
+            noms.append(nom_fichier)
+    return noms
+
+
 def admin_requis(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
@@ -331,7 +342,9 @@ def produit(produit_id):
     p = trouver_produit(produit_id)
     if not p:
         abort(404)
-    return render_template("produit.html", produit=p, categories=CATEGORIES)
+    galerie = [p["image"]] + [img for img in p.get("images", []) if img != p["image"]]
+    galerie = galerie[:4]
+    return render_template("produit.html", produit=p, categories=CATEGORIES, galerie=galerie)
 
 
 @app.route("/panier")
@@ -726,6 +739,10 @@ def admin_ajouter_produit():
         except ValueError:
             stock = 0
 
+        photos_supplementaires = enregistrer_photos_supplementaires(
+            request.files.getlist("photos_supplementaires"), nouvel_id
+        )
+
         nouveau_produit = {
             "id": nouvel_id,
             "nom": request.form.get("nom", "").strip(),
@@ -735,6 +752,7 @@ def admin_ajouter_produit():
             "public": request.form.get("public") if request.form.get("public") in PUBLICS else "unisexe",
             "stock": stock,
             "image": nom_image,
+            "images": photos_supplementaires,
             "description": request.form.get("description", "").strip(),
             "couleurs": parser_liste(request.form.get("couleurs", "")),
             "tailles": parser_liste(request.form.get("tailles", "")),
@@ -777,6 +795,12 @@ def admin_modifier_produit(produit_id):
             nom_image = f"produit-{produit_id}.{extension}"
             fichier.save(IMAGES_DIR / nom_image)
             produit_cible["image"] = nom_image
+
+        photos_supplementaires = enregistrer_photos_supplementaires(
+            request.files.getlist("photos_supplementaires"), produit_id
+        )
+        if photos_supplementaires:
+            produit_cible["images"] = photos_supplementaires
 
         sauvegarder_produits(produits)
         return redirect(url_for("admin_produits"))

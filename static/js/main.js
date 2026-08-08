@@ -6,3 +6,20 @@ document.querySelectorAll(".qte-bouton").forEach(function (bouton) {
         input.value = valeur;
     });
 });
+
+(function () {
+    var imagePrincipale = document.getElementById("image-principale");
+    var vignettes = document.querySelectorAll(".detail-vignette");
+    if (!imagePrincipale || !vignettes.length) return;
+
+    function afficher(vignette) {
+        imagePrincipale.src = vignette.dataset.image;
+        vignettes.forEach(function (v) { v.classList.remove("detail-vignette-actif"); });
+        vignette.classList.add("detail-vignette-actif");
+    }
+
+    vignettes.forEach(function (vignette) {
+        vignette.addEventListener("mouseenter", function () { afficher(vignette); });
+        vignette.addEventListener("click", function () { afficher(vignette); });
+    });
+})();
