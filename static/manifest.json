@@ -1,0 +1,18 @@
+{
+  "name": "Majt Shop",
+  "short_name": "Majt Shop",
+  "description": "Vêtements, chaussures, sacs, électroniques, accessoires et jouets en ligne.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#faf7fc",
+  "theme_color": "#2a0e4a",
+  "icons": [
+    {
+      "src": "/static/images/logo.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
