@@ -24,7 +24,6 @@
             <tr>
                 <th>Photo</th>
                 <th>Nom</th>
-                <th>Catégorie</th>
                 <th>Prix</th>
                 <th>Réduction</th>
                 <th>Prix final</th>
@@ -36,8 +35,10 @@
             {% for p in produits %}
             <tr>
                 <td><img src="{{ url_for('static', filename='images/' + p.image) }}" class="admin-miniature" alt="{{ p.nom }}"></td>
-                <td>{{ p.nom }}</td>
-                <td>{{ categories.get(p.categorie, p.categorie) }}</td>
+                <td>
+                    {{ p.nom }}<br>
+                    <span class="admin-commande-contact">{{ categories.get(p.categorie, p.categorie) }}</span>
+                </td>
                 <td>{{ p.prix|cdf }}</td>
                 <td>{{ p.reduction or 0 }}%</td>
                 <td>{{ (p|prix_final)|cdf }}</td>
@@ -56,7 +57,7 @@
                 </td>
             </tr>
             {% else %}
-            <tr><td colspan="8">Aucun produit pour le moment.</td></tr>
+            <tr><td colspan="7">Aucun produit pour le moment.</td></tr>
             {% endfor %}
         </tbody>
     </table>
