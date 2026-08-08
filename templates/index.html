@@ -15,10 +15,18 @@
     <div class="conteneur">
         <div class="filtre-public">
             <a href="{{ url_for('accueil') }}" class="filtre-public-lien {{ 'filtre-public-actif' if not public_filtre and not categorie_filtre else '' }}">Tout</a>
+            {% if 'homme' in publics_presents %}
             <a href="{{ url_for('accueil', public='homme') }}" class="filtre-public-lien {{ 'filtre-public-actif' if public_filtre == 'homme' else '' }}">Homme</a>
+            {% endif %}
+            {% if 'femme' in publics_presents %}
             <a href="{{ url_for('accueil', public='femme') }}" class="filtre-public-lien {{ 'filtre-public-actif' if public_filtre == 'femme' else '' }}">Femme</a>
+            {% endif %}
+            {% if 'enfant' in publics_presents %}
             <a href="{{ url_for('accueil', public='enfant') }}" class="filtre-public-lien {{ 'filtre-public-actif' if public_filtre == 'enfant' else '' }}">Enfant</a>
+            {% endif %}
+            {% if 'telephones' in categories_presentes %}
             <a href="{{ url_for('accueil', categorie='telephones') }}" class="filtre-public-lien {{ 'filtre-public-actif' if categorie_filtre == 'telephones' else '' }}">Électroniques</a>
+            {% endif %}
         </div>
 
         <div class="grille-produits">
