@@ -18,4 +18,13 @@
             panneau.classList.remove("admin-notif-ouvert");
         }
     });
+
+    var menuBouton = document.getElementById("admin-menu-bouton");
+    var nav = document.getElementById("admin-nav");
+    if (menuBouton && nav) {
+        menuBouton.addEventListener("click", function () {
+            var ouvert = nav.classList.toggle("admin-nav-ouvert");
+            menuBouton.setAttribute("aria-expanded", ouvert ? "true" : "false");
+        });
+    }
 })();
