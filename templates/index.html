@@ -11,15 +11,19 @@
     </div>
 </section>
 
-{% for section in sections %}
 <section class="section-categorie">
     <div class="conteneur">
-        <div class="section-entete">
-            <h2>{{ section.titre }}</h2>
-            <a href="{{ section.lien }}" class="voir-tout">Voir tout &rsaquo;</a>
+        {% if publics|length > 1 %}
+        <div class="filtre-public">
+            <a href="{{ url_for('accueil') }}" class="filtre-public-lien {{ 'filtre-public-actif' if not public_filtre else '' }}">Tout</a>
+            {% for pub in publics %}
+                <a href="{{ url_for('accueil', public=pub) }}" class="filtre-public-lien {{ 'filtre-public-actif' if public_filtre == pub else '' }}">{{ public_labels[pub] }}</a>
+            {% endfor %}
         </div>
+        {% endif %}
+
         <div class="grille-produits">
-            {% for produit in section.produits %}
+            {% for produit in produits %}
             <a href="{{ url_for('produit', produit_id=produit.id) }}" class="carte-produit">
                 <div class="carte-image-wrap">
                     {% if produit.reduction %}<span class="badge-reduction">-{{ produit.reduction }}%</span>{% endif %}
@@ -35,9 +39,10 @@
                     {% endif %}
                 </p>
             </a>
+            {% else %}
+            <p>Aucun article trouvé.</p>
             {% endfor %}
         </div>
     </div>
 </section>
-{% endfor %}
 {% endblock %}

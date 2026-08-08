@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: majt-shop
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ADMIN_UTILISATEUR
+        value: admin
+      - key: ADMIN_MOT_DE_PASSE
+        sync: false
+      - key: FLASK_DEBUG
+        value: "0"

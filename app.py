@@ -117,28 +117,6 @@ def publics_presents_tries(produits):
     return [pub for pub in ORDRE_PUBLICS if pub in presents]
 
 
-def construire_sections_accueil(produits):
-    sections = []
-    for slug, nom in CATEGORIES.items():
-        produits_cat = [p for p in produits if p["categorie"] == slug]
-        if not produits_cat:
-            continue
-        publics = publics_presents_tries(produits_cat)
-        if len(publics) > 1:
-            for pub in publics:
-                produits_pub = [p for p in produits_cat if p.get("public", "unisexe") == pub]
-                sections.append({
-                    "titre": f"{nom} {PUBLICS[pub]}",
-                    "produits": produits_pub,
-                    "lien": url_for("categorie", slug=slug, public=pub),
-                })
-        else:
-            sections.append({
-                "titre": nom,
-                "produits": produits_cat,
-                "lien": url_for("categorie", slug=slug),
-            })
-    return sections
 
 
 def obtenir_lignes_panier():
@@ -231,8 +209,18 @@ def compter_visite():
 @app.route("/")
 def accueil():
     produits = [p for p in charger_produits() if p.get("stock", 0) > 0]
-    sections = construire_sections_accueil(produits)
-    return render_template("index.html", categories=CATEGORIES, sections=sections)
+    publics = publics_presents_tries(produits)
+    public_filtre = request.args.get("public", "")
+    if public_filtre in PUBLICS:
+        produits = [p for p in produits if p.get("public", "unisexe") == public_filtre]
+    return render_template(
+        "index.html",
+        categories=CATEGORIES,
+        produits=produits,
+        publics=publics,
+        public_filtre=public_filtre,
+        public_labels=PUBLICS,
+    )
 
 
 @app.route("/categorie/<slug>")
