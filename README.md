@@ -4,7 +4,7 @@ Site de vente en ligne (vêtements, chaussures, sacs à main, téléphones porta
 
 ## Fonctionnalités
 
-- Catalogue par catégorie et public (Homme / Femme / Enfant / Unisexe), avec tailles/couleurs et réductions
+- Catalogue par catégorie (Vêtements, Chaussures, Sacs à main, Électroniques) et public (Homme / Femme / Enfant / Tous), avec tailles/couleurs et réductions
 - Panier, commande (nom, téléphone, adresse) et confirmation, paiement à la livraison, prix en CDF
 - Espace administrateur protégé : gestion des produits (photos, stock, réapprovisionnement), suivi des commandes (statut, montant versé), revenus filtrables (date/semaine/article/catégorie), visiteurs par jour, notifications de nouvelles commandes
 

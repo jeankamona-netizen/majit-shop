@@ -21,14 +21,14 @@ CATEGORIES = {
     "vetements": "Vêtements",
     "chaussures": "Chaussures",
     "sacs": "Sacs à main",
-    "telephones": "Téléphones portables",
+    "telephones": "Électroniques",
 }
 
 PUBLICS = {
     "homme": "Homme",
     "femme": "Femme",
     "enfant": "Enfant",
-    "unisexe": "Unisexe",
+    "unisexe": "Tous",
 }
 ORDRE_PUBLICS = ["homme", "femme", "enfant", "unisexe"]
 
