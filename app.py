@@ -1,5 +1,6 @@
 import os
 import json
+import unicodedata
 import urllib.request
 from datetime import date, datetime
 from functools import wraps
@@ -340,17 +341,38 @@ def categorie(slug):
     )
 
 
+def normaliser_recherche(texte):
+    forme = unicodedata.normalize("NFKD", texte.lower())
+    return "".join(c for c in forme if not unicodedata.combining(c))
+
+
+def distance_levenshtein(a, b, max_dist=1):
+    if abs(len(a) - len(b)) > max_dist:
+        return max_dist + 1
+    precedent = list(range(len(b) + 1))
+    for i, ca in enumerate(a, 1):
+        courant = [i]
+        for j, cb in enumerate(b, 1):
+            cout = 0 if ca == cb else 1
+            courant.append(min(precedent[j] + 1, courant[j - 1] + 1, precedent[j - 1] + cout))
+        precedent = courant
+    return precedent[-1]
+
+
 def extraire_mots_recherche(q):
     mots = []
-    for mot in q.lower().replace("'", " ").split():
+    for mot in normaliser_recherche(q).replace("'", " ").split():
         mot = mot.strip(".,;:!?")
         if mot and mot not in MOTS_VIDES:
             mots.append(mot)
-    return mots or ([q] if q else [])
+    return mots or ([normaliser_recherche(q)] if q else [])
 
 
 def produit_correspond(produit, mots):
-    texte = f"{produit['nom']} {produit.get('description', '')} {' '.join(produit.get('couleurs', []))}".lower()
+    texte = normaliser_recherche(
+        f"{produit['nom']} {produit.get('description', '')} {' '.join(produit.get('couleurs', []))}"
+    )
+    mots_texte = texte.split()
     for mot in mots:
         variantes = {mot}
         if mot.endswith("s") and len(mot) > 3:
@@ -358,6 +380,8 @@ def produit_correspond(produit, mots):
         else:
             variantes.add(mot + "s")
         if any(v in texte for v in variantes):
+            return True
+        if len(mot) >= 4 and any(distance_levenshtein(mot, mt) <= 1 for mt in mots_texte):
             return True
     return False
 
