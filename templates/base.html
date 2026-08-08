@@ -10,6 +10,8 @@
     <div class="entete-fixe">
         <header class="entete">
             <div class="conteneur entete-inner">
+                <button type="button" class="menu-bouton" id="menu-bouton" aria-label="Ouvrir le menu des catégories" aria-expanded="false">☰</button>
+
                 <a href="{{ url_for('accueil') }}" class="logo">
                     <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Majt Shop">
                 </a>
@@ -21,11 +23,11 @@
                     <button type="submit">Rechercher</button>
                 </form>
 
-                <a href="{{ url_for('panier') }}" class="panier">🛒 Panier{% if nombre_panier %} <span class="panier-badge">{{ nombre_panier }}</span>{% endif %}</a>
+                <a href="{{ url_for('panier') }}" class="panier">🛒 <span class="panier-texte">Panier</span>{% if nombre_panier %} <span class="panier-badge">{{ nombre_panier }}</span>{% endif %}</a>
             </div>
         </header>
 
-        <nav class="nav-categories">
+        <nav class="nav-categories" id="nav-categories">
             <div class="conteneur nav-categories-inner">
                 <a href="{{ url_for('accueil') }}" class="{{ 'actif' if not categorie_active else '' }}">Tout</a>
                 {% for slug, nom in categories.items() %}
@@ -74,5 +76,7 @@
             <a href="{{ url_for('admin_tableau_de_bord') if admin_connecte else url_for('admin_connexion') }}" class="lien-admin">Espace administrateur</a>
         </div>
     </footer>
+
+    <script src="{{ url_for('static', filename='js/nav.js') }}"></script>
 </body>
 </html>
