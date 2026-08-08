@@ -1,0 +1,680 @@
+import os
+import json
+from datetime import date, datetime
+from functools import wraps
+from pathlib import Path
+
+from flask import Flask, render_template, abort, request, redirect, url_for, session
+from werkzeug.security import generate_password_hash, check_password_hash
+
+app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY", "dev-majt-shop-secret-key")
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5 Mo max par photo
+
+DATA_FILE = Path(__file__).parent / "data" / "produits.json"
+COMMANDES_FILE = Path(__file__).parent / "data" / "commandes.json"
+VISITES_FILE = Path(__file__).parent / "data" / "visites.json"
+IMAGES_DIR = Path(__file__).parent / "static" / "images"
+EXTENSIONS_AUTORISEES = {"png", "jpg", "jpeg", "webp", "gif"}
+
+CATEGORIES = {
+    "vetements": "Vêtements",
+    "chaussures": "Chaussures",
+    "sacs": "Sacs à main",
+    "telephones": "Téléphones portables",
+}
+
+PUBLICS = {
+    "homme": "Homme",
+    "femme": "Femme",
+    "enfant": "Enfant",
+    "unisexe": "Unisexe",
+}
+ORDRE_PUBLICS = ["homme", "femme", "enfant", "unisexe"]
+
+FILTRES_REVENUS = {
+    "date": "Date de livraison",
+    "semaine": "Semaine",
+    "article": "Article",
+    "categorie": "Catégorie",
+}
+
+# Identifiants administrateur : configurables via variables d'environnement
+# (ADMIN_UTILISATEUR, ADMIN_MOT_DE_PASSE). Valeurs par défaut pour le développement local uniquement.
+ADMIN_UTILISATEUR = os.environ.get("ADMIN_UTILISATEUR", "admin")
+ADMIN_MOT_DE_PASSE_HASH = generate_password_hash(os.environ.get("ADMIN_MOT_DE_PASSE", "MajtAdmin2026!"))
+
+
+def charger_produits():
+    with open(DATA_FILE, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def sauvegarder_produits(produits):
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(produits, f, ensure_ascii=False, indent=2)
+
+
+def charger_commandes():
+    if COMMANDES_FILE.exists():
+        with open(COMMANDES_FILE, encoding="utf-8") as f:
+            return json.load(f)
+    return []
+
+
+def sauvegarder_commandes(commandes):
+    with open(COMMANDES_FILE, "w", encoding="utf-8") as f:
+        json.dump(commandes, f, ensure_ascii=False, indent=2)
+
+
+def generer_numero_commande():
+    prefixe = f"MJT{date.today().strftime('%y%m%d')}"
+    commandes_du_jour = [c for c in charger_commandes() if c["numero"].startswith(prefixe)]
+    return f"{prefixe}{len(commandes_du_jour) + 1}"
+
+
+def construire_lignes_ventes():
+    produits_par_id = {p["id"]: p for p in charger_produits()}
+    lignes_ventes = []
+    for c in charger_commandes():
+        if c["statut"] != "livree":
+            continue
+        jour = (c.get("date_livraison") or c["date"])[:10]
+        annee, semaine, _ = date.fromisoformat(jour).isocalendar()
+        for ligne in c["lignes"]:
+            p = produits_par_id.get(ligne.get("produit_id"))
+            categorie_nom = CATEGORIES.get(p["categorie"], "Autre") if p else "Autre"
+            lignes_ventes.append({
+                "date": jour,
+                "semaine": f"{annee} - semaine {semaine:02d}",
+                "article": ligne["nom"],
+                "categorie": categorie_nom,
+                "commande": c["numero"],
+                "quantite": ligne["quantite"],
+                "montant": ligne["sous_total"],
+            })
+    return lignes_ventes
+
+
+def charger_visites():
+    if VISITES_FILE.exists():
+        with open(VISITES_FILE, encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+
+def sauvegarder_visites(visites):
+    with open(VISITES_FILE, "w", encoding="utf-8") as f:
+        json.dump(visites, f, ensure_ascii=False, indent=2)
+
+
+def trouver_produit(produit_id):
+    return next((p for p in charger_produits() if p["id"] == produit_id), None)
+
+
+def publics_presents_tries(produits):
+    presents = {p.get("public", "unisexe") for p in produits}
+    return [pub for pub in ORDRE_PUBLICS if pub in presents]
+
+
+def construire_sections_accueil(produits):
+    sections = []
+    for slug, nom in CATEGORIES.items():
+        produits_cat = [p for p in produits if p["categorie"] == slug]
+        if not produits_cat:
+            continue
+        publics = publics_presents_tries(produits_cat)
+        if len(publics) > 1:
+            for pub in publics:
+                produits_pub = [p for p in produits_cat if p.get("public", "unisexe") == pub]
+                sections.append({
+                    "titre": f"{nom} {PUBLICS[pub]}",
+                    "produits": produits_pub,
+                    "lien": url_for("categorie", slug=slug, public=pub),
+                })
+        else:
+            sections.append({
+                "titre": nom,
+                "produits": produits_cat,
+                "lien": url_for("categorie", slug=slug),
+            })
+    return sections
+
+
+def obtenir_lignes_panier():
+    panier_session = session.get("panier", {})
+    produits = charger_produits()
+    lignes = []
+    total = 0
+    for cle, quantite in panier_session.items():
+        pid_str, taille, couleur = (cle.split("|", 2) + ["", ""])[:3]
+        p = next((x for x in produits if x["id"] == int(pid_str)), None)
+        if p:
+            sous_total = prix_final(p) * quantite
+            total += sous_total
+            lignes.append({
+                "cle": cle,
+                "produit": p,
+                "taille": taille,
+                "couleur": couleur,
+                "quantite": quantite,
+                "sous_total": sous_total,
+            })
+    return lignes, total
+
+
+def parser_liste(chaine):
+    return [v.strip() for v in chaine.split(",") if v.strip()]
+
+
+def prix_final(produit):
+    reduction = produit.get("reduction", 0) or 0
+    if reduction:
+        return round(produit["prix"] * (1 - reduction / 100))
+    return produit["prix"]
+
+
+def extension_autorisee(nom_fichier):
+    return "." in nom_fichier and nom_fichier.rsplit(".", 1)[1].lower() in EXTENSIONS_AUTORISEES
+
+
+def admin_requis(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if not session.get("admin_connecte"):
+            return redirect(url_for("admin_connexion", suivant=request.path))
+        return f(*args, **kwargs)
+    return wrapper
+
+
+@app.template_filter("cdf")
+def formater_cdf(valeur):
+    return f"{round(valeur):,}".replace(",", " ") + " CDF"
+
+
+@app.template_filter("prix_final")
+def prix_final_filter(produit):
+    return prix_final(produit)
+
+
+@app.context_processor
+def injecter_globals():
+    panier = session.get("panier", {})
+    admin_connecte = session.get("admin_connecte", False)
+    nouvelles_commandes = []
+    if admin_connecte:
+        nouvelles_commandes = [c for c in charger_commandes() if not c.get("vue", True)]
+        nouvelles_commandes.sort(key=lambda c: c["date"], reverse=True)
+    return {
+        "nombre_panier": sum(panier.values()),
+        "admin_connecte": admin_connecte,
+        "nouvelles_commandes": nouvelles_commandes,
+    }
+
+
+@app.before_request
+def compter_visite():
+    if request.method != "GET":
+        return
+    if not request.endpoint or request.endpoint == "static" or request.endpoint.startswith("admin"):
+        return
+    aujourd_hui = date.today().isoformat()
+    if session.get("visite_comptee_le") != aujourd_hui:
+        session["visite_comptee_le"] = aujourd_hui
+        visites = charger_visites()
+        visites[aujourd_hui] = visites.get(aujourd_hui, 0) + 1
+        sauvegarder_visites(visites)
+
+
+# --- Boutique ---
+
+@app.route("/")
+def accueil():
+    produits = [p for p in charger_produits() if p.get("stock", 0) > 0]
+    sections = construire_sections_accueil(produits)
+    return render_template("index.html", categories=CATEGORIES, sections=sections)
+
+
+@app.route("/categorie/<slug>")
+def categorie(slug):
+    if slug not in CATEGORIES:
+        abort(404)
+    produits = [p for p in charger_produits() if p["categorie"] == slug and p.get("stock", 0) > 0]
+    publics = publics_presents_tries(produits)
+    public_filtre = request.args.get("public", "")
+    if public_filtre in PUBLICS:
+        produits = [p for p in produits if p.get("public", "unisexe") == public_filtre]
+    return render_template(
+        "categorie.html",
+        produits=produits,
+        categories=CATEGORIES,
+        categorie_active=slug,
+        nom_categorie=CATEGORIES[slug],
+        publics=publics,
+        public_filtre=public_filtre,
+        public_labels=PUBLICS,
+    )
+
+
+@app.route("/recherche")
+def recherche():
+    q = request.args.get("q", "").strip().lower()
+    produits = [p for p in charger_produits() if q in p["nom"].lower() and p.get("stock", 0) > 0] if q else []
+    return render_template(
+        "categorie.html",
+        produits=produits,
+        categories=CATEGORIES,
+        categorie_active=None,
+        nom_categorie=f"Résultats pour « {q} »" if q else "Recherche",
+    )
+
+
+@app.route("/produit/<int:produit_id>")
+def produit(produit_id):
+    p = trouver_produit(produit_id)
+    if not p:
+        abort(404)
+    return render_template("produit.html", produit=p, categories=CATEGORIES)
+
+
+@app.route("/panier")
+def panier():
+    lignes, total = obtenir_lignes_panier()
+    return render_template("panier.html", lignes=lignes, total=total, categories=CATEGORIES)
+
+
+@app.route("/panier/ajouter/<int:produit_id>", methods=["POST"])
+def ajouter_au_panier(produit_id):
+    produit_cible = trouver_produit(produit_id)
+    if not produit_cible:
+        abort(404)
+    try:
+        quantite = max(1, int(request.form.get("quantite", 1)))
+    except ValueError:
+        quantite = 1
+
+    stock_disponible = produit_cible.get("stock", 0)
+    if stock_disponible <= 0:
+        return redirect(url_for("produit", produit_id=produit_id))
+    quantite = min(quantite, stock_disponible)
+
+    tailles = produit_cible.get("tailles") or []
+    couleurs = produit_cible.get("couleurs") or []
+    taille = request.form.get("taille", "")
+    couleur = request.form.get("couleur", "")
+    if tailles and taille not in tailles:
+        taille = tailles[0]
+    if couleurs and couleur not in couleurs:
+        couleur = couleurs[0]
+    if not tailles:
+        taille = ""
+    if not couleurs:
+        couleur = ""
+
+    panier_session = session.get("panier", {})
+    cle = f"{produit_id}|{taille}|{couleur}"
+    panier_session[cle] = panier_session.get(cle, 0) + quantite
+    session["panier"] = panier_session
+
+    if request.form.get("acheter"):
+        return redirect(url_for("panier"))
+    return redirect(url_for("produit", produit_id=produit_id))
+
+
+@app.route("/panier/supprimer", methods=["POST"])
+def supprimer_du_panier():
+    cle = request.form.get("cle", "")
+    panier_session = session.get("panier", {})
+    panier_session.pop(cle, None)
+    session["panier"] = panier_session
+    return redirect(url_for("panier"))
+
+
+@app.route("/panier/commander", methods=["GET", "POST"])
+def commander():
+    lignes, total = obtenir_lignes_panier()
+    if not lignes:
+        return redirect(url_for("panier"))
+
+    erreurs = {}
+    if request.method == "POST":
+        nom = request.form.get("nom", "").strip()
+        telephone = request.form.get("telephone", "").strip()
+        adresse = request.form.get("adresse", "").strip()
+
+        if not nom:
+            erreurs["nom"] = "Merci d'indiquer votre nom."
+        if not telephone:
+            erreurs["telephone"] = "Merci d'indiquer un numéro de téléphone."
+        if not adresse:
+            erreurs["adresse"] = "Merci d'indiquer une adresse de livraison."
+
+        if not erreurs:
+            numero = generer_numero_commande()
+            commande = {
+                "numero": numero,
+                "date": datetime.now().isoformat(timespec="seconds"),
+                "nom": nom,
+                "telephone": telephone,
+                "adresse": adresse,
+                "lignes": [
+                    {
+                        "produit_id": ligne["produit"]["id"],
+                        "nom": ligne["produit"]["nom"],
+                        "taille": ligne["taille"],
+                        "couleur": ligne["couleur"],
+                        "quantite": ligne["quantite"],
+                        "sous_total": ligne["sous_total"],
+                    }
+                    for ligne in lignes
+                ],
+                "total": total,
+                "statut": "en_attente",
+                "montant_verse": None,
+                "date_livraison": None,
+                "vue": False,
+            }
+
+            commandes = charger_commandes()
+            commandes.append(commande)
+            sauvegarder_commandes(commandes)
+
+            produits = charger_produits()
+            for ligne in lignes:
+                p = next((x for x in produits if x["id"] == ligne["produit"]["id"]), None)
+                if p:
+                    p["stock"] = max(0, p.get("stock", 0) - ligne["quantite"])
+            sauvegarder_produits(produits)
+
+            session["derniere_commande"] = commande
+            session["panier"] = {}
+            return redirect(url_for("confirmation_commande"))
+
+    return render_template(
+        "commander.html",
+        lignes=lignes,
+        total=total,
+        categories=CATEGORIES,
+        erreurs=erreurs,
+        valeurs=request.form,
+    )
+
+
+@app.route("/commande/confirmation")
+def confirmation_commande():
+    commande = session.pop("derniere_commande", None)
+    if not commande:
+        return redirect(url_for("accueil"))
+    return render_template("confirmation.html", commande=commande, categories=CATEGORIES)
+
+
+@app.route("/guide/commande")
+def guide_commande():
+    return render_template("guide_commande.html", categories=CATEGORIES)
+
+
+# --- Administration ---
+
+@app.route("/admin/connexion", methods=["GET", "POST"])
+def admin_connexion():
+    erreur = None
+    if request.method == "POST":
+        utilisateur = request.form.get("utilisateur", "")
+        mot_de_passe = request.form.get("mot_de_passe", "")
+        if utilisateur == ADMIN_UTILISATEUR and check_password_hash(ADMIN_MOT_DE_PASSE_HASH, mot_de_passe):
+            session["admin_connecte"] = True
+            suivant = request.args.get("suivant") or url_for("admin_tableau_de_bord")
+            return redirect(suivant)
+        erreur = "Identifiant ou mot de passe incorrect."
+    return render_template("admin/connexion.html", erreur=erreur, categories=CATEGORIES)
+
+
+@app.route("/admin/deconnexion")
+def admin_deconnexion():
+    session.pop("admin_connecte", None)
+    return redirect(url_for("admin_connexion"))
+
+
+@app.route("/admin")
+@admin_requis
+def admin_tableau_de_bord():
+    produits = charger_produits()
+    commandes = charger_commandes()
+    visites = charger_visites()
+
+    aujourd_hui = date.today().isoformat()
+    commandes_en_attente = [c for c in commandes if c["statut"] == "en_attente"]
+    commandes_livrees = [c for c in commandes if c["statut"] == "livree"]
+    chiffre_affaires = sum(c.get("montant_verse") or 0 for c in commandes_livrees)
+
+    return render_template(
+        "admin/tableau_de_bord.html",
+        categories=CATEGORIES,
+        visiteurs_jour=visites.get(aujourd_hui, 0),
+        nb_commandes_attente=len(commandes_en_attente),
+        nb_commandes_livrees=len(commandes_livrees),
+        chiffre_affaires=chiffre_affaires,
+        nb_produits=len(produits),
+        nb_rupture=len([p for p in produits if p.get("stock", 0) <= 0]),
+    )
+
+
+@app.route("/admin/produits")
+@admin_requis
+def admin_produits():
+    produits = charger_produits()
+    categorie_filtre = request.args.get("categorie", "")
+    if categorie_filtre and categorie_filtre in CATEGORIES:
+        produits = [p for p in produits if p["categorie"] == categorie_filtre]
+    stock_filtre = request.args.get("stock", "")
+    if stock_filtre == "rupture":
+        produits = [p for p in produits if p.get("stock", 0) <= 0]
+    return render_template(
+        "admin/produits.html",
+        produits=produits,
+        categories=CATEGORIES,
+        categorie_filtre=categorie_filtre,
+        stock_filtre=stock_filtre,
+    )
+
+
+@app.route("/admin/commandes")
+@admin_requis
+def admin_commandes():
+    commandes = charger_commandes()
+    if any(not c.get("vue", True) for c in commandes):
+        for c in commandes:
+            c["vue"] = True
+        sauvegarder_commandes(commandes)
+    statut_filtre = request.args.get("statut", "")
+    if statut_filtre in ("en_attente", "livree"):
+        commandes = [c for c in commandes if c["statut"] == statut_filtre]
+    commandes = sorted(commandes, key=lambda c: c["date"], reverse=True)
+    return render_template(
+        "admin/commandes.html",
+        commandes=commandes,
+        categories=CATEGORIES,
+        statut_filtre=statut_filtre,
+    )
+
+
+@app.route("/admin/revenus")
+@admin_requis
+def admin_revenus():
+    lignes = construire_lignes_ventes()
+    total = sum(l["montant"] for l in lignes)
+
+    type_filtre = request.args.get("type", "")
+    valeur_filtre = request.args.get("valeur", "")
+
+    valeurs_disponibles = []
+    resultats = []
+    sous_total = 0
+
+    if type_filtre in FILTRES_REVENUS:
+        valeurs_disponibles = sorted({l[type_filtre] for l in lignes}, reverse=(type_filtre in ("date", "semaine")))
+        if valeur_filtre:
+            resultats = [l for l in lignes if l[type_filtre] == valeur_filtre]
+            sous_total = sum(l["montant"] for l in resultats)
+
+    return render_template(
+        "admin/revenus.html",
+        categories=CATEGORIES,
+        total=total,
+        filtres=FILTRES_REVENUS,
+        type_filtre=type_filtre,
+        valeur_filtre=valeur_filtre,
+        valeurs_disponibles=valeurs_disponibles,
+        resultats=resultats,
+        sous_total=sous_total,
+    )
+
+
+@app.route("/admin/visites")
+@admin_requis
+def admin_visites():
+    visites = sorted(charger_visites().items(), reverse=True)
+    return render_template("admin/visites.html", categories=CATEGORIES, visites=visites)
+
+
+@app.route("/admin/notifications/marquer-vues", methods=["POST"])
+@admin_requis
+def marquer_notifications_vues():
+    commandes = charger_commandes()
+    for c in commandes:
+        c["vue"] = True
+    sauvegarder_commandes(commandes)
+    return ("", 204)
+
+
+@app.route("/admin/commandes/<numero>/livrer", methods=["POST"])
+@admin_requis
+def admin_livrer_commande(numero):
+    commandes = charger_commandes()
+    commande = next((c for c in commandes if c["numero"] == numero), None)
+    if not commande:
+        abort(404)
+    try:
+        montant = float(request.form.get("montant_verse") or commande["total"])
+    except ValueError:
+        montant = commande["total"]
+    commande["statut"] = "livree"
+    commande["montant_verse"] = montant
+    commande["date_livraison"] = datetime.now().isoformat(timespec="seconds")
+    sauvegarder_commandes(commandes)
+    return redirect(url_for("admin_commandes"))
+
+
+@app.route("/admin/produits/ajouter", methods=["GET", "POST"])
+@admin_requis
+def admin_ajouter_produit():
+    if request.method == "POST":
+        produits = charger_produits()
+        nouvel_id = max((p["id"] for p in produits), default=0) + 1
+        nom_image = "placeholder.jpg"
+        fichier = request.files.get("photo")
+        if fichier and fichier.filename and extension_autorisee(fichier.filename):
+            extension = fichier.filename.rsplit(".", 1)[1].lower()
+            nom_image = f"produit-{nouvel_id}.{extension}"
+            fichier.save(IMAGES_DIR / nom_image)
+
+        try:
+            reduction = max(0, min(90, int(request.form.get("reduction", 0) or 0)))
+        except ValueError:
+            reduction = 0
+
+        try:
+            stock = max(0, int(request.form.get("stock", 0) or 0))
+        except ValueError:
+            stock = 0
+
+        nouveau_produit = {
+            "id": nouvel_id,
+            "nom": request.form.get("nom", "").strip(),
+            "categorie": request.form.get("categorie"),
+            "prix": float(request.form.get("prix", 0) or 0),
+            "reduction": reduction,
+            "public": request.form.get("public") if request.form.get("public") in PUBLICS else "unisexe",
+            "stock": stock,
+            "image": nom_image,
+            "description": request.form.get("description", "").strip(),
+            "couleurs": parser_liste(request.form.get("couleurs", "")),
+            "tailles": parser_liste(request.form.get("tailles", "")),
+        }
+        produits.append(nouveau_produit)
+        sauvegarder_produits(produits)
+        return redirect(url_for("admin_produits"))
+
+    return render_template("admin/formulaire_produit.html", produit=None, categories=CATEGORIES, publics_options=PUBLICS)
+
+
+@app.route("/admin/produits/<int:produit_id>/modifier", methods=["GET", "POST"])
+@admin_requis
+def admin_modifier_produit(produit_id):
+    produits = charger_produits()
+    produit_cible = next((p for p in produits if p["id"] == produit_id), None)
+    if not produit_cible:
+        abort(404)
+
+    if request.method == "POST":
+        produit_cible["nom"] = request.form.get("nom", "").strip()
+        produit_cible["categorie"] = request.form.get("categorie")
+        produit_cible["prix"] = float(request.form.get("prix", 0) or 0)
+        try:
+            produit_cible["reduction"] = max(0, min(90, int(request.form.get("reduction", 0) or 0)))
+        except ValueError:
+            produit_cible["reduction"] = 0
+        produit_cible["description"] = request.form.get("description", "").strip()
+        produit_cible["couleurs"] = parser_liste(request.form.get("couleurs", ""))
+        produit_cible["tailles"] = parser_liste(request.form.get("tailles", ""))
+        produit_cible["public"] = request.form.get("public") if request.form.get("public") in PUBLICS else "unisexe"
+        try:
+            produit_cible["stock"] = max(0, int(request.form.get("stock", 0) or 0))
+        except ValueError:
+            produit_cible["stock"] = 0
+
+        fichier = request.files.get("photo")
+        if fichier and fichier.filename and extension_autorisee(fichier.filename):
+            extension = fichier.filename.rsplit(".", 1)[1].lower()
+            nom_image = f"produit-{produit_id}.{extension}"
+            fichier.save(IMAGES_DIR / nom_image)
+            produit_cible["image"] = nom_image
+
+        sauvegarder_produits(produits)
+        return redirect(url_for("admin_produits"))
+
+    return render_template("admin/formulaire_produit.html", produit=produit_cible, categories=CATEGORIES, publics_options=PUBLICS)
+
+
+@app.route("/admin/produits/<int:produit_id>/supprimer", methods=["POST"])
+@admin_requis
+def admin_supprimer_produit(produit_id):
+    produits = [p for p in charger_produits() if p["id"] != produit_id]
+    sauvegarder_produits(produits)
+    return redirect(url_for("admin_produits"))
+
+
+@app.route("/admin/produits/<int:produit_id>/reapprovisionner", methods=["POST"])
+@admin_requis
+def admin_reapprovisionner_produit(produit_id):
+    produits = charger_produits()
+    produit_cible = next((p for p in produits if p["id"] == produit_id), None)
+    if not produit_cible:
+        abort(404)
+    try:
+        quantite_ajoutee = max(0, int(request.form.get("quantite_ajoutee", 0) or 0))
+    except ValueError:
+        quantite_ajoutee = 0
+    produit_cible["stock"] = produit_cible.get("stock", 0) + quantite_ajoutee
+    sauvegarder_produits(produits)
+
+    destination = request.referrer
+    if destination and destination.startswith(request.host_url):
+        return redirect(destination)
+    return redirect(url_for("admin_produits"))
+
+
+if __name__ == "__main__":
+    debug = os.environ.get("FLASK_DEBUG", "1") == "1"
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=debug)

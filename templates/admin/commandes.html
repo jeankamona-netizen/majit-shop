@@ -1,0 +1,68 @@
+{% extends "admin/admin_base.html" %}
+
+{% block titre %}Commandes — Administration Majt Shop{% endblock %}
+
+{% block contenu %}
+<h1>Commandes</h1>
+
+<div class="admin-filtres">
+    <a href="{{ url_for('admin_commandes') }}" class="admin-filtre {{ 'admin-filtre-actif' if not statut_filtre else '' }}">Toutes</a>
+    <a href="{{ url_for('admin_commandes', statut='en_attente') }}" class="admin-filtre {{ 'admin-filtre-actif' if statut_filtre == 'en_attente' else '' }}">En attente</a>
+    <a href="{{ url_for('admin_commandes', statut='livree') }}" class="admin-filtre {{ 'admin-filtre-actif' if statut_filtre == 'livree' else '' }}">Livrées</a>
+</div>
+
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>N°</th>
+                <th>Date</th>
+                <th>Client</th>
+                <th>Articles</th>
+                <th>Total</th>
+                <th>Statut</th>
+                <th>Montant versé</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in commandes %}
+            <tr>
+                <td>{{ c.numero }}</td>
+                <td>{{ c.date.replace('T', ' ') }}</td>
+                <td>
+                    {{ c.nom }}<br>
+                    <span class="admin-commande-contact">{{ c.telephone }} — {{ c.adresse }}</span>
+                </td>
+                <td class="admin-commande-articles">
+                    {% for ligne in c.lignes %}
+                        <div>{{ ligne.nom }}{% if ligne.couleur %} ({{ ligne.couleur }}{% if ligne.taille %}, {{ ligne.taille }}{% endif %}){% elif ligne.taille %} ({{ ligne.taille }}){% endif %} × {{ ligne.quantite }}</div>
+                    {% endfor %}
+                </td>
+                <td>{{ c.total|cdf }}</td>
+                <td>
+                    {% if c.statut == 'livree' %}
+                        <span class="statut-badge statut-livree">Livrée</span>
+                    {% else %}
+                        <span class="statut-badge statut-attente">En attente</span>
+                    {% endif %}
+                </td>
+                <td>{{ c.montant_verse|cdf if c.montant_verse is not none else '—' }}</td>
+                <td>
+                    {% if c.statut != 'livree' %}
+                    <form method="post" action="{{ url_for('admin_livrer_commande', numero=c.numero) }}" class="admin-form-livraison">
+                        <input type="number" name="montant_verse" step="1" min="0" value="{{ c.total|round|int }}">
+                        <button type="submit">Marquer livrée</button>
+                    </form>
+                    {% else %}
+                        <span class="admin-livree-date">le {{ c.date_livraison.replace('T', ' ') if c.date_livraison else '' }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="8">Aucune commande pour le moment.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block titre %}Passer la commande — Majt Shop{% endblock %}
+
+{% block contenu %}
+<section class="section-categorie">
+    <div class="conteneur">
+        <div class="section-entete">
+            <h2>Passer la commande</h2>
+        </div>
+
+        <div class="commande-grille">
+            <form method="post" class="commande-formulaire">
+                <label for="nom">Nom complet</label>
+                <input type="text" id="nom" name="nom" value="{{ valeurs.get('nom', '') }}" required>
+                {% if erreurs.nom %}<p class="commande-erreur">{{ erreurs.nom }}</p>{% endif %}
+
+                <label for="telephone">Téléphone</label>
+                <input type="tel" id="telephone" name="telephone" value="{{ valeurs.get('telephone', '') }}" required>
+                {% if erreurs.telephone %}<p class="commande-erreur">{{ erreurs.telephone }}</p>{% endif %}
+
+                <label for="adresse">Adresse de livraison</label>
+                <textarea id="adresse" name="adresse" rows="3" required>{{ valeurs.get('adresse', '') }}</textarea>
+                {% if erreurs.adresse %}<p class="commande-erreur">{{ erreurs.adresse }}</p>{% endif %}
+
+                <label>Mode de paiement</label>
+                <p class="commande-paiement">Paiement à la livraison</p>
+
+                <button type="submit">Confirmer la commande</button>
+            </form>
+
+            <div class="commande-recap">
+                <h3>Récapitulatif</h3>
+                <ul class="commande-liste">
+                    {% for ligne in lignes %}
+                    <li>
+                        <span>{{ ligne.produit.nom }}{% if ligne.couleur %} ({{ ligne.couleur }}{% if ligne.taille %}, {{ ligne.taille }}{% endif %}){% elif ligne.taille %} ({{ ligne.taille }}){% endif %} × {{ ligne.quantite }}</span>
+                        <span>{{ ligne.sous_total|cdf }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <div class="commande-total">Total : <strong>{{ total|cdf }}</strong></div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

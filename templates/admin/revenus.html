@@ -1,0 +1,68 @@
+{% extends "admin/admin_base.html" %}
+
+{% block titre %}Revenus — Administration Majt Shop{% endblock %}
+
+{% block contenu %}
+<h1>Chiffre d'affaires généré (commandes livrées)</h1>
+
+<div class="admin-revenu-total">
+    <span class="admin-stat-valeur">{{ total|cdf }}</span>
+    <span class="admin-stat-label">Total encaissé après livraison</span>
+</div>
+
+<form method="get" class="admin-filtre-revenus">
+    <label for="type">Filtrer par</label>
+    <select id="type" name="type" onchange="this.form.submit()">
+        <option value="">— Choisir —</option>
+        {% for cle, label in filtres.items() %}
+            <option value="{{ cle }}" {{ 'selected' if type_filtre == cle else '' }}>{{ label }}</option>
+        {% endfor %}
+    </select>
+
+    {% if type_filtre %}
+    <label for="valeur">Valeur</label>
+    <select id="valeur" name="valeur">
+        <option value="">— Sélectionner —</option>
+        {% for v in valeurs_disponibles %}
+            <option value="{{ v }}" {{ 'selected' if valeur_filtre == v else '' }}>{{ v }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Afficher</button>
+    {% endif %}
+</form>
+
+{% if type_filtre and valeur_filtre %}
+<h2>Ventes — {{ filtres[type_filtre] }} : {{ valeur_filtre }}</h2>
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Article</th>
+                <th>Catégorie</th>
+                <th>Date de livraison</th>
+                <th>Commande</th>
+                <th>Quantité</th>
+                <th>Montant</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for l in resultats %}
+            <tr>
+                <td>{{ l.article }}</td>
+                <td>{{ l.categorie }}</td>
+                <td>{{ l.date }}</td>
+                <td>{{ l.commande }}</td>
+                <td>{{ l.quantite }}</td>
+                <td>{{ l.montant|cdf }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6">Aucune vente pour cette sélection.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<div class="admin-revenu-soustotal">Sous-total : <strong>{{ sous_total|cdf }}</strong></div>
+{% elif type_filtre %}
+<p class="admin-revenu-invite">Choisissez une valeur pour voir le détail des ventes.</p>
+{% endif %}
+{% endblock %}

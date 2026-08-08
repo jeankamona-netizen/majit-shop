@@ -1,0 +1,20 @@
+{% extends "admin/admin_base.html" %}
+
+{% block titre %}Visiteurs — Administration Majt Shop{% endblock %}
+
+{% block contenu %}
+<h1>Visiteurs par jour</h1>
+
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead><tr><th>Date</th><th>Visiteurs</th></tr></thead>
+        <tbody>
+            {% for jour, nombre in visites %}
+            <tr><td>{{ jour }}</td><td>{{ nombre }}</td></tr>
+            {% else %}
+            <tr><td colspan="2">Aucune visite enregistrée pour le moment.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

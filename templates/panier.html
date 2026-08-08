@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block titre %}Mon panier — Majt Shop{% endblock %}
+
+{% block contenu %}
+<section class="section-categorie">
+    <div class="conteneur">
+        <div class="section-entete">
+            <h2>Mon panier</h2>
+        </div>
+
+        {% if lignes %}
+        <div class="table-panier-wrap">
+            <table class="table-panier">
+                <thead>
+                    <tr>
+                        <th>Produit</th>
+                        <th>Prix</th>
+                        <th>Quantité</th>
+                        <th>Sous-total</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ligne in lignes %}
+                    <tr>
+                        <td class="panier-produit">
+                            <img src="{{ url_for('static', filename='images/' + ligne.produit.image) }}" alt="{{ ligne.produit.nom }}">
+                            <div>
+                                <a href="{{ url_for('produit', produit_id=ligne.produit.id) }}">{{ ligne.produit.nom }}</a>
+                                {% if ligne.taille or ligne.couleur %}
+                                <div class="panier-variante">
+                                    {% if ligne.couleur %}<span>Couleur : {{ ligne.couleur }}</span>{% endif %}
+                                    {% if ligne.taille %}<span>Taille : {{ ligne.taille }}</span>{% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>{{ (ligne.produit|prix_final)|cdf }}</td>
+                        <td>{{ ligne.quantite }}</td>
+                        <td>{{ ligne.sous_total|cdf }}</td>
+                        <td>
+                            <form method="post" action="{{ url_for('supprimer_du_panier') }}">
+                                <input type="hidden" name="cle" value="{{ ligne.cle }}">
+                                <button type="submit" class="bouton-supprimer">Retirer</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="panier-pied">
+            <a href="{{ url_for('accueil') }}" class="lien-continuer">&larr; Continuer mes achats</a>
+            <div class="panier-total">Total : <strong>{{ total|cdf }}</strong></div>
+        </div>
+        <div class="panier-commander">
+            <a href="{{ url_for('commander') }}" class="bouton-acheter">Passer la commande</a>
+        </div>
+        {% else %}
+        <p class="panier-vide">Votre panier est vide. <a href="{{ url_for('accueil') }}">Continuer vos achats</a></p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

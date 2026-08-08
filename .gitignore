@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+.env
+
+# Données générées à l'exécution (contiennent des infos clients) : ne pas versionner
+data/commandes.json
+data/visites.json

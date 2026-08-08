@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block titre %}Administration — Majt Shop{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body class="admin-body">
+    <header class="admin-entete">
+        <a href="{{ url_for('accueil') }}" class="admin-logo">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Majt Shop">
+            <span>Administration</span>
+        </a>
+        {% if admin_connecte %}
+        <nav class="admin-nav">
+            <a href="{{ url_for('admin_tableau_de_bord') }}">Tableau de bord</a>
+            <a href="{{ url_for('admin_produits') }}">Produits</a>
+            <a href="{{ url_for('admin_commandes') }}">Commandes</a>
+            <a href="{{ url_for('admin_ajouter_produit') }}">+ Ajouter un article</a>
+            <a href="{{ url_for('accueil') }}">Voir la boutique</a>
+            <a href="{{ url_for('admin_deconnexion') }}">Déconnexion</a>
+
+            <div class="admin-notif">
+                <button type="button" id="admin-cloche" class="admin-cloche" aria-label="Notifications">
+                    🔔
+                    {% if nouvelles_commandes %}
+                    <span class="admin-cloche-badge" id="admin-cloche-badge">{{ nouvelles_commandes|length }}</span>
+                    {% endif %}
+                </button>
+                <div class="admin-notif-panneau" id="admin-notif-panneau">
+                    <div class="admin-notif-entete">Nouvelles commandes</div>
+                    {% if nouvelles_commandes %}
+                        {% for c in nouvelles_commandes %}
+                        <div class="admin-notif-commande">
+                            <div class="admin-notif-ligne1">
+                                <strong>{{ c.numero }}</strong>
+                                <span class="admin-notif-date">{{ c.date.replace('T', ' ') }}</span>
+                            </div>
+                            <div class="admin-notif-client">{{ c.nom }} — {{ c.telephone }}</div>
+                            <div class="admin-notif-adresse">{{ c.adresse }}</div>
+                            <ul class="admin-notif-articles">
+                                {% for ligne in c.lignes %}
+                                <li>{{ ligne.nom }}{% if ligne.couleur %} ({{ ligne.couleur }}{% if ligne.taille %}, {{ ligne.taille }}{% endif %}){% elif ligne.taille %} ({{ ligne.taille }}){% endif %} × {{ ligne.quantite }} — {{ ligne.sous_total|cdf }}</li>
+                                {% endfor %}
+                            </ul>
+                            <div class="admin-notif-total">Total : {{ c.total|cdf }}</div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="admin-notif-vide">Aucune nouvelle commande.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+        {% endif %}
+    </header>
+
+    {% if admin_connecte %}
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    {% endif %}
+
+    <main class="admin-contenu">
+        {% block contenu %}{% endblock %}
+    </main>
+</body>
+</html>

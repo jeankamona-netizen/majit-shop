@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block titre %}{{ nom_categorie }} — Majt Shop{% endblock %}
+
+{% block contenu %}
+<section class="section-categorie">
+    <div class="conteneur">
+        <div class="section-entete">
+            <h2>{{ nom_categorie }}</h2>
+        </div>
+
+        {% if publics is defined and publics|length > 1 %}
+        <div class="filtre-public">
+            <a href="{{ url_for('categorie', slug=categorie_active) }}" class="filtre-public-lien {{ 'filtre-public-actif' if not public_filtre else '' }}">Tout</a>
+            {% for pub in publics %}
+                <a href="{{ url_for('categorie', slug=categorie_active, public=pub) }}" class="filtre-public-lien {{ 'filtre-public-actif' if public_filtre == pub else '' }}">{{ public_labels[pub] }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="grille-produits">
+            {% for produit in produits %}
+            <a href="{{ url_for('produit', produit_id=produit.id) }}" class="carte-produit">
+                <div class="carte-image-wrap">
+                    {% if produit.reduction %}<span class="badge-reduction">-{{ produit.reduction }}%</span>{% endif %}
+                    <img src="{{ url_for('static', filename='images/' + produit.image) }}" alt="{{ produit.nom }}">
+                </div>
+                <h3>{{ produit.nom }}</h3>
+                <p class="description">{{ produit.description }}</p>
+                <p class="prix">
+                    {% if produit.reduction %}
+                        <span class="prix-barre">{{ produit.prix|cdf }}</span>
+                        <span class="prix-actuel">{{ (produit|prix_final)|cdf }}</span>
+                    {% else %}
+                        {{ produit.prix|cdf }}
+                    {% endif %}
+                </p>
+            </a>
+            {% else %}
+            <p>Aucun produit trouvé.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

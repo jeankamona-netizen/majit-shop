@@ -1,0 +1,64 @@
+{% extends "admin/admin_base.html" %}
+
+{% block titre %}Produits — Administration Majt Shop{% endblock %}
+
+{% block contenu %}
+<h1>Gestion des produits</h1>
+<a href="{{ url_for('admin_ajouter_produit') }}" class="admin-lien-ajout">+ Ajouter un article</a>
+
+<div class="admin-filtres">
+    <a href="{{ url_for('admin_produits', stock=stock_filtre) }}" class="admin-filtre {{ 'admin-filtre-actif' if not categorie_filtre else '' }}">Toutes catégories</a>
+    {% for slug, nom in categories.items() %}
+        <a href="{{ url_for('admin_produits', categorie=slug, stock=stock_filtre) }}" class="admin-filtre {{ 'admin-filtre-actif' if categorie_filtre == slug else '' }}">{{ nom }}</a>
+    {% endfor %}
+</div>
+
+<div class="admin-filtres">
+    <a href="{{ url_for('admin_produits', categorie=categorie_filtre) }}" class="admin-filtre {{ 'admin-filtre-actif' if not stock_filtre else '' }}">Tous les stocks</a>
+    <a href="{{ url_for('admin_produits', categorie=categorie_filtre, stock='rupture') }}" class="admin-filtre {{ 'admin-filtre-actif' if stock_filtre == 'rupture' else '' }}">Rupture uniquement</a>
+</div>
+
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Photo</th>
+                <th>Nom</th>
+                <th>Catégorie</th>
+                <th>Prix</th>
+                <th>Réduction</th>
+                <th>Prix final</th>
+                <th>Stock</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in produits %}
+            <tr>
+                <td><img src="{{ url_for('static', filename='images/' + p.image) }}" class="admin-miniature" alt="{{ p.nom }}"></td>
+                <td>{{ p.nom }}</td>
+                <td>{{ categories.get(p.categorie, p.categorie) }}</td>
+                <td>{{ p.prix|cdf }}</td>
+                <td>{{ p.reduction or 0 }}%</td>
+                <td>{{ (p|prix_final)|cdf }}</td>
+                <td>
+                    {% if p.stock and p.stock > 0 %}
+                        <span class="stock-badge">{{ p.stock }}</span>
+                    {% else %}
+                        <span class="stock-badge stock-badge-vide">Rupture</span>
+                    {% endif %}
+                </td>
+                <td class="admin-actions">
+                    <a href="{{ url_for('admin_modifier_produit', produit_id=p.id) }}">Modifier</a>
+                    <form method="post" action="{{ url_for('admin_supprimer_produit', produit_id=p.id) }}" onsubmit="return confirm('Supprimer ce produit ?');">
+                        <button type="submit">Supprimer</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="8">Aucun produit pour le moment.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

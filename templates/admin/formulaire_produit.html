@@ -1,0 +1,52 @@
+{% extends "admin/admin_base.html" %}
+
+{% block titre %}{{ 'Modifier' if produit else 'Ajouter' }} un produit — Administration{% endblock %}
+
+{% block contenu %}
+<h1>{{ 'Modifier le produit' if produit else 'Ajouter un produit' }}</h1>
+
+<form method="post" enctype="multipart/form-data" class="admin-formulaire">
+    <label for="nom">Nom</label>
+    <input type="text" id="nom" name="nom" value="{{ produit.nom if produit else '' }}" required>
+
+    <label for="categorie">Catégorie</label>
+    <select id="categorie" name="categorie" required>
+        {% for slug, nom in categories.items() %}
+            <option value="{{ slug }}" {{ 'selected' if produit and produit.categorie == slug else '' }}>{{ nom }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="prix">Prix (CDF)</label>
+    <input type="number" id="prix" step="1" min="0" name="prix" value="{{ produit.prix if produit else '' }}" required>
+
+    <label for="reduction">Réduction (%)</label>
+    <input type="number" id="reduction" step="1" min="0" max="90" name="reduction" value="{{ produit.reduction if produit else 0 }}">
+
+    <label for="public">Public visé</label>
+    <select id="public" name="public">
+        {% for cle, label in publics_options.items() %}
+            <option value="{{ cle }}" {{ 'selected' if produit and produit.public == cle else ('selected' if not produit and cle == 'unisexe' else '') }}>{{ label }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="stock">Stock disponible (quantité)</label>
+    <input type="number" id="stock" step="1" min="0" name="stock" value="{{ produit.stock if produit else 0 }}" required>
+
+    <label for="couleurs">Couleurs disponibles (séparées par des virgules)</label>
+    <input type="text" id="couleurs" name="couleurs" placeholder="Noir, Blanc, Bleu" value="{{ produit.couleurs|join(', ') if produit else '' }}">
+
+    <label for="tailles">Tailles / pointures disponibles (séparées par des virgules)</label>
+    <input type="text" id="tailles" name="tailles" placeholder="S, M, L, XL" value="{{ produit.tailles|join(', ') if produit else '' }}">
+
+    <label for="description">Description</label>
+    <textarea id="description" name="description" rows="3">{{ produit.description if produit else '' }}</textarea>
+
+    <label for="photo">Photo</label>
+    {% if produit and produit.image %}
+    <img src="{{ url_for('static', filename='images/' + produit.image) }}" class="admin-apercu" alt="{{ produit.nom }}">
+    {% endif %}
+    <input type="file" id="photo" name="photo" accept="image/*">
+
+    <button type="submit">{{ 'Enregistrer' if produit else 'Ajouter' }}</button>
+</form>
+{% endblock %}

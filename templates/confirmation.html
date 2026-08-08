@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block titre %}Commande confirmée — Majt Shop{% endblock %}
+
+{% block contenu %}
+<section class="section-categorie">
+    <div class="conteneur">
+        <div class="confirmation-carte">
+            <div class="confirmation-icone">✅</div>
+            <h1>Merci {{ commande.nom }} !</h1>
+            <p>Votre commande <strong>{{ commande.numero }}</strong> a bien été enregistrée.</p>
+            <p class="confirmation-note">Nous vous contactons au {{ commande.telephone }} pour organiser la livraison à : {{ commande.adresse }}. Paiement à la livraison.</p>
+
+            <ul class="commande-liste">
+                {% for ligne in commande.lignes %}
+                <li>
+                    <span>{{ ligne.nom }}{% if ligne.couleur %} ({{ ligne.couleur }}{% if ligne.taille %}, {{ ligne.taille }}{% endif %}){% elif ligne.taille %} ({{ ligne.taille }}){% endif %} × {{ ligne.quantite }}</span>
+                    <span>{{ ligne.sous_total|cdf }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            <div class="commande-total">Total : <strong>{{ commande.total|cdf }}</strong></div>
+
+            <a href="{{ url_for('accueil') }}" class="bouton-hero">Continuer mes achats</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

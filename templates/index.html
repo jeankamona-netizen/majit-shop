@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block titre %}Majt Shop — Vêtements, chaussures, sacs & téléphones{% endblock %}
+
+{% block contenu %}
+<section class="banniere">
+    <div class="conteneur">
+        <a href="{{ url_for('categorie', slug='vetements') }}">
+            <img src="{{ url_for('static', filename='images/banniere-accueil.jpg') }}" alt="Majt Shop — Tout ce dont vous avez besoin, au meilleur prix !" class="banniere-image">
+        </a>
+    </div>
+</section>
+
+{% for section in sections %}
+<section class="section-categorie">
+    <div class="conteneur">
+        <div class="section-entete">
+            <h2>{{ section.titre }}</h2>
+            <a href="{{ section.lien }}" class="voir-tout">Voir tout &rsaquo;</a>
+        </div>
+        <div class="grille-produits">
+            {% for produit in section.produits %}
+            <a href="{{ url_for('produit', produit_id=produit.id) }}" class="carte-produit">
+                <div class="carte-image-wrap">
+                    {% if produit.reduction %}<span class="badge-reduction">-{{ produit.reduction }}%</span>{% endif %}
+                    <img src="{{ url_for('static', filename='images/' + produit.image) }}" alt="{{ produit.nom }}">
+                </div>
+                <h3>{{ produit.nom }}</h3>
+                <p class="prix">
+                    {% if produit.reduction %}
+                        <span class="prix-barre">{{ produit.prix|cdf }}</span>
+                        <span class="prix-actuel">{{ (produit|prix_final)|cdf }}</span>
+                    {% else %}
+                        {{ produit.prix|cdf }}
+                    {% endif %}
+                </p>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endfor %}
+{% endblock %}

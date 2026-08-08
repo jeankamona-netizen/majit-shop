@@ -1,0 +1,596 @@
+.admin-body {
+    background: #f4f1f9;
+}
+
+.admin-entete {
+    background: var(--violet-900);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.admin-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 700;
+}
+
+.admin-logo img {
+    height: 40px;
+}
+
+.admin-nav {
+    display: flex;
+    gap: 1.2rem;
+    flex-wrap: wrap;
+}
+
+.admin-nav a {
+    color: white;
+    font-size: 0.9rem;
+}
+
+.admin-nav a:hover {
+    color: var(--orange-400);
+}
+
+.admin-contenu {
+    max-width: 1100px;
+    margin: 2rem auto;
+    padding: 0 1.5rem 3rem;
+}
+
+.admin-contenu h1 {
+    color: var(--violet-800);
+    margin-bottom: 1.2rem;
+    font-size: 1.4rem;
+}
+
+.admin-lien-ajout {
+    display: inline-block;
+    margin-bottom: 1.2rem;
+    background: var(--orange-500);
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 24px;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.admin-lien-ajout:hover {
+    background: var(--orange-600);
+}
+
+/* Connexion */
+.admin-connexion-carte {
+    max-width: 380px;
+    margin: 3rem auto;
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+}
+
+.admin-connexion-carte h1 {
+    text-align: center;
+    margin-bottom: 1.2rem;
+    font-size: 1.3rem;
+    color: var(--violet-800);
+}
+
+.admin-connexion-carte form {
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-connexion-carte label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-top: 0.7rem;
+}
+
+.admin-connexion-carte input {
+    padding: 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    margin-top: 0.3rem;
+}
+
+.admin-connexion-carte button {
+    margin-top: 1.4rem;
+    background: var(--violet-700);
+    color: white;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.admin-connexion-carte button:hover {
+    background: var(--violet-800);
+}
+
+.admin-erreur {
+    background: #fde2e2;
+    color: #b42318;
+    padding: 0.6rem;
+    border-radius: 6px;
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+
+/* Tableau produits */
+.admin-table-wrap {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    overflow-x: auto;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 0.7rem 0.9rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    font-size: 0.88rem;
+}
+
+.admin-table th {
+    background: var(--violet-100);
+    color: var(--violet-800);
+}
+
+.admin-miniature {
+    width: 44px;
+    height: 44px;
+    object-fit: cover;
+    border-radius: 4px;
+    background: var(--violet-100);
+}
+
+.admin-actions {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+}
+
+.admin-actions a {
+    color: var(--violet-700);
+    font-weight: 600;
+}
+
+.admin-actions button {
+    background: none;
+    border: 1px solid #d33;
+    color: #d33;
+    border-radius: 16px;
+    padding: 0.25rem 0.7rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.admin-actions button:hover {
+    background: #d33;
+    color: white;
+}
+
+/* Formulaire produit */
+.admin-formulaire {
+    display: flex;
+    flex-direction: column;
+    max-width: 520px;
+    background: white;
+    padding: 1.8rem;
+    border-radius: 10px;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+}
+
+.admin-formulaire label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-top: 0.9rem;
+}
+
+.admin-formulaire input,
+.admin-formulaire select,
+.admin-formulaire textarea {
+    padding: 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    margin-top: 0.3rem;
+}
+
+.admin-apercu {
+    width: 120px;
+    border-radius: 6px;
+    margin-top: 0.4rem;
+    background: var(--violet-100);
+}
+
+.admin-formulaire button {
+    margin-top: 1.4rem;
+    background: var(--violet-700);
+    color: white;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.admin-formulaire button:hover {
+    background: var(--violet-800);
+}
+
+/* Filtres catégorie */
+.admin-filtres {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.2rem;
+}
+
+.admin-filtre {
+    background: white;
+    border: 1px solid #ddd;
+    color: var(--violet-700);
+    padding: 0.4rem 0.9rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.admin-filtre:hover {
+    border-color: var(--violet-500);
+}
+
+.admin-filtre-actif {
+    background: var(--violet-700);
+    border-color: var(--violet-700);
+    color: white;
+}
+
+/* Stock */
+.stock-badge {
+    display: inline-block;
+    background: var(--violet-100);
+    color: var(--violet-800);
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.82rem;
+}
+
+.stock-badge-vide {
+    background: #fbdada;
+    color: #c0392b;
+}
+
+/* Tableau de bord */
+.admin-stats-grille {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.admin-stat-carte {
+    background: white;
+    border-radius: 10px;
+    padding: 1.2rem 1.4rem;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.admin-stat-carte:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+
+.admin-stat-valeur {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: var(--violet-800);
+}
+
+.admin-stat-label {
+    font-size: 0.82rem;
+    color: #777;
+}
+
+.admin-stat-accent {
+    background: linear-gradient(120deg, var(--violet-800), var(--orange-500));
+}
+
+.admin-stat-accent .admin-stat-valeur,
+.admin-stat-accent .admin-stat-label {
+    color: white;
+}
+
+.admin-stat-alerte .admin-stat-valeur {
+    color: #c0392b;
+}
+
+.admin-liens-rapides {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.admin-lien-secondaire {
+    background: var(--violet-700);
+}
+
+.admin-lien-secondaire:hover {
+    background: var(--violet-800);
+}
+
+/* Commandes */
+.admin-commande-contact {
+    font-size: 0.78rem;
+    color: #888;
+}
+
+.admin-commande-articles div {
+    font-size: 0.82rem;
+    margin-bottom: 0.2rem;
+}
+
+.statut-badge {
+    display: inline-block;
+    padding: 0.25rem 0.7rem;
+    border-radius: 14px;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.statut-attente {
+    background: #fdf0d5;
+    color: #b9770e;
+}
+
+.statut-livree {
+    background: #dcf5e3;
+    color: #1e8449;
+}
+
+.admin-form-livraison {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+}
+
+.admin-form-livraison input {
+    width: 100px;
+    padding: 0.35rem 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.82rem;
+}
+
+.admin-form-livraison button {
+    background: var(--orange-500);
+    color: white;
+    border: none;
+    padding: 0.4rem 0.7rem;
+    border-radius: 16px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.admin-form-livraison button:hover {
+    background: var(--orange-600);
+}
+
+.admin-livree-date {
+    font-size: 0.78rem;
+    color: #888;
+}
+
+/* Cloche de notifications */
+.admin-notif {
+    position: relative;
+    margin-left: auto;
+}
+
+.admin-cloche {
+    position: relative;
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+
+.admin-cloche-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: var(--orange-500);
+    color: white;
+    font-size: 0.68rem;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+}
+
+.admin-notif-panneau {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.6rem);
+    width: 340px;
+    max-height: 420px;
+    overflow-y: auto;
+    background: white;
+    color: var(--gris-texte);
+    border-radius: 10px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+    z-index: 50;
+}
+
+.admin-notif-panneau.admin-notif-ouvert {
+    display: block;
+}
+
+.admin-notif-entete {
+    padding: 0.8rem 1rem;
+    font-weight: 700;
+    color: var(--violet-800);
+    border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 0;
+    background: white;
+}
+
+.admin-notif-vide {
+    padding: 1rem;
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.admin-notif-commande {
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid #eee;
+    font-size: 0.82rem;
+}
+
+.admin-notif-ligne1 {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.2rem;
+}
+
+.admin-notif-ligne1 strong {
+    color: var(--violet-800);
+}
+
+.admin-notif-date {
+    color: #999;
+    font-size: 0.75rem;
+}
+
+.admin-notif-client,
+.admin-notif-adresse {
+    color: #666;
+    margin-bottom: 0.2rem;
+}
+
+.admin-notif-articles {
+    list-style: none;
+    margin: 0.4rem 0;
+    padding-left: 0;
+}
+
+.admin-notif-articles li {
+    padding: 0.15rem 0;
+    color: #444;
+}
+
+.admin-notif-total {
+    font-weight: 700;
+    color: var(--orange-600);
+    text-align: right;
+}
+
+/* Revenus */
+.admin-revenu-total {
+    background: linear-gradient(120deg, var(--violet-800), var(--orange-500));
+    border-radius: 10px;
+    padding: 1.4rem 1.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-bottom: 1.5rem;
+}
+
+.admin-revenu-total .admin-stat-valeur,
+.admin-revenu-total .admin-stat-label {
+    color: white;
+}
+
+.admin-revenu-total .admin-stat-valeur {
+    font-size: 2rem;
+}
+
+.admin-filtre-revenus {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    flex-wrap: wrap;
+    background: white;
+    padding: 1.2rem 1.4rem;
+    border-radius: 10px;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+    margin-bottom: 1.5rem;
+}
+
+.admin-filtre-revenus label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+}
+
+.admin-filtre-revenus select {
+    padding: 0.5rem 0.7rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    min-width: 200px;
+}
+
+.admin-filtre-revenus button {
+    background: var(--orange-500);
+    color: white;
+    border: none;
+    padding: 0.55rem 1.2rem;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.admin-filtre-revenus button:hover {
+    background: var(--orange-600);
+}
+
+.admin-revenu-soustotal {
+    text-align: right;
+    margin-top: 1rem;
+    font-size: 1.1rem;
+}
+
+.admin-revenu-soustotal strong {
+    color: var(--orange-600);
+}
+
+.admin-revenu-invite {
+    color: #888;
+    font-size: 0.9rem;
+}

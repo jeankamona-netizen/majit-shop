@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block titre %}Majt Shop{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="entete">
+        <div class="conteneur entete-inner">
+            <a href="{{ url_for('accueil') }}" class="logo">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Majt Shop">
+            </a>
+
+            <span class="entete-bienvenue">Bienvenue sur Majt Shop</span>
+
+            <form class="barre-recherche" action="{{ url_for('recherche') }}" method="get">
+                <input type="text" name="q" placeholder="Que recherchez-vous ?" value="{{ request.args.get('q', '') }}">
+                <button type="submit">Rechercher</button>
+            </form>
+
+            <a href="{{ url_for('panier') }}" class="panier">🛒 Panier{% if nombre_panier %} <span class="panier-badge">{{ nombre_panier }}</span>{% endif %}</a>
+        </div>
+    </header>
+
+    <nav class="nav-categories">
+        <div class="conteneur nav-categories-inner">
+            <a href="{{ url_for('accueil') }}" class="{{ 'actif' if not categorie_active else '' }}">Tout</a>
+            {% for slug, nom in categories.items() %}
+                <a href="{{ url_for('categorie', slug=slug) }}" class="{{ 'actif' if categorie_active == slug else '' }}">{{ nom }}</a>
+            {% endfor %}
+        </div>
+    </nav>
+
+    <main>
+        {% block contenu %}{% endblock %}
+    </main>
+
+    <footer class="pied-de-page">
+        <div class="conteneur pied-grille">
+            <div>
+                <h4>Guide d'achat</h4>
+                <ul>
+                    <li><a href="{{ url_for('guide_commande') }}">Comment commander</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Aide</h4>
+                <ul>
+                    <li><a href="#">Questions fréquentes</a></li>
+                    <li><a href="#">Politique de retour</a></li>
+                    <li><a href="#">Contactez-nous</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Catégories</h4>
+                <ul>
+                    {% for slug, nom in categories.items() %}
+                        <li><a href="{{ url_for('categorie', slug=slug) }}">{{ nom }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div>
+                <h4>Majt Shop</h4>
+                <p>Vêtements, chaussures, sacs à main et téléphones portables, livrés chez vous.</p>
+            </div>
+        </div>
+        <div class="pied-copyright">
+            © 2026 Majt Shop. Tous droits réservés.
+            ·
+            <a href="{{ url_for('admin_tableau_de_bord') if admin_connecte else url_for('admin_connexion') }}" class="lien-admin">Espace administrateur</a>
+        </div>
+    </footer>
+</body>
+</html>

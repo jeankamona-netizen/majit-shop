@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block titre %}{{ produit.nom }} — Majt Shop{% endblock %}
+
+{% block contenu %}
+<section class="detail-produit">
+    <div class="conteneur">
+        <a href="{{ url_for('categorie', slug=produit.categorie) }}" class="fil-ariane">&larr; Retour à {{ categories[produit.categorie] }}</a>
+
+        <div class="detail-grille">
+            <div class="detail-image">
+                {% if produit.reduction %}<span class="badge-reduction badge-reduction-detail">-{{ produit.reduction }}%</span>{% endif %}
+                <img src="{{ url_for('static', filename='images/' + produit.image) }}" alt="{{ produit.nom }}">
+            </div>
+
+            <div class="detail-info">
+                <h1>{{ produit.nom }}</h1>
+                <p class="detail-categorie">{{ categories[produit.categorie] }}</p>
+
+                <div class="detail-prix-bloc">
+                    {% if produit.reduction %}
+                        <span class="prix-barre prix-barre-detail">{{ produit.prix|cdf }}</span>
+                    {% endif %}
+                    <span class="detail-prix">{{ (produit|prix_final)|cdf }}</span>
+                    {% if produit.reduction %}
+                        <span class="pastille-reduction">Prix réduit de {{ produit.reduction }}%</span>
+                    {% endif %}
+                </div>
+
+                <p class="detail-description">{{ produit.description }}</p>
+
+                {% if produit.stock and produit.stock > 0 %}
+                    <p class="detail-stock">En stock : {{ produit.stock }} disponible{{ 's' if produit.stock > 1 else '' }}</p>
+                {% else %}
+                    <p class="detail-stock detail-stock-vide">Rupture de stock</p>
+                {% endif %}
+
+                <form method="post" action="{{ url_for('ajouter_au_panier', produit_id=produit.id) }}" class="form-panier {{ 'form-panier-desactive' if not produit.stock else '' }}">
+                    {% if produit.couleurs %}
+                    <div class="variante-groupe">
+                        <span class="variante-titre">Couleur :</span>
+                        <div class="variante-options">
+                            {% for couleur in produit.couleurs %}
+                            <label class="variante-option">
+                                <input type="radio" name="couleur" value="{{ couleur }}" {{ 'checked' if loop.first else '' }}>
+                                <span>{{ couleur }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if produit.tailles %}
+                    <div class="variante-groupe">
+                        <span class="variante-titre">{{ 'Pointure' if produit.categorie == 'chaussures' else 'Taille' }} :</span>
+                        <div class="variante-options">
+                            {% for taille in produit.tailles %}
+                            <label class="variante-option">
+                                <input type="radio" name="taille" value="{{ taille }}" {{ 'checked' if loop.first else '' }}>
+                                <span>{{ taille }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <label for="quantite">Quantité</label>
+                    <div class="selecteur-quantite">
+                        <button type="button" class="qte-bouton" data-delta="-1">−</button>
+                        <input type="number" id="quantite" name="quantite" value="1" min="1">
+                        <button type="button" class="qte-bouton" data-delta="1">+</button>
+                    </div>
+
+                    <div class="detail-boutons">
+                        <button type="submit" class="bouton-ajouter" {{ 'disabled' if not produit.stock else '' }}>Ajouter au panier</button>
+                        <button type="submit" name="acheter" value="1" class="bouton-acheter" {{ 'disabled' if not produit.stock else '' }}>Acheter maintenant</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}

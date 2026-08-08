@@ -1,0 +1,435 @@
+[
+  {
+    "id": 1,
+    "nom": "T-shirt basique",
+    "categorie": "vetements",
+    "prix": 18500.0,
+    "reduction": 0,
+    "image": "produit-1.jpg",
+    "description": "T-shirt en coton, coupe classique.",
+    "tailles": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "couleurs": [
+      "Blanc",
+      "Noir",
+      "Bleu"
+    ],
+    "stock": 21,
+    "public": "unisexe"
+  },
+  {
+    "id": 2,
+    "nom": "Robe d'été fleurie",
+    "categorie": "vetements",
+    "prix": 32000.0,
+    "reduction": 20,
+    "image": "produit-2.jpg",
+    "description": "Robe légère à motifs floraux.",
+    "tailles": [
+      "S",
+      "M",
+      "L"
+    ],
+    "couleurs": [
+      "Rose",
+      "Jaune"
+    ],
+    "stock": 14,
+    "public": "femme"
+  },
+  {
+    "id": 3,
+    "nom": "Veste en jean",
+    "categorie": "vetements",
+    "prix": 45000.0,
+    "reduction": 0,
+    "image": "produit-3.jpg",
+    "description": "Veste en denim, coupe unisexe.",
+    "tailles": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "couleurs": [
+      "Bleu",
+      "Noir"
+    ],
+    "stock": 15,
+    "public": "unisexe"
+  },
+  {
+    "id": 19,
+    "nom": "Pantalon habillé homme",
+    "categorie": "vetements",
+    "prix": 35000,
+    "reduction": 0,
+    "image": "vetement6.jpg",
+    "description": "Pantalon habillé coupe droite, plusieurs coloris.",
+    "tailles": [
+      "38",
+      "40",
+      "42",
+      "44",
+      "46"
+    ],
+    "couleurs": [
+      "Beige",
+      "Violet",
+      "Rouge",
+      "Noir",
+      "Bleu marine",
+      "Blanc"
+    ],
+    "stock": 25,
+    "public": "homme"
+  },
+  {
+    "id": 20,
+    "nom": "Chemise fleurie hawaïenne",
+    "categorie": "vetements",
+    "prix": 26000,
+    "reduction": 10,
+    "image": "vetement7.jpg",
+    "description": "Chemise manches courtes à motifs floraux.",
+    "tailles": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "couleurs": [
+      "Multicolore"
+    ],
+    "stock": 12,
+    "public": "homme"
+  },
+  {
+    "id": 21,
+    "nom": "Blouse femme tunique",
+    "categorie": "vetements",
+    "prix": 24000,
+    "reduction": 15,
+    "image": "vetement8.jpg",
+    "description": "Blouse tunique légère, manches 3/4.",
+    "tailles": [
+      "S",
+      "M",
+      "L"
+    ],
+    "couleurs": [
+      "Noir",
+      "Rouge",
+      "Blanc",
+      "Jaune"
+    ],
+    "stock": 20,
+    "public": "femme"
+  },
+  {
+    "id": 14,
+    "nom": "Polo homme blanc chic",
+    "categorie": "vetements",
+    "prix": 32000,
+    "reduction": 10,
+    "image": "vetement1.jpg",
+    "description": "Polo homme élégant, col contrasté, coupe soignée.",
+    "tailles": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "couleurs": [
+      "Blanc"
+    ],
+    "stock": 14,
+    "public": "homme"
+  },
+  {
+    "id": 15,
+    "nom": "Ensemble t-shirt & short",
+    "categorie": "vetements",
+    "prix": 38000,
+    "reduction": 15,
+    "image": "vetement2.jpg",
+    "description": "Ensemble décontracté t-shirt imprimé et short assorti.",
+    "tailles": [
+      "M",
+      "L",
+      "XL"
+    ],
+    "couleurs": [
+      "Blanc"
+    ],
+    "stock": 16,
+    "public": "homme"
+  },
+  {
+    "id": 16,
+    "nom": "Chemise à carreaux",
+    "categorie": "vetements",
+    "prix": 27500,
+    "reduction": 0,
+    "image": "vetement3.jpg",
+    "description": "Chemise homme à carreaux, manches courtes.",
+    "tailles": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "couleurs": [
+      "Bleu"
+    ],
+    "stock": 30,
+    "public": "homme"
+  },
+  {
+    "id": 17,
+    "nom": "Chemise habillée bleu marine",
+    "categorie": "vetements",
+    "prix": 34000,
+    "reduction": 8,
+    "image": "vetement4.jpg",
+    "description": "Chemise habillée manches longues, motifs fins.",
+    "tailles": [
+      "M",
+      "L",
+      "XL"
+    ],
+    "couleurs": [
+      "Bleu marine"
+    ],
+    "stock": 10,
+    "public": "homme"
+  },
+  {
+    "id": 18,
+    "nom": "Chemise imprimée tendance",
+    "categorie": "vetements",
+    "prix": 29500,
+    "reduction": 12,
+    "image": "vetement5.jpg",
+    "description": "Chemise homme imprimée, manches longues, coupe moderne.",
+    "tailles": [
+      "S",
+      "M",
+      "L"
+    ],
+    "couleurs": [
+      "Bleu ciel",
+      "Blanc",
+      "Noir"
+    ],
+    "stock": 7,
+    "public": "homme"
+  },
+  {
+    "id": 4,
+    "nom": "Baskets running",
+    "categorie": "chaussures",
+    "prix": 72000,
+    "reduction": 12,
+    "image": "chaussure2.jpg",
+    "description": "Baskets légères pour la course.",
+    "tailles": [
+      "39",
+      "40",
+      "41",
+      "42",
+      "43"
+    ],
+    "couleurs": [
+      "Blanc",
+      "Bleu marine"
+    ],
+    "stock": 18,
+    "public": "unisexe"
+  },
+  {
+    "id": 5,
+    "nom": "Sandales d'été",
+    "categorie": "chaussures",
+    "prix": 24500,
+    "reduction": 0,
+    "image": "chaussure4.jpg",
+    "description": "Sandales confortables pour l'été.",
+    "tailles": [
+      "38",
+      "39",
+      "40",
+      "41"
+    ],
+    "couleurs": [
+      "Marron",
+      "Noir"
+    ],
+    "stock": 6,
+    "public": "unisexe"
+  },
+  {
+    "id": 6,
+    "nom": "Chaussures de ville",
+    "categorie": "chaussures",
+    "prix": 58000,
+    "reduction": 8,
+    "image": "chaussure1.jpg",
+    "description": "Chaussures élégantes en cuir synthétique.",
+    "tailles": [
+      "40",
+      "41",
+      "42",
+      "43",
+      "44"
+    ],
+    "couleurs": [
+      "Gris",
+      "Noir"
+    ],
+    "stock": 13,
+    "public": "homme"
+  },
+  {
+    "id": 13,
+    "nom": "Sneakers cuir noir",
+    "categorie": "chaussures",
+    "prix": 68000,
+    "reduction": 5,
+    "image": "chaussure3.jpg",
+    "description": "Sneakers en cuir, semelle blanche, look urbain et élégant.",
+    "tailles": [
+      "40",
+      "41",
+      "42",
+      "43",
+      "44"
+    ],
+    "couleurs": [
+      "Noir"
+    ],
+    "stock": 11,
+    "public": "homme"
+  },
+  {
+    "id": 7,
+    "nom": "Sac à main cuir",
+    "categorie": "sacs",
+    "prix": 105000.0,
+    "reduction": 0,
+    "image": "produit-7.jpg",
+    "description": "Sac à main en cuir véritable.",
+    "tailles": [],
+    "couleurs": [
+      "Noir",
+      "Marron",
+      "Beige"
+    ],
+    "stock": 12,
+    "public": "femme"
+  },
+  {
+    "id": 8,
+    "nom": "Sac bandoulière",
+    "categorie": "sacs",
+    "prix": 38000.0,
+    "reduction": 10,
+    "image": "produit-8.jpg",
+    "description": "Petit sac bandoulière pratique.",
+    "tailles": [],
+    "couleurs": [
+      "Noir",
+      "Rouge"
+    ],
+    "stock": 19,
+    "public": "femme"
+  },
+  {
+    "id": 9,
+    "nom": "Sac à dos tendance",
+    "categorie": "sacs",
+    "prix": 49500.0,
+    "reduction": 0,
+    "image": "produit-9.jpg",
+    "description": "Sac à dos spacieux et résistant.",
+    "tailles": [],
+    "couleurs": [
+      "Gris",
+      "Bleu",
+      "Noir"
+    ],
+    "stock": 15,
+    "public": "unisexe"
+  },
+  {
+    "id": 10,
+    "nom": "Smartphone X12",
+    "categorie": "telephones",
+    "prix": 279900.0,
+    "reduction": 10,
+    "image": "telephone1.jpg",
+    "description": "Téléphone portable double SIM, 128Go.",
+    "tailles": [],
+    "couleurs": [
+      "Noir",
+      "Or",
+      "Bleu"
+    ],
+    "stock": 0,
+    "public": "unisexe"
+  },
+  {
+    "id": 11,
+    "nom": "Smartphone Lite S3",
+    "categorie": "telephones",
+    "prix": 152500,
+    "reduction": 5,
+    "image": "telephone2.jpg",
+    "description": "Téléphone abordable et performant, 64Go.",
+    "tailles": [],
+    "couleurs": [
+      "Noir",
+      "Blanc"
+    ],
+    "stock": 13,
+    "public": "unisexe"
+  },
+  {
+    "id": 12,
+    "nom": "Smartphone Pro Max",
+    "categorie": "telephones",
+    "prix": 449000,
+    "reduction": 15,
+    "image": "telephone3.jpg",
+    "description": "Téléphone haut de gamme, 256Go, triple caméra.",
+    "tailles": [],
+    "couleurs": [
+      "Noir",
+      "Argent",
+      "Or"
+    ],
+    "stock": 4,
+    "public": "unisexe"
+  },
+  {
+    "id": 22,
+    "nom": "SAMSUNG Galaxy A17 5G",
+    "categorie": "telephones",
+    "prix": 210000.0,
+    "reduction": 2,
+    "stock": 10,
+    "image": "produit-22.jpg",
+    "description": "SAMSUNG Galaxy A17 5G\r\nEmpreinte digitale et reconnaissance faciale, très bonne autonomie avec garantie d'une année",
+    "couleurs": [
+      "Noir",
+      "Marron",
+      "Beige"
+    ],
+    "tailles": [],
+    "public": "unisexe"
+  }
+]
