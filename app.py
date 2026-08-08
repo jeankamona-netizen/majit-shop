@@ -368,7 +368,7 @@ def recherche():
     mots = extraire_mots_recherche(q)
     produits = [
         p for p in charger_produits()
-        if p.get("stock", 0) > 0 and produit_correspond(p, mots)
+        if produit_correspond(p, mots)
     ] if mots else []
     return render_template(
         "categorie.html",

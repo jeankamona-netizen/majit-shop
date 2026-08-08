@@ -23,6 +23,7 @@
             <a href="{{ url_for('produit', produit_id=produit.id) }}" class="carte-produit">
                 <div class="carte-image-wrap">
                     {% if produit.reduction %}<span class="badge-reduction">-{{ produit.reduction }}%</span>{% endif %}
+                    {% if not produit.stock %}<span class="badge-rupture">Rupture</span>{% endif %}
                     <img src="{{ url_for('static', filename='images/' + produit.image) }}" alt="{{ produit.nom }}">
                 </div>
                 <h3>{{ produit.nom }}</h3>

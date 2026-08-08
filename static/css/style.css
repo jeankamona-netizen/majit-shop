@@ -381,6 +381,19 @@ a {
     z-index: 1;
 }
 
+.badge-rupture {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: rgba(0, 0, 0, 0.65);
+    color: white;
+    font-weight: 700;
+    font-size: 0.72rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    z-index: 1;
+}
+
 .prix-barre {
     text-decoration: line-through;
     color: #999;
