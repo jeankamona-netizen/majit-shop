@@ -970,9 +970,15 @@ a {
     }
 
     .nav-categories {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
         max-height: 0;
         overflow: hidden;
         transition: max-height 0.25s ease;
+        z-index: 90;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     }
 
     .nav-categories.nav-ouverte {

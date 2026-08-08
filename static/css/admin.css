@@ -714,6 +714,11 @@
     }
 
     .admin-nav {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--violet-900);
         max-height: 0;
         overflow: hidden;
         flex-direction: column;
@@ -721,6 +726,8 @@
         gap: 0;
         padding: 0 1rem;
         transition: max-height 0.25s ease;
+        z-index: 90;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     }
 
     .admin-nav.admin-nav-ouvert {
