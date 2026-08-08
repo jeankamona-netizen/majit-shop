@@ -42,7 +42,7 @@
                             {{ loop.index }}. {{ ligne.nom }}{% if ligne.couleur %} ({{ ligne.couleur }}{% if ligne.taille %}, {{ ligne.taille }}{% endif %}){% elif ligne.taille %} ({{ ligne.taille }}){% endif %}<br>
                             <span class="admin-commande-contact">{{ ligne.prix_unitaire|cdf }} × {{ ligne.quantite }} = {{ ligne.sous_total|cdf }}</span>
                         </div>
-                        {% if c.statut != 'annulee' %}
+                        {% if c.statut == 'en_attente' %}
                         <form method="post" action="{{ url_for('admin_modifier_ligne_commande', numero=c.numero, index=loop.index0) }}" class="admin-ligne-qte" onsubmit="return confirm('Réduire la quantité de cet article ?');">
                             <input type="number" name="quantite" min="0" max="{{ ligne.quantite }}" value="{{ ligne.quantite }}">
                             <button type="submit" title="Mettre à jour la quantité">✓</button>
@@ -59,21 +59,26 @@
                     {% else %}
                         <span class="statut-badge statut-attente">En attente</span>
                     {% endif %}
-                    {% if c.statut != 'annulee' %}
+                    {% if c.statut == 'en_attente' %}
                     <form method="post" action="{{ url_for('admin_annuler_commande', numero=c.numero) }}" onsubmit="return confirm('Annuler cette commande ? Les articles seront remis en stock.');">
                         <button type="submit" class="admin-lien-annuler">Annuler la commande</button>
                     </form>
                     {% endif %}
                 </td>
                 <td>
+                    {% set solde = c.montant_verse is not none and c.montant_verse >= c.total %}
                     {% if c.statut == 'annulee' %}
                         <span class="admin-commande-contact">—</span>
+                    {% elif c.statut == 'livree' and solde %}
+                        <span class="admin-commande-contact">{{ c.montant_verse|cdf }} versé</span><br>
+                        <span class="admin-livree-date">le {{ c.date_livraison.replace('T', ' ') if c.date_livraison else '' }}</span>
                     {% else %}
                     <form method="post" action="{{ url_for('admin_livrer_commande', numero=c.numero) }}" class="admin-form-livraison">
                         <input type="number" name="montant_verse" step="1" min="0" value="{{ (c.montant_verse if c.montant_verse is not none else c.total)|round|int }}">
                         <button type="submit">{{ 'Mettre à jour' if c.statut == 'livree' else 'Marquer livrée' }}</button>
                     </form>
                     {% if c.statut == 'livree' %}
+                        <span class="admin-commande-contact">Paiement partiel — solde restant : {{ (c.total - (c.montant_verse or 0))|cdf }}</span><br>
                         <span class="admin-livree-date">le {{ c.date_livraison.replace('T', ' ') if c.date_livraison else '' }}</span>
                     {% endif %}
                     {% endif %}

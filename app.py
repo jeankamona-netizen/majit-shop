@@ -627,6 +627,12 @@ def admin_livrer_commande(numero):
     commande = next((c for c in commandes if c["numero"] == numero), None)
     if not commande:
         abort(404)
+    if commande["statut"] == "annulee":
+        return redirect(url_for("admin_commandes"))
+    deja_solde = commande["statut"] == "livree" and (commande.get("montant_verse") or 0) >= commande["total"]
+    if deja_solde:
+        return redirect(url_for("admin_commandes"))
+
     try:
         montant = float(request.form.get("montant_verse") or commande["total"])
     except ValueError:
@@ -646,7 +652,7 @@ def admin_annuler_commande(numero):
     commande = next((c for c in commandes if c["numero"] == numero), None)
     if not commande:
         abort(404)
-    if commande["statut"] != "annulee":
+    if commande["statut"] == "en_attente":
         produits = charger_produits()
         for ligne in commande["lignes"]:
             p = next((x for x in produits if x["id"] == ligne.get("produit_id")), None)
@@ -666,6 +672,8 @@ def admin_modifier_ligne_commande(numero, index):
     commande = next((c for c in commandes if c["numero"] == numero), None)
     if not commande or index < 0 or index >= len(commande["lignes"]):
         abort(404)
+    if commande["statut"] != "en_attente":
+        return redirect(url_for("admin_commandes"))
 
     ligne = commande["lignes"][index]
     try:
