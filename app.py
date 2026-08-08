@@ -16,6 +16,7 @@ DATA_FILE = Path(__file__).parent / "data" / "produits.json"
 COMMANDES_FILE = Path(__file__).parent / "data" / "commandes.json"
 VISITES_FILE = Path(__file__).parent / "data" / "visites.json"
 GEOLOC_CACHE_FILE = Path(__file__).parent / "data" / "geoloc_cache.json"
+AVIS_FILE = Path(__file__).parent / "data" / "avis.json"
 IMAGES_DIR = Path(__file__).parent / "static" / "images"
 EXTENSIONS_AUTORISEES = {"png", "jpg", "jpeg", "webp", "gif"}
 
@@ -112,6 +113,19 @@ def charger_visites():
 def sauvegarder_visites(visites):
     with open(VISITES_FILE, "w", encoding="utf-8") as f:
         json.dump(visites, f, ensure_ascii=False, indent=2)
+
+
+def charger_avis():
+    if AVIS_FILE.exists():
+        with open(AVIS_FILE, encoding="utf-8") as f:
+            donnees = json.load(f)
+            return donnees if isinstance(donnees, list) else []
+    return []
+
+
+def sauvegarder_avis(avis):
+    with open(AVIS_FILE, "w", encoding="utf-8") as f:
+        json.dump(avis, f, ensure_ascii=False, indent=2)
 
 
 def obtenir_ip_client():
@@ -484,6 +498,30 @@ def guide_commande():
     return render_template("guide_commande.html", categories=CATEGORIES)
 
 
+@app.route("/avis/<numero>", methods=["POST"])
+def deposer_avis(numero):
+    commande = next((c for c in charger_commandes() if c["numero"] == numero), None)
+    if not commande:
+        abort(404)
+
+    try:
+        note_articles = max(1, min(5, int(request.form.get("note_articles", 0))))
+        note_procedure = max(1, min(5, int(request.form.get("note_procedure", 0))))
+    except ValueError:
+        abort(400)
+
+    avis = charger_avis()
+    avis.append({
+        "numero": numero,
+        "date": datetime.now().isoformat(timespec="seconds"),
+        "note_articles": note_articles,
+        "note_procedure": note_procedure,
+        "commentaire": request.form.get("commentaire", "").strip(),
+    })
+    sauvegarder_avis(avis)
+    return ("", 204)
+
+
 # --- Administration ---
 
 @app.route("/admin/connexion", methods=["GET", "POST"])
@@ -621,6 +659,23 @@ def admin_visites():
     if cache_modifie:
         sauvegarder_cache_geoloc(cache)
     return render_template("admin/visites.html", categories=CATEGORIES, visites=visites)
+
+
+@app.route("/admin/avis")
+@admin_requis
+def admin_avis():
+    avis = sorted(charger_avis(), key=lambda a: a.get("date", ""), reverse=True)
+    nb = len(avis)
+    moyenne_articles = round(sum(a["note_articles"] for a in avis) / nb, 1) if nb else 0
+    moyenne_procedure = round(sum(a["note_procedure"] for a in avis) / nb, 1) if nb else 0
+    return render_template(
+        "admin/avis.html",
+        categories=CATEGORIES,
+        avis=avis,
+        nb=nb,
+        moyenne_articles=moyenne_articles,
+        moyenne_procedure=moyenne_procedure,
+    )
 
 
 @app.route("/admin/notifications/marquer-vues", methods=["POST"])
