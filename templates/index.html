@@ -13,14 +13,13 @@
 
 <section class="section-categorie">
     <div class="conteneur">
-        {% if publics|length > 1 %}
         <div class="filtre-public">
-            <a href="{{ url_for('accueil') }}" class="filtre-public-lien {{ 'filtre-public-actif' if not public_filtre else '' }}">Tout</a>
-            {% for pub in publics %}
-                <a href="{{ url_for('accueil', public=pub) }}" class="filtre-public-lien {{ 'filtre-public-actif' if public_filtre == pub else '' }}">{{ public_labels[pub] }}</a>
-            {% endfor %}
+            <a href="{{ url_for('accueil') }}" class="filtre-public-lien {{ 'filtre-public-actif' if not public_filtre and not categorie_filtre else '' }}">Tout</a>
+            <a href="{{ url_for('accueil', public='homme') }}" class="filtre-public-lien {{ 'filtre-public-actif' if public_filtre == 'homme' else '' }}">Homme</a>
+            <a href="{{ url_for('accueil', public='femme') }}" class="filtre-public-lien {{ 'filtre-public-actif' if public_filtre == 'femme' else '' }}">Femme</a>
+            <a href="{{ url_for('accueil', public='enfant') }}" class="filtre-public-lien {{ 'filtre-public-actif' if public_filtre == 'enfant' else '' }}">Enfant</a>
+            <a href="{{ url_for('accueil', categorie='telephones') }}" class="filtre-public-lien {{ 'filtre-public-actif' if categorie_filtre == 'telephones' else '' }}">Électroniques</a>
         </div>
-        {% endif %}
 
         <div class="grille-produits">
             {% for produit in produits %}

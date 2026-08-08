@@ -209,16 +209,18 @@ def compter_visite():
 @app.route("/")
 def accueil():
     produits = [p for p in charger_produits() if p.get("stock", 0) > 0]
-    publics = publics_presents_tries(produits)
     public_filtre = request.args.get("public", "")
+    categorie_filtre = request.args.get("categorie", "")
     if public_filtre in PUBLICS:
         produits = [p for p in produits if p.get("public", "unisexe") == public_filtre]
+    elif categorie_filtre in CATEGORIES:
+        produits = [p for p in produits if p["categorie"] == categorie_filtre]
     return render_template(
         "index.html",
         categories=CATEGORIES,
         produits=produits,
-        publics=publics,
         public_filtre=public_filtre,
+        categorie_filtre=categorie_filtre,
         public_labels=PUBLICS,
     )
 
