@@ -45,6 +45,8 @@ FILTRES_REVENUS = {
     "categorie": "Catégorie",
 }
 
+MOTS_VIDES = {"le", "la", "les", "l", "un", "une", "des", "de", "du", "d", "et", "ou", "pour", "avec", "en", "au", "aux"}
+
 # Identifiants administrateur : configurables via variables d'environnement
 # (ADMIN_UTILISATEUR, ADMIN_MOT_DE_PASSE). Valeurs par défaut pour le développement local uniquement.
 ADMIN_UTILISATEUR = os.environ.get("ADMIN_UTILISATEUR", "admin")
@@ -338,10 +340,36 @@ def categorie(slug):
     )
 
 
+def extraire_mots_recherche(q):
+    mots = []
+    for mot in q.lower().replace("'", " ").split():
+        mot = mot.strip(".,;:!?")
+        if mot and mot not in MOTS_VIDES:
+            mots.append(mot)
+    return mots or ([q] if q else [])
+
+
+def produit_correspond(produit, mots):
+    texte = f"{produit['nom']} {produit.get('description', '')} {' '.join(produit.get('couleurs', []))}".lower()
+    for mot in mots:
+        variantes = {mot}
+        if mot.endswith("s") and len(mot) > 3:
+            variantes.add(mot[:-1])
+        else:
+            variantes.add(mot + "s")
+        if any(v in texte for v in variantes):
+            return True
+    return False
+
+
 @app.route("/recherche")
 def recherche():
-    q = request.args.get("q", "").strip().lower()
-    produits = [p for p in charger_produits() if q in p["nom"].lower() and p.get("stock", 0) > 0] if q else []
+    q = request.args.get("q", "").strip()
+    mots = extraire_mots_recherche(q)
+    produits = [
+        p for p in charger_produits()
+        if p.get("stock", 0) > 0 and produit_correspond(p, mots)
+    ] if mots else []
     return render_template(
         "categorie.html",
         produits=produits,
