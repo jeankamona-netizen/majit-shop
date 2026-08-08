@@ -370,15 +370,17 @@
     "categorie": "telephones",
     "prix": 279900.0,
     "reduction": 10,
-    "image": "telephone1.jpg",
+    "image": "telephone9.jpg",
+    "images": ["telephone10.jpg", "telephone11.jpg", "telephone12.jpg"],
     "description": "Téléphone portable double SIM, 128Go.",
     "tailles": [],
     "couleurs": [
+      "Orange",
       "Noir",
       "Or",
       "Bleu"
     ],
-    "stock": 0,
+    "stock": 12,
     "public": "unisexe"
   },
   {
