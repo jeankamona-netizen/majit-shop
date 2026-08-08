@@ -5,8 +5,8 @@
 {% block contenu %}
 <section class="banniere">
     <div class="conteneur">
-        <a href="{{ url_for('categorie', slug='vetements') }}">
-            <img src="{{ url_for('static', filename='images/banniere-accueil.png') }}" alt="Majt Shop — Tout ce dont vous avez besoin, au meilleur prix !" class="banniere-image">
+        <a href="#produits-populaires">
+            <img src="{{ url_for('static', filename='images/banniere-accueil.jpg') }}" alt="Majt Shop — Tout ce dont vous avez besoin, au meilleur prix !" class="banniere-image">
         </a>
     </div>
 </section>
@@ -29,25 +29,25 @@
 
 <script src="{{ url_for('static', filename='js/carrousel.js') }}"></script>
 
-<section class="section-categorie">
+<section class="section-categorie" id="produits-populaires">
     <div class="conteneur">
         <div class="section-entete">
             <h2>Produits populaires</h2>
         </div>
 
         <div class="filtre-public">
-            <a href="{{ url_for('accueil') }}" class="filtre-public-lien {{ 'filtre-public-actif' if not public_filtre and not categorie_filtre else '' }}">Tout</a>
+            <a href="{{ url_for('accueil') }}#produits-populaires" class="filtre-public-lien {{ 'filtre-public-actif' if not public_filtre and not categorie_filtre else '' }}">Tout</a>
             {% if 'homme' in publics_presents %}
-            <a href="{{ url_for('accueil', public='homme') }}" class="filtre-public-lien {{ 'filtre-public-actif' if public_filtre == 'homme' else '' }}">Homme</a>
+            <a href="{{ url_for('accueil', public='homme') }}#produits-populaires" class="filtre-public-lien {{ 'filtre-public-actif' if public_filtre == 'homme' else '' }}">Homme</a>
             {% endif %}
             {% if 'femme' in publics_presents %}
-            <a href="{{ url_for('accueil', public='femme') }}" class="filtre-public-lien {{ 'filtre-public-actif' if public_filtre == 'femme' else '' }}">Femme</a>
+            <a href="{{ url_for('accueil', public='femme') }}#produits-populaires" class="filtre-public-lien {{ 'filtre-public-actif' if public_filtre == 'femme' else '' }}">Femme</a>
             {% endif %}
             {% if 'enfant' in publics_presents %}
-            <a href="{{ url_for('accueil', public='enfant') }}" class="filtre-public-lien {{ 'filtre-public-actif' if public_filtre == 'enfant' else '' }}">Enfant</a>
+            <a href="{{ url_for('accueil', public='enfant') }}#produits-populaires" class="filtre-public-lien {{ 'filtre-public-actif' if public_filtre == 'enfant' else '' }}">Enfant</a>
             {% endif %}
             {% if 'telephones' in categories_presentes %}
-            <a href="{{ url_for('accueil', categorie='telephones') }}" class="filtre-public-lien {{ 'filtre-public-actif' if categorie_filtre == 'telephones' else '' }}">Électroniques</a>
+            <a href="{{ url_for('accueil', categorie='telephones') }}#produits-populaires" class="filtre-public-lien {{ 'filtre-public-actif' if categorie_filtre == 'telephones' else '' }}">Électroniques</a>
             {% endif %}
         </div>
 

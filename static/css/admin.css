@@ -773,3 +773,9 @@
         min-width: 0;
     }
 }
+
+.admin-etoiles-lecture {
+    color: var(--orange-500);
+    letter-spacing: 1px;
+    white-space: nowrap;
+}

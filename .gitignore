@@ -10,3 +10,4 @@ env/
 data/commandes.json
 data/visites.json
 data/geoloc_cache.json
+data/avis.json

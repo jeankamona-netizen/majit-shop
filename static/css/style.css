@@ -215,6 +215,7 @@ a {
 /* Sections catégories */
 .section-categorie {
     padding: 2rem 0;
+    scroll-margin-top: 90px;
 }
 
 .section-entete {
@@ -1188,4 +1189,131 @@ a {
     .commande-recap {
         max-width: 100%;
     }
+}
+
+/* Sondage de satisfaction */
+.sondage-fond {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(11, 61, 58, 0.55);
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 1rem;
+}
+
+.sondage-fond.sondage-ouvert {
+    display: flex;
+}
+
+.sondage-carte {
+    position: relative;
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.sondage-carte h2 {
+    color: var(--violet-800);
+    font-size: 1.2rem;
+    margin-bottom: 0.3rem;
+}
+
+.sondage-carte > p {
+    color: #666;
+    font-size: 0.88rem;
+    margin-bottom: 1.2rem;
+}
+
+.sondage-fermer {
+    position: absolute;
+    top: 0.8rem;
+    right: 0.8rem;
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    color: #999;
+    cursor: pointer;
+}
+
+.sondage-fermer:hover {
+    color: var(--violet-800);
+}
+
+.sondage-groupe {
+    margin-bottom: 1.1rem;
+}
+
+.sondage-question {
+    display: block;
+    font-weight: 600;
+    font-size: 0.88rem;
+    margin-bottom: 0.4rem;
+}
+
+.etoiles {
+    display: flex;
+    gap: 0.3rem;
+}
+
+.etoile {
+    background: none;
+    border: none;
+    font-size: 1.7rem;
+    line-height: 1;
+    color: #ddd;
+    cursor: pointer;
+    padding: 0;
+}
+
+.etoile.etoile-active {
+    color: var(--orange-500);
+}
+
+#commentaire {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    margin-top: 0.3rem;
+    margin-bottom: 1.2rem;
+    resize: vertical;
+}
+
+.sondage-boutons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.sondage-passer {
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.sondage-merci {
+    display: none;
+    text-align: center;
+    color: var(--violet-800);
+    font-weight: 700;
+    padding: 1rem 0;
+}
+
+.sondage-carte.sondage-envoye form {
+    display: none;
+}
+
+.sondage-carte.sondage-envoye .sondage-merci {
+    display: block;
 }

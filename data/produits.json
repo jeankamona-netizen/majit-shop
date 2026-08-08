@@ -18,17 +18,17 @@
       "Noir",
       "Bleu"
     ],
-    "stock": 22,
+    "stock": 21,
     "public": "unisexe"
   },
   {
     "id": 2,
-    "nom": "Robe d'�t� fleurie",
+    "nom": "Robe d'été fleurie",
     "categorie": "vetements",
     "prix": 32000.0,
     "reduction": 15,
     "image": "produit-2.jpg",
-    "description": "Robe l�g�re � motifs floraux.",
+    "description": "Robe légère à motifs floraux.",
     "tailles": [
       "S",
       "M",

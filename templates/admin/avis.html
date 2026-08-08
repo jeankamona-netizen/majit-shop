@@ -1,0 +1,49 @@
+{% extends "admin/admin_base.html" %}
+
+{% block titre %}Avis clients — Administration Majt Shop{% endblock %}
+
+{% block contenu %}
+<h1>Avis clients</h1>
+
+<div class="admin-stats-grille">
+    <div class="admin-stat-carte">
+        <span class="admin-stat-valeur">{{ nb }}</span>
+        <span class="admin-stat-label">Avis reçus</span>
+    </div>
+    <div class="admin-stat-carte">
+        <span class="admin-stat-valeur">{{ moyenne_articles }} / 5</span>
+        <span class="admin-stat-label">Note moyenne — Articles</span>
+    </div>
+    <div class="admin-stat-carte">
+        <span class="admin-stat-valeur">{{ moyenne_procedure }} / 5</span>
+        <span class="admin-stat-label">Note moyenne — Procédure d'achat</span>
+    </div>
+</div>
+
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Commande</th>
+                <th>Articles</th>
+                <th>Procédure</th>
+                <th>Commentaire</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in avis %}
+            <tr>
+                <td>{{ a.date.replace('T', ' ') }}</td>
+                <td>{{ a.numero }}</td>
+                <td class="admin-etoiles-lecture">{{ '★' * a.note_articles }}{{ '☆' * (5 - a.note_articles) }}</td>
+                <td class="admin-etoiles-lecture">{{ '★' * a.note_procedure }}{{ '☆' * (5 - a.note_procedure) }}</td>
+                <td>{{ a.commentaire or '—' }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5">Aucun avis pour le moment.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
