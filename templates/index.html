@@ -14,16 +14,20 @@
 <section class="section-categorie">
     <div class="conteneur">
         <h2 class="titre-section">Catégories</h2>
-        <div class="grille-categories">
-            {% for slug, nom in categories.items() %}
-            <a href="{{ url_for('categorie', slug=slug) }}" class="tuile-categorie">
-                <img src="{{ url_for('static', filename='images/' + categories_apercu.get(slug, 'placeholder.jpg')) }}" alt="{{ nom }}">
-                <span class="tuile-categorie-nom">{{ nom }}</span>
-            </a>
-            {% endfor %}
+        <div class="carrousel-categories-wrap">
+            <div class="carrousel-categories" id="carrousel-categories">
+                {% for slug, nom in categories.items() %}
+                <a href="{{ url_for('categorie', slug=slug) }}" class="tuile-categorie">
+                    <img src="{{ url_for('static', filename='images/' + categories_apercu.get(slug, 'placeholder.jpg')) }}" alt="{{ nom }}">
+                    <span class="tuile-categorie-nom">{{ nom }}</span>
+                </a>
+                {% endfor %}
+            </div>
         </div>
     </div>
 </section>
+
+<script src="{{ url_for('static', filename='js/carrousel.js') }}"></script>
 
 <section class="section-categorie">
     <div class="conteneur">

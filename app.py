@@ -22,8 +22,10 @@ EXTENSIONS_AUTORISEES = {"png", "jpg", "jpeg", "webp", "gif"}
 CATEGORIES = {
     "vetements": "Vêtements",
     "chaussures": "Chaussures",
-    "sacs": "Sacs à main",
+    "sacs": "Sacs",
     "telephones": "Électroniques",
+    "automobiles": "Automobiles",
+    "jouets": "Jouets",
 }
 
 PUBLICS = {

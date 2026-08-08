@@ -237,16 +237,30 @@ a {
     margin-bottom: 1rem;
 }
 
-.grille-categories {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
+.carrousel-categories-wrap {
+    overflow: hidden;
     margin-bottom: 0.5rem;
+}
+
+.carrousel-categories {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 0.3rem;
+    scrollbar-width: none;
+}
+
+.carrousel-categories::-webkit-scrollbar {
+    display: none;
 }
 
 .tuile-categorie {
     position: relative;
     display: block;
+    flex: 0 0 calc((100% - 3rem) / 4);
+    scroll-snap-align: start;
     height: 170px;
     border-radius: 10px;
     overflow: hidden;
@@ -1012,8 +1026,8 @@ a {
         grid-template-columns: 1fr;
     }
 
-    .grille-categories {
-        grid-template-columns: repeat(2, 1fr);
+    .tuile-categorie {
+        flex: 0 0 calc((100% - 2rem) / 3);
     }
 }
 
@@ -1086,6 +1100,11 @@ a {
     .nav-categories a.actif {
         color: var(--orange-400);
         border-bottom-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .tuile-categorie {
+        flex: 0 0 calc((100% - 1rem) / 2);
+        height: 130px;
     }
 
     .grille-produits {
