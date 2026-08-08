@@ -3,6 +3,20 @@
 {% block titre %}Majt Shop — Vêtements, chaussures, sacs & téléphones{% endblock %}
 
 {% block contenu %}
+<section class="section-categorie">
+    <div class="conteneur">
+        <h2 class="titre-section">Catégories</h2>
+        <div class="grille-categories">
+            {% for slug, nom in categories.items() %}
+            <a href="{{ url_for('categorie', slug=slug) }}" class="tuile-categorie">
+                <img src="{{ url_for('static', filename='images/' + categories_apercu.get(slug, 'placeholder.jpg')) }}" alt="{{ nom }}">
+                <span class="tuile-categorie-nom">{{ nom }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
 <section class="banniere">
     <div class="conteneur">
         <a href="{{ url_for('categorie', slug='vetements') }}">
@@ -13,6 +27,10 @@
 
 <section class="section-categorie">
     <div class="conteneur">
+        <div class="section-entete">
+            <h2>Produits populaires</h2>
+        </div>
+
         <div class="filtre-public">
             <a href="{{ url_for('accueil') }}" class="filtre-public-lien {{ 'filtre-public-actif' if not public_filtre and not categorie_filtre else '' }}">Tout</a>
             {% if 'homme' in publics_presents %}
@@ -36,6 +54,7 @@
                     {% if produit.reduction %}<span class="badge-reduction">-{{ produit.reduction }}%</span>{% endif %}
                     <img src="{{ url_for('static', filename='images/' + produit.image) }}" alt="{{ produit.nom }}">
                 </div>
+                <span class="carte-eyebrow">{{ categories[produit.categorie] }}</span>
                 <h3>{{ produit.nom }}</h3>
                 <p class="prix">
                     {% if produit.reduction %}

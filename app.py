@@ -262,6 +262,11 @@ def accueil():
     publics_presents = publics_presents_tries(tous_produits)
     categories_presentes = {p["categorie"] for p in tous_produits}
 
+    categories_apercu = {}
+    for slug in CATEGORIES:
+        premier = next((p for p in tous_produits if p["categorie"] == slug), None)
+        categories_apercu[slug] = premier["image"] if premier else "placeholder.jpg"
+
     public_filtre = request.args.get("public", "")
     categorie_filtre = request.args.get("categorie", "")
 
@@ -280,6 +285,7 @@ def accueil():
         public_labels=PUBLICS,
         publics_presents=publics_presents,
         categories_presentes=categories_presentes,
+        categories_apercu=categories_apercu,
     )
 
 
