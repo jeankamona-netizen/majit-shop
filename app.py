@@ -24,6 +24,7 @@ CATEGORIES = {
     "chaussures": "Chaussures",
     "sacs": "Sacs",
     "telephones": "Électroniques",
+    "accessoires": "Accessoires",
     "automobiles": "Automobiles",
     "jouets": "Jouets",
 }

@@ -431,5 +431,802 @@
     ],
     "tailles": [],
     "public": "unisexe"
+  },
+  {
+    "id": 23,
+    "nom": "T-shirt blanc essentiel femme",
+    "categorie": "vetements",
+    "prix": 17000,
+    "reduction": 0,
+    "public": "femme",
+    "stock": 20,
+    "image": "vetement9.jpg",
+    "description": "T-shirt blanc coupe cintrée, coton doux.",
+    "tailles": [
+      "S",
+      "M",
+      "L"
+    ],
+    "couleurs": [
+      "Blanc"
+    ]
+  },
+  {
+    "id": 24,
+    "nom": "Robe portefeuille fleurie",
+    "categorie": "vetements",
+    "prix": 38000,
+    "reduction": 15,
+    "public": "femme",
+    "stock": 14,
+    "image": "vetement10.jpg",
+    "description": "Robe longue portefeuille, imprimé fleuri, manches courtes volantées.",
+    "tailles": [
+      "S",
+      "M",
+      "L"
+    ],
+    "couleurs": [
+      "Bleu"
+    ]
+  },
+  {
+    "id": 25,
+    "nom": "Veste en jean crop femme",
+    "categorie": "vetements",
+    "prix": 42000,
+    "reduction": 0,
+    "public": "femme",
+    "stock": 12,
+    "image": "vetement11.jpg",
+    "description": "Veste en jean courte, coupe ajustée, boutonnée.",
+    "tailles": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "couleurs": [
+      "Bleu"
+    ]
+  },
+  {
+    "id": 26,
+    "nom": "Sac à main avec portefeuilles assortis",
+    "categorie": "sacs",
+    "prix": 95000,
+    "reduction": 10,
+    "public": "femme",
+    "stock": 9,
+    "image": "Sac1.jpg",
+    "description": "Sac à main structuré avec deux portefeuilles assortis, simili-cuir.",
+    "tailles": [],
+    "couleurs": [
+      "Marron"
+    ]
+  },
+  {
+    "id": 27,
+    "nom": "Sac bandoulière élégant",
+    "categorie": "sacs",
+    "prix": 55000,
+    "reduction": 0,
+    "public": "femme",
+    "stock": 16,
+    "image": "Sac2.jpg",
+    "description": "Petit sac bandoulière rigide, fermoir doré.",
+    "tailles": [],
+    "couleurs": [
+      "Bleu marine"
+    ]
+  },
+  {
+    "id": 28,
+    "nom": "Sac à dos avec pochette",
+    "categorie": "sacs",
+    "prix": 45000,
+    "reduction": 5,
+    "public": "unisexe",
+    "stock": 18,
+    "image": "Sac3.jpg",
+    "description": "Sac à dos spacieux avec petite pochette amovible assortie.",
+    "tailles": [],
+    "couleurs": [
+      "Beige",
+      "Blanc"
+    ]
+  },
+  {
+    "id": 29,
+    "nom": "Chaussures habillées tricolores",
+    "categorie": "chaussures",
+    "prix": 62000,
+    "reduction": 10,
+    "public": "homme",
+    "stock": 15,
+    "image": "chaussure5-1.jpeg",
+    "description": "Chaussures habillées en cuir, semelle confort.",
+    "tailles": [
+      "40",
+      "41",
+      "42",
+      "43",
+      "44"
+    ],
+    "couleurs": [
+      "Cognac",
+      "Marron",
+      "Noir"
+    ]
+  },
+  {
+    "id": 30,
+    "nom": "Sneakers premium tricolores",
+    "categorie": "chaussures",
+    "prix": 68000,
+    "reduction": 0,
+    "public": "homme",
+    "stock": 13,
+    "image": "chaussure5-2.jpeg",
+    "description": "Sneakers montantes, semelle épaisse, finition daim.",
+    "tailles": [
+      "40",
+      "41",
+      "42",
+      "43",
+      "44"
+    ],
+    "couleurs": [
+      "Marron",
+      "Noir",
+      "Camel"
+    ]
+  },
+  {
+    "id": 31,
+    "nom": "Sneakers derby tricolores",
+    "categorie": "chaussures",
+    "prix": 64000,
+    "reduction": 8,
+    "public": "homme",
+    "stock": 11,
+    "image": "chaussure5-3.jpeg",
+    "description": "Sneakers style derby perforé, semelle blanche.",
+    "tailles": [
+      "40",
+      "41",
+      "42",
+      "43",
+      "44"
+    ],
+    "couleurs": [
+      "Gris",
+      "Marron",
+      "Noir"
+    ]
+  },
+  {
+    "id": 32,
+    "nom": "Baskets montantes classiques",
+    "categorie": "chaussures",
+    "prix": 59000,
+    "reduction": 0,
+    "public": "homme",
+    "stock": 20,
+    "image": "chaussure5-4.jpeg",
+    "description": "Baskets montantes en cuir, look intemporel.",
+    "tailles": [
+      "40",
+      "41",
+      "42",
+      "43",
+      "44"
+    ],
+    "couleurs": [
+      "Blanc",
+      "Noir"
+    ]
+  },
+  {
+    "id": 33,
+    "nom": "Sneakers classiques 4 coloris",
+    "categorie": "chaussures",
+    "prix": 57000,
+    "reduction": 12,
+    "public": "homme",
+    "stock": 17,
+    "image": "chaussure5-5.jpeg",
+    "description": "Sneakers basses, logo brodé, plusieurs coloris disponibles.",
+    "tailles": [
+      "40",
+      "41",
+      "42",
+      "43",
+      "44"
+    ],
+    "couleurs": [
+      "Noir",
+      "Marine",
+      "Gris"
+    ]
+  },
+  {
+    "id": 34,
+    "nom": "Chaussures habillées vernies",
+    "categorie": "chaussures",
+    "prix": 66000,
+    "reduction": 0,
+    "public": "homme",
+    "stock": 10,
+    "image": "chaussure5-6.jpeg",
+    "description": "Chaussures habillées finition vernie, semelle blanche.",
+    "tailles": [
+      "40",
+      "41",
+      "42",
+      "43",
+      "44"
+    ],
+    "couleurs": [
+      "Noir",
+      "Marron",
+      "Camel"
+    ]
+  },
+  {
+    "id": 35,
+    "nom": "Mocassins sport tricolores",
+    "categorie": "chaussures",
+    "prix": 60000,
+    "reduction": 15,
+    "public": "homme",
+    "stock": 14,
+    "image": "chaussure5-7.jpeg",
+    "description": "Mocassins sport sans lacets, semelle crantée.",
+    "tailles": [
+      "40",
+      "41",
+      "42",
+      "43",
+      "44"
+    ],
+    "couleurs": [
+      "Marron",
+      "Orange",
+      "Noir"
+    ]
+  },
+  {
+    "id": 36,
+    "nom": "Smartphone Galaxy A16 5G",
+    "categorie": "telephones",
+    "prix": 195000,
+    "reduction": 8,
+    "public": "unisexe",
+    "stock": 12,
+    "image": "telephone5.jpeg",
+    "description": "Smartphone 5G, triple caméra, écran fluide, coloris turquoise.",
+    "tailles": [],
+    "couleurs": [
+      "Turquoise"
+    ]
+  },
+  {
+    "id": 37,
+    "nom": "Montre classique cuir",
+    "categorie": "accessoires",
+    "prix": 65000,
+    "reduction": 12,
+    "public": "homme",
+    "stock": 15,
+    "image": "accesoire1.jpg",
+    "description": "Montre chronographe, bracelet en cuir marron.",
+    "tailles": [],
+    "couleurs": [
+      "Marron"
+    ]
+  },
+  {
+    "id": 38,
+    "nom": "Écouteurs sans fil",
+    "categorie": "accessoires",
+    "prix": 35000,
+    "reduction": 20,
+    "public": "unisexe",
+    "stock": 25,
+    "image": "accesoire2.jpg",
+    "description": "Écouteurs Bluetooth avec boîtier de charge.",
+    "tailles": [],
+    "couleurs": [
+      "Noir"
+    ]
+  },
+  {
+    "id": 39,
+    "nom": "Ordinateur portable 15 pouces",
+    "categorie": "telephones",
+    "prix": 780000,
+    "reduction": 5,
+    "public": "unisexe",
+    "stock": 6,
+    "image": "electronique1.jpg",
+    "description": "Ordinateur portable 15,6 pouces, usage bureautique et multimédia.",
+    "tailles": [],
+    "couleurs": [
+      "Bleu"
+    ]
+  },
+  {
+    "id": 40,
+    "nom": "Ordinateur portable HP avec accessoires offerts",
+    "categorie": "telephones",
+    "prix": 920000,
+    "reduction": 10,
+    "public": "unisexe",
+    "stock": 5,
+    "image": "electronique2.jpg",
+    "description": "Ordinateur portable HP avec sacoche, souris et tapis de souris offerts.",
+    "tailles": [],
+    "couleurs": [
+      "Argent"
+    ]
+  },
+  {
+    "id": 41,
+    "nom": "Ordinateur portable Dell Latitude",
+    "categorie": "telephones",
+    "prix": 1150000,
+    "reduction": 0,
+    "public": "unisexe",
+    "stock": 4,
+    "image": "electronique3.jpg",
+    "description": "Ordinateur portable professionnel Dell Latitude, châssis robuste.",
+    "tailles": [],
+    "couleurs": [
+      "Noir"
+    ]
+  },
+  {
+    "id": 42,
+    "nom": "Ordinateur portable HP EliteBook",
+    "categorie": "telephones",
+    "prix": 1050000,
+    "reduction": 8,
+    "public": "unisexe",
+    "stock": 5,
+    "image": "electronique4.jpg",
+    "description": "Ordinateur portable HP EliteBook, format compact et léger.",
+    "tailles": [],
+    "couleurs": [
+      "Argent"
+    ]
+  },
+  {
+    "id": 43,
+    "nom": "Housse d'ordinateur portable avec support",
+    "categorie": "telephones",
+    "prix": 28000,
+    "reduction": 0,
+    "public": "unisexe",
+    "stock": 20,
+    "image": "electronique5.jpg",
+    "description": "Housse de protection avec support intégré et tapis de souris assorti.",
+    "tailles": [],
+    "couleurs": [
+      "Vert"
+    ]
+  },
+  {
+    "id": 44,
+    "nom": "Smartphone Tecno Spark",
+    "categorie": "telephones",
+    "prix": 145000,
+    "reduction": 10,
+    "public": "unisexe",
+    "stock": 14,
+    "image": "telephone6.jpg",
+    "description": "Smartphone double caméra, écran fluide, coloris vert menthe.",
+    "tailles": [],
+    "couleurs": [
+      "Vert"
+    ]
+  },
+  {
+    "id": 45,
+    "nom": "Téléphone Tecno basique",
+    "categorie": "telephones",
+    "prix": 45000,
+    "reduction": 0,
+    "public": "unisexe",
+    "stock": 22,
+    "image": "telephone7.jpg",
+    "description": "Téléphone à clavier, longue autonomie, double SIM.",
+    "tailles": [],
+    "couleurs": [
+      "Noir"
+    ]
+  },
+  {
+    "id": 46,
+    "nom": "Téléphone Samsung basique double SIM",
+    "categorie": "telephones",
+    "prix": 55000,
+    "reduction": 0,
+    "public": "unisexe",
+    "stock": 18,
+    "image": "telephone8.jpg",
+    "description": "Téléphone à clavier double SIM, robuste et simple d'utilisation.",
+    "tailles": [],
+    "couleurs": [
+      "Blanc"
+    ]
+  },
+  {
+    "id": 47,
+    "nom": "Écouteurs sans fil compacts",
+    "categorie": "accessoires",
+    "prix": 32000,
+    "reduction": 15,
+    "public": "unisexe",
+    "stock": 20,
+    "image": "accesoire3.jpg",
+    "description": "Écouteurs Bluetooth avec boîtier de charge compact.",
+    "tailles": [],
+    "couleurs": [
+      "Gris"
+    ]
+  },
+  {
+    "id": 48,
+    "nom": "Écouteurs sport à crochets avec écran",
+    "categorie": "accessoires",
+    "prix": 42000,
+    "reduction": 10,
+    "public": "unisexe",
+    "stock": 15,
+    "image": "accesoire4.jpg",
+    "description": "Écouteurs sport à crochets, boîtier avec écran d'affichage.",
+    "tailles": [],
+    "couleurs": [
+      "Noir"
+    ]
+  },
+  {
+    "id": 49,
+    "nom": "Support téléphone pour voiture",
+    "categorie": "accessoires",
+    "prix": 15000,
+    "reduction": 0,
+    "public": "unisexe",
+    "stock": 25,
+    "image": "accesoire5.jpg",
+    "description": "Support téléphone voiture, fixation ventouse et grille d'aération.",
+    "tailles": [],
+    "couleurs": [
+      "Noir"
+    ]
+  },
+  {
+    "id": 50,
+    "nom": "Clavier flexible USB",
+    "categorie": "accessoires",
+    "prix": 25000,
+    "reduction": 0,
+    "public": "unisexe",
+    "stock": 12,
+    "image": "accesoire6.jpg",
+    "description": "Clavier silicone flexible et enroulable, connexion USB.",
+    "tailles": [],
+    "couleurs": [
+      "Noir"
+    ]
+  },
+  {
+    "id": 51,
+    "nom": "Micro-cravate sans fil double",
+    "categorie": "accessoires",
+    "prix": 55000,
+    "reduction": 5,
+    "public": "unisexe",
+    "stock": 10,
+    "image": "accesoire7.jpg",
+    "description": "Kit de deux micros-cravates sans fil avec adaptateur pour smartphone.",
+    "tailles": [],
+    "couleurs": [
+      "Noir"
+    ]
+  },
+  {
+    "id": 52,
+    "nom": "Support pliable pour ordinateur portable",
+    "categorie": "accessoires",
+    "prix": 20000,
+    "reduction": 0,
+    "public": "unisexe",
+    "stock": 18,
+    "image": "accesoire8.jpg",
+    "description": "Support ergonomique pliable, réglable en hauteur.",
+    "tailles": [],
+    "couleurs": [
+      "Noir"
+    ]
+  },
+  {
+    "id": 53,
+    "nom": "Console de jeu portable",
+    "categorie": "jouets",
+    "prix": 650000,
+    "reduction": 5,
+    "public": "unisexe",
+    "stock": 4,
+    "image": "accesoire9.jpg",
+    "description": "Console de jeu portable haute performance, écran tactile intégré.",
+    "tailles": [],
+    "couleurs": [
+      "Noir"
+    ]
+  },
+  {
+    "id": 54,
+    "nom": "Manette de jeu sans fil camouflage",
+    "categorie": "jouets",
+    "prix": 95000,
+    "reduction": 0,
+    "public": "unisexe",
+    "stock": 10,
+    "image": "accesoire10.jpg",
+    "description": "Manette sans fil compatible console de salon, finition camouflage.",
+    "tailles": [],
+    "couleurs": [
+      "Gris camouflage"
+    ]
+  },
+  {
+    "id": 55,
+    "nom": "Jeu vidéo — Football 26",
+    "categorie": "jouets",
+    "prix": 65000,
+    "reduction": 0,
+    "public": "unisexe",
+    "stock": 12,
+    "image": "accesoire11.jpg",
+    "description": "Jeu vidéo de football, édition 2026, compatible console de salon.",
+    "tailles": [],
+    "couleurs": []
+  },
+  {
+    "id": 56,
+    "nom": "Jeu vidéo — Agent secret",
+    "categorie": "jouets",
+    "prix": 68000,
+    "reduction": 0,
+    "public": "unisexe",
+    "stock": 10,
+    "image": "accesoire12.jpg",
+    "description": "Jeu vidéo d'action-espionnage, compatible console de salon.",
+    "tailles": [],
+    "couleurs": []
+  },
+  {
+    "id": 57,
+    "nom": "Jeu vidéo — Mythologie nordique",
+    "categorie": "jouets",
+    "prix": 70000,
+    "reduction": 5,
+    "public": "unisexe",
+    "stock": 9,
+    "image": "accesoire13.jpg",
+    "description": "Jeu vidéo d'aventure épique, compatible console de salon.",
+    "tailles": [],
+    "couleurs": []
+  },
+  {
+    "id": 58,
+    "nom": "Jeu vidéo — Légende du singe",
+    "categorie": "jouets",
+    "prix": 68000,
+    "reduction": 0,
+    "public": "unisexe",
+    "stock": 8,
+    "image": "accesoire14.jpg",
+    "description": "Jeu vidéo d'action inspiré d'un mythe classique, édition deluxe.",
+    "tailles": [],
+    "couleurs": []
+  },
+  {
+    "id": 59,
+    "nom": "Manette de jeu pour smartphone",
+    "categorie": "jouets",
+    "prix": 30000,
+    "reduction": 10,
+    "public": "unisexe",
+    "stock": 16,
+    "image": "accesoire15.jpg",
+    "description": "Manette de jeu mobile clipsable, compatible Android et iOS.",
+    "tailles": [],
+    "couleurs": [
+      "Blanc"
+    ]
+  },
+  {
+    "id": 60,
+    "nom": "Coque de protection pour manette",
+    "categorie": "jouets",
+    "prix": 12000,
+    "reduction": 0,
+    "public": "unisexe",
+    "stock": 24,
+    "image": "accesoire16.jpg",
+    "description": "Coque en silicone antidérapante pour manette de console.",
+    "tailles": [],
+    "couleurs": [
+      "Rouge"
+    ]
+  },
+  {
+    "id": 61,
+    "nom": "Étui de transport manette et tablette",
+    "categorie": "jouets",
+    "prix": 22000,
+    "reduction": 0,
+    "public": "unisexe",
+    "stock": 14,
+    "image": "accesoire17.jpg",
+    "description": "Étui rigide pour manette combinée à smartphone ou tablette.",
+    "tailles": [],
+    "couleurs": [
+      "Noir"
+    ]
+  },
+  {
+    "id": 62,
+    "nom": "Console de salon avec manette",
+    "categorie": "jouets",
+    "prix": 750000,
+    "reduction": 5,
+    "public": "unisexe",
+    "stock": 3,
+    "image": "electronique6.jpg",
+    "description": "Console de jeu de salon, livrée avec une manette sans fil.",
+    "tailles": [],
+    "couleurs": [
+      "Blanc"
+    ]
+  },
+  {
+    "id": 63,
+    "nom": "Manette sans fil officielle",
+    "categorie": "jouets",
+    "prix": 98000,
+    "reduction": 0,
+    "public": "unisexe",
+    "stock": 11,
+    "image": "electronique7.jpg",
+    "description": "Manette sans fil officielle pour console de salon, retour haptique.",
+    "tailles": [],
+    "couleurs": [
+      "Blanc"
+    ]
+  },
+  {
+    "id": 64,
+    "nom": "Sac à dos anti-vol avec port USB",
+    "categorie": "sacs",
+    "prix": 48000,
+    "reduction": 8,
+    "public": "unisexe",
+    "stock": 15,
+    "image": "Sac4.jpg",
+    "description": "Sac à dos anti-vol avec fermeture cachée et port de charge USB.",
+    "tailles": [],
+    "couleurs": [
+      "Noir"
+    ]
+  },
+  {
+    "id": 65,
+    "nom": "Tablette de dessin lumineuse enfant",
+    "categorie": "jouets",
+    "prix": 18000,
+    "reduction": 10,
+    "public": "enfant",
+    "stock": 20,
+    "image": "jouet1.jpg",
+    "description": "Tablette LCD lumineuse pour dessiner, effaçable, avec stylet.",
+    "tailles": [],
+    "couleurs": [
+      "Rose",
+      "Bleu"
+    ]
+  },
+  {
+    "id": 66,
+    "nom": "Piano jouet pour enfant",
+    "categorie": "jouets",
+    "prix": 22000,
+    "reduction": 0,
+    "public": "enfant",
+    "stock": 15,
+    "image": "jouet2.jpg",
+    "description": "Petit clavier musical jouet, sons et mélodies pour enfant.",
+    "tailles": [],
+    "couleurs": [
+      "Turquoise"
+    ]
+  },
+  {
+    "id": 67,
+    "nom": "Mallette docteur pour enfant",
+    "categorie": "jouets",
+    "prix": 25000,
+    "reduction": 5,
+    "public": "enfant",
+    "stock": 14,
+    "image": "jouet3.jpg",
+    "description": "Mallette de docteur avec accessoires médicaux jouets.",
+    "tailles": [],
+    "couleurs": [
+      "Rose"
+    ]
+  },
+  {
+    "id": 68,
+    "nom": "Fusil jouet pour enfant",
+    "categorie": "jouets",
+    "prix": 20000,
+    "reduction": 0,
+    "public": "enfant",
+    "stock": 16,
+    "image": "jouet4.jpg",
+    "description": "Fusil jouet lumineux avec effets sonores, pour jeux d'extérieur.",
+    "tailles": [],
+    "couleurs": [
+      "Noir/Jaune"
+    ]
+  },
+  {
+    "id": 69,
+    "nom": "Moto de course miniature",
+    "categorie": "jouets",
+    "prix": 15000,
+    "reduction": 0,
+    "public": "enfant",
+    "stock": 22,
+    "image": "jouet5.jpg",
+    "description": "Moto de course miniature à friction, détails réalistes.",
+    "tailles": [],
+    "couleurs": [
+      "Rouge"
+    ]
+  },
+  {
+    "id": 70,
+    "nom": "Camion benne jouet",
+    "categorie": "jouets",
+    "prix": 24000,
+    "reduction": 8,
+    "public": "enfant",
+    "stock": 18,
+    "image": "jouet6.jpg",
+    "description": "Camion benne jouet robuste, benne basculante.",
+    "tailles": [],
+    "couleurs": [
+      "Jaune"
+    ]
+  },
+  {
+    "id": 71,
+    "nom": "Transat balancelle pour bébé",
+    "categorie": "jouets",
+    "prix": 85000,
+    "reduction": 10,
+    "public": "enfant",
+    "stock": 8,
+    "image": "jouet7.jpg",
+    "description": "Transat évolutif pour bébé avec arche de jeux amovible.",
+    "tailles": [],
+    "couleurs": [
+      "Gris"
+    ]
   }
 ]
