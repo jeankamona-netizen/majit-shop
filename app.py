@@ -369,19 +369,18 @@ def extraire_mots_recherche(q):
 
 
 def produit_correspond(produit, mots):
-    texte = normaliser_recherche(
-        f"{produit['nom']} {produit.get('description', '')} {' '.join(produit.get('couleurs', []))}"
-    )
-    mots_texte = texte.split()
+    texte_principal = normaliser_recherche(f"{produit['nom']} {produit.get('description', '')}")
+    texte_complet = texte_principal + " " + normaliser_recherche(" ".join(produit.get("couleurs", [])))
+    mots_principaux = texte_principal.split()
     for mot in mots:
         variantes = {mot}
         if mot.endswith("s") and len(mot) > 3:
             variantes.add(mot[:-1])
         else:
             variantes.add(mot + "s")
-        if any(v in texte for v in variantes):
+        if any(v in texte_complet for v in variantes):
             return True
-        if len(mot) >= 4 and any(distance_levenshtein(mot, mt) <= 1 for mt in mots_texte):
+        if len(mot) >= 6 and any(distance_levenshtein(mot, mt) <= 1 for mt in mots_principaux):
             return True
     return False
 
