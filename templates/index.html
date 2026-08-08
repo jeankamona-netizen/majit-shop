@@ -3,6 +3,14 @@
 {% block titre %}Majt Shop — Vêtements, chaussures, sacs & téléphones{% endblock %}
 
 {% block contenu %}
+<section class="banniere">
+    <div class="conteneur">
+        <a href="{{ url_for('categorie', slug='vetements') }}">
+            <img src="{{ url_for('static', filename='images/banniere-accueil.jpg') }}" alt="Majt Shop — Tout ce dont vous avez besoin, au meilleur prix !" class="banniere-image">
+        </a>
+    </div>
+</section>
+
 <section class="section-categorie">
     <div class="conteneur">
         <h2 class="titre-section">Catégories</h2>
@@ -14,14 +22,6 @@
             </a>
             {% endfor %}
         </div>
-    </div>
-</section>
-
-<section class="banniere">
-    <div class="conteneur">
-        <a href="{{ url_for('categorie', slug='vetements') }}">
-            <img src="{{ url_for('static', filename='images/banniere-accueil.jpg') }}" alt="Majt Shop — Tout ce dont vous avez besoin, au meilleur prix !" class="banniere-image">
-        </a>
     </div>
 </section>
 
