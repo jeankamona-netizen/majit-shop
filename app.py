@@ -1,5 +1,6 @@
 import os
 import json
+import urllib.request
 from datetime import date, datetime
 from functools import wraps
 from pathlib import Path
@@ -14,6 +15,7 @@ app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5 Mo max par photo
 DATA_FILE = Path(__file__).parent / "data" / "produits.json"
 COMMANDES_FILE = Path(__file__).parent / "data" / "commandes.json"
 VISITES_FILE = Path(__file__).parent / "data" / "visites.json"
+GEOLOC_CACHE_FILE = Path(__file__).parent / "data" / "geoloc_cache.json"
 IMAGES_DIR = Path(__file__).parent / "static" / "images"
 EXTENSIONS_AUTORISEES = {"png", "jpg", "jpeg", "webp", "gif"}
 
@@ -99,13 +101,57 @@ def construire_lignes_ventes():
 def charger_visites():
     if VISITES_FILE.exists():
         with open(VISITES_FILE, encoding="utf-8") as f:
-            return json.load(f)
-    return {}
+            donnees = json.load(f)
+            return donnees if isinstance(donnees, list) else []
+    return []
 
 
 def sauvegarder_visites(visites):
     with open(VISITES_FILE, "w", encoding="utf-8") as f:
         json.dump(visites, f, ensure_ascii=False, indent=2)
+
+
+def obtenir_ip_client():
+    transmise = request.headers.get("X-Forwarded-For", "")
+    if transmise:
+        return transmise.split(",")[0].strip()
+    return request.remote_addr or ""
+
+
+def charger_cache_geoloc():
+    if GEOLOC_CACHE_FILE.exists():
+        with open(GEOLOC_CACHE_FILE, encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+
+def sauvegarder_cache_geoloc(cache):
+    with open(GEOLOC_CACHE_FILE, "w", encoding="utf-8") as f:
+        json.dump(cache, f, ensure_ascii=False, indent=2)
+
+
+def localiser_ip(ip, cache):
+    if not ip:
+        return "Inconnue"
+    if ip in cache:
+        return cache[ip]
+    if ip in ("127.0.0.1", "::1") or ip.startswith(("10.", "192.168.", "172.")):
+        cache[ip] = "Local"
+        return cache[ip]
+    localisation = "Inconnue"
+    try:
+        with urllib.request.urlopen(
+            f"http://ip-api.com/json/{ip}?fields=status,city,regionName,country", timeout=3
+        ) as reponse:
+            resultat = json.loads(reponse.read().decode())
+        if resultat.get("status") == "success":
+            parties = [v for v in (resultat.get("city"), resultat.get("country")) if v]
+            if parties:
+                localisation = ", ".join(parties)
+    except Exception:
+        pass
+    cache[ip] = localisation
+    return localisation
 
 
 def trouver_produit(produit_id):
@@ -200,7 +246,11 @@ def compter_visite():
     if session.get("visite_comptee_le") != aujourd_hui:
         session["visite_comptee_le"] = aujourd_hui
         visites = charger_visites()
-        visites[aujourd_hui] = visites.get(aujourd_hui, 0) + 1
+        visites.append({
+            "date": aujourd_hui,
+            "heure": datetime.now().strftime("%H:%M:%S"),
+            "ip": obtenir_ip_client(),
+        })
         sauvegarder_visites(visites)
 
 
@@ -448,7 +498,7 @@ def admin_tableau_de_bord():
     return render_template(
         "admin/tableau_de_bord.html",
         categories=CATEGORIES,
-        visiteurs_jour=visites.get(aujourd_hui, 0),
+        visiteurs_jour=sum(1 for v in visites if v.get("date") == aujourd_hui),
         nb_commandes_attente=len(commandes_en_attente),
         nb_commandes_livrees=len(commandes_livrees),
         chiffre_affaires=chiffre_affaires,
@@ -531,7 +581,16 @@ def admin_revenus():
 @app.route("/admin/visites")
 @admin_requis
 def admin_visites():
-    visites = sorted(charger_visites().items(), reverse=True)
+    visites = sorted(charger_visites(), key=lambda v: (v.get("date", ""), v.get("heure", "")), reverse=True)
+    cache = charger_cache_geoloc()
+    cache_modifie = False
+    for v in visites:
+        ip = v.get("ip", "")
+        if ip not in cache:
+            cache_modifie = True
+        v["localisation"] = localiser_ip(ip, cache)
+    if cache_modifie:
+        sauvegarder_cache_geoloc(cache)
     return render_template("admin/visites.html", categories=CATEGORIES, visites=visites)
 
 

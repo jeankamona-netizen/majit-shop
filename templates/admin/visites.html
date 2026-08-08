@@ -3,16 +3,28 @@
 {% block titre %}Visiteurs — Administration Majt Shop{% endblock %}
 
 {% block contenu %}
-<h1>Visiteurs par jour</h1>
+<h1>Visiteurs du site</h1>
 
 <div class="admin-table-wrap">
     <table class="admin-table">
-        <thead><tr><th>Date</th><th>Visiteurs</th></tr></thead>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Heure</th>
+                <th>Adresse IP</th>
+                <th>Localisation</th>
+            </tr>
+        </thead>
         <tbody>
-            {% for jour, nombre in visites %}
-            <tr><td>{{ jour }}</td><td>{{ nombre }}</td></tr>
+            {% for v in visites %}
+            <tr>
+                <td>{{ v.date }}</td>
+                <td>{{ v.heure }}</td>
+                <td>{{ v.ip or '—' }}</td>
+                <td>{{ v.localisation }}</td>
+            </tr>
             {% else %}
-            <tr><td colspan="2">Aucune visite enregistrée pour le moment.</td></tr>
+            <tr><td colspan="4">Aucune visite enregistrée pour le moment.</td></tr>
             {% endfor %}
         </tbody>
     </table>
