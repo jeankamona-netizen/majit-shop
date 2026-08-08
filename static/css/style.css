@@ -296,16 +296,6 @@ a {
     z-index: 1;
 }
 
-.carte-eyebrow {
-    display: block;
-    color: var(--orange-600);
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    margin-bottom: 0.2rem;
-}
-
 .filtre-public {
     display: flex;
     flex-wrap: wrap;

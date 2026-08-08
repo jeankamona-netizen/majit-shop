@@ -58,8 +58,8 @@
                     {% if produit.reduction %}<span class="badge-reduction">-{{ produit.reduction }}%</span>{% endif %}
                     <img src="{{ url_for('static', filename='images/' + produit.image) }}" alt="{{ produit.nom }}">
                 </div>
-                <span class="carte-eyebrow">{{ categories[produit.categorie] }}</span>
                 <h3>{{ produit.nom }}</h3>
+                <p class="description">{{ produit.description }}</p>
                 <p class="prix">
                     {% if produit.reduction %}
                         <span class="prix-barre">{{ produit.prix|cdf }}</span>
