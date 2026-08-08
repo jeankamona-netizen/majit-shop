@@ -665,6 +665,9 @@ def admin_visites():
 @admin_requis
 def admin_avis():
     avis = sorted(charger_avis(), key=lambda a: a.get("date", ""), reverse=True)
+    noms_par_numero = {c["numero"]: c["nom"] for c in charger_commandes()}
+    for a in avis:
+        a["nom_client"] = noms_par_numero.get(a["numero"], "—")
     nb = len(avis)
     moyenne_articles = round(sum(a["note_articles"] for a in avis) / nb, 1) if nb else 0
     moyenne_procedure = round(sum(a["note_procedure"] for a in avis) / nb, 1) if nb else 0

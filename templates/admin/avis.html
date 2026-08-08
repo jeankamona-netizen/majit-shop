@@ -25,6 +25,7 @@
         <thead>
             <tr>
                 <th>Date</th>
+                <th>Client</th>
                 <th>Commande</th>
                 <th>Articles</th>
                 <th>Procédure</th>
@@ -35,13 +36,14 @@
             {% for a in avis %}
             <tr>
                 <td>{{ a.date.replace('T', ' ') }}</td>
+                <td>{{ a.nom_client }}</td>
                 <td>{{ a.numero }}</td>
                 <td class="admin-etoiles-lecture">{{ '★' * a.note_articles }}{{ '☆' * (5 - a.note_articles) }}</td>
                 <td class="admin-etoiles-lecture">{{ '★' * a.note_procedure }}{{ '☆' * (5 - a.note_procedure) }}</td>
                 <td>{{ a.commentaire or '—' }}</td>
             </tr>
             {% else %}
-            <tr><td colspan="5">Aucun avis pour le moment.</td></tr>
+            <tr><td colspan="6">Aucun avis pour le moment.</td></tr>
             {% endfor %}
         </tbody>
     </table>
