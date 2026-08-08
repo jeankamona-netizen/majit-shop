@@ -412,6 +412,7 @@ def commander():
                         "taille": ligne["taille"],
                         "couleur": ligne["couleur"],
                         "quantite": ligne["quantite"],
+                        "prix_unitaire": prix_final(ligne["produit"]),
                         "sous_total": ligne["sous_total"],
                     }
                     for ligne in lignes
@@ -534,8 +535,14 @@ def admin_commandes():
         for c in commandes:
             c["vue"] = True
         sauvegarder_commandes(commandes)
+
+    for c in commandes:
+        for ligne in c["lignes"]:
+            if ligne.get("prix_unitaire") is None and ligne.get("quantite"):
+                ligne["prix_unitaire"] = round(ligne["sous_total"] / ligne["quantite"])
+
     statut_filtre = request.args.get("statut", "")
-    if statut_filtre in ("en_attente", "livree"):
+    if statut_filtre in ("en_attente", "livree", "annulee"):
         commandes = [c for c in commandes if c["statut"] == statut_filtre]
     commandes = sorted(commandes, key=lambda c: c["date"], reverse=True)
     return render_template(
@@ -617,7 +624,64 @@ def admin_livrer_commande(numero):
         montant = commande["total"]
     commande["statut"] = "livree"
     commande["montant_verse"] = montant
-    commande["date_livraison"] = datetime.now().isoformat(timespec="seconds")
+    if not commande.get("date_livraison"):
+        commande["date_livraison"] = datetime.now().isoformat(timespec="seconds")
+    sauvegarder_commandes(commandes)
+    return redirect(url_for("admin_commandes"))
+
+
+@app.route("/admin/commandes/<numero>/annuler", methods=["POST"])
+@admin_requis
+def admin_annuler_commande(numero):
+    commandes = charger_commandes()
+    commande = next((c for c in commandes if c["numero"] == numero), None)
+    if not commande:
+        abort(404)
+    if commande["statut"] != "annulee":
+        produits = charger_produits()
+        for ligne in commande["lignes"]:
+            p = next((x for x in produits if x["id"] == ligne.get("produit_id")), None)
+            if p:
+                p["stock"] = p.get("stock", 0) + ligne["quantite"]
+        sauvegarder_produits(produits)
+        commande["statut"] = "annulee"
+        commande["montant_verse"] = None
+    sauvegarder_commandes(commandes)
+    return redirect(url_for("admin_commandes"))
+
+
+@app.route("/admin/commandes/<numero>/lignes/<int:index>/modifier", methods=["POST"])
+@admin_requis
+def admin_modifier_ligne_commande(numero, index):
+    commandes = charger_commandes()
+    commande = next((c for c in commandes if c["numero"] == numero), None)
+    if not commande or index < 0 or index >= len(commande["lignes"]):
+        abort(404)
+
+    ligne = commande["lignes"][index]
+    try:
+        nouvelle_quantite = max(0, int(request.form.get("quantite", ligne["quantite"])))
+    except ValueError:
+        nouvelle_quantite = ligne["quantite"]
+    nouvelle_quantite = min(nouvelle_quantite, ligne["quantite"])
+
+    delta = ligne["quantite"] - nouvelle_quantite
+    if delta > 0:
+        produits = charger_produits()
+        p = next((x for x in produits if x["id"] == ligne.get("produit_id")), None)
+        if p:
+            p["stock"] = p.get("stock", 0) + delta
+            sauvegarder_produits(produits)
+
+    prix_unitaire = ligne.get("prix_unitaire") or (round(ligne["sous_total"] / ligne["quantite"]) if ligne["quantite"] else 0)
+    if nouvelle_quantite == 0:
+        commande["lignes"].pop(index)
+    else:
+        ligne["quantite"] = nouvelle_quantite
+        ligne["prix_unitaire"] = prix_unitaire
+        ligne["sous_total"] = prix_unitaire * nouvelle_quantite
+
+    commande["total"] = sum(l["sous_total"] for l in commande["lignes"])
     sauvegarder_commandes(commandes)
     return redirect(url_for("admin_commandes"))
 

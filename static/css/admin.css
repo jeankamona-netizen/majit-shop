@@ -349,9 +349,63 @@
     color: #888;
 }
 
-.admin-commande-articles div {
+.admin-commande-total {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--violet-800);
+}
+
+.admin-commande-articles {
+    min-width: 260px;
+}
+
+.admin-ligne-article {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.35rem 0;
+    border-bottom: 1px dashed #eee;
+}
+
+.admin-ligne-article:last-child {
+    border-bottom: none;
+}
+
+.admin-ligne-texte {
     font-size: 0.82rem;
-    margin-bottom: 0.2rem;
+}
+
+.admin-ligne-qte {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.admin-ligne-qte input {
+    width: 48px;
+    padding: 0.25rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 0.78rem;
+    text-align: center;
+}
+
+.admin-ligne-qte button {
+    background: var(--violet-100);
+    color: var(--violet-800);
+    border: none;
+    border-radius: 5px;
+    width: 26px;
+    height: 26px;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.admin-ligne-qte button:hover {
+    background: var(--violet-500);
+    color: white;
 }
 
 .statut-badge {
@@ -370,6 +424,27 @@
 .statut-livree {
     background: #dcf5e3;
     color: #1e8449;
+}
+
+.statut-annulee {
+    background: #fbdada;
+    color: #c0392b;
+}
+
+.admin-lien-annuler {
+    display: block;
+    background: none;
+    border: none;
+    color: #c0392b;
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+}
+
+.admin-lien-annuler:hover {
+    color: #922b21;
 }
 
 .admin-form-livraison {

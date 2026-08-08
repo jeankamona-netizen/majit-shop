@@ -9,58 +9,78 @@
     <a href="{{ url_for('admin_commandes') }}" class="admin-filtre {{ 'admin-filtre-actif' if not statut_filtre else '' }}">Toutes</a>
     <a href="{{ url_for('admin_commandes', statut='en_attente') }}" class="admin-filtre {{ 'admin-filtre-actif' if statut_filtre == 'en_attente' else '' }}">En attente</a>
     <a href="{{ url_for('admin_commandes', statut='livree') }}" class="admin-filtre {{ 'admin-filtre-actif' if statut_filtre == 'livree' else '' }}">Livrées</a>
+    <a href="{{ url_for('admin_commandes', statut='annulee') }}" class="admin-filtre {{ 'admin-filtre-actif' if statut_filtre == 'annulee' else '' }}">Annulées</a>
 </div>
 
 <div class="admin-table-wrap">
     <table class="admin-table">
         <thead>
             <tr>
-                <th>N°</th>
-                <th>Date</th>
+                <th>N° Facture</th>
                 <th>Client</th>
                 <th>Articles</th>
-                <th>Total</th>
                 <th>Statut</th>
                 <th>Montant versé</th>
-                <th></th>
             </tr>
         </thead>
         <tbody>
             {% for c in commandes %}
             <tr>
-                <td>{{ c.numero }}</td>
-                <td>{{ c.date.replace('T', ' ') }}</td>
+                <td>
+                    <strong>{{ c.numero }}</strong><br>
+                    <span class="admin-commande-contact">{{ c.date.replace('T', ' ') }}</span>
+                </td>
                 <td>
                     {{ c.nom }}<br>
-                    <span class="admin-commande-contact">{{ c.telephone }} — {{ c.adresse }}</span>
+                    <span class="admin-commande-contact">{{ c.telephone }} — {{ c.adresse }}</span><br>
+                    <span class="admin-commande-total">Total : {{ c.total|cdf }}</span>
                 </td>
                 <td class="admin-commande-articles">
                     {% for ligne in c.lignes %}
-                        <div>{{ ligne.nom }}{% if ligne.couleur %} ({{ ligne.couleur }}{% if ligne.taille %}, {{ ligne.taille }}{% endif %}){% elif ligne.taille %} ({{ ligne.taille }}){% endif %} × {{ ligne.quantite }}</div>
+                    <div class="admin-ligne-article">
+                        <div class="admin-ligne-texte">
+                            {{ loop.index }}. {{ ligne.nom }}{% if ligne.couleur %} ({{ ligne.couleur }}{% if ligne.taille %}, {{ ligne.taille }}{% endif %}){% elif ligne.taille %} ({{ ligne.taille }}){% endif %}<br>
+                            <span class="admin-commande-contact">{{ ligne.prix_unitaire|cdf }} × {{ ligne.quantite }} = {{ ligne.sous_total|cdf }}</span>
+                        </div>
+                        {% if c.statut != 'annulee' %}
+                        <form method="post" action="{{ url_for('admin_modifier_ligne_commande', numero=c.numero, index=loop.index0) }}" class="admin-ligne-qte" onsubmit="return confirm('Réduire la quantité de cet article ?');">
+                            <input type="number" name="quantite" min="0" max="{{ ligne.quantite }}" value="{{ ligne.quantite }}">
+                            <button type="submit" title="Mettre à jour la quantité">✓</button>
+                        </form>
+                        {% endif %}
+                    </div>
                     {% endfor %}
                 </td>
-                <td>{{ c.total|cdf }}</td>
                 <td>
                     {% if c.statut == 'livree' %}
                         <span class="statut-badge statut-livree">Livrée</span>
+                    {% elif c.statut == 'annulee' %}
+                        <span class="statut-badge statut-annulee">Annulée</span>
                     {% else %}
                         <span class="statut-badge statut-attente">En attente</span>
                     {% endif %}
-                </td>
-                <td>{{ c.montant_verse|cdf if c.montant_verse is not none else '—' }}</td>
-                <td>
-                    {% if c.statut != 'livree' %}
-                    <form method="post" action="{{ url_for('admin_livrer_commande', numero=c.numero) }}" class="admin-form-livraison">
-                        <input type="number" name="montant_verse" step="1" min="0" value="{{ c.total|round|int }}">
-                        <button type="submit">Marquer livrée</button>
+                    {% if c.statut != 'annulee' %}
+                    <form method="post" action="{{ url_for('admin_annuler_commande', numero=c.numero) }}" onsubmit="return confirm('Annuler cette commande ? Les articles seront remis en stock.');">
+                        <button type="submit" class="admin-lien-annuler">Annuler la commande</button>
                     </form>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if c.statut == 'annulee' %}
+                        <span class="admin-commande-contact">—</span>
                     {% else %}
+                    <form method="post" action="{{ url_for('admin_livrer_commande', numero=c.numero) }}" class="admin-form-livraison">
+                        <input type="number" name="montant_verse" step="1" min="0" value="{{ (c.montant_verse if c.montant_verse is not none else c.total)|round|int }}">
+                        <button type="submit">{{ 'Mettre à jour' if c.statut == 'livree' else 'Marquer livrée' }}</button>
+                    </form>
+                    {% if c.statut == 'livree' %}
                         <span class="admin-livree-date">le {{ c.date_livraison.replace('T', ' ') if c.date_livraison else '' }}</span>
+                    {% endif %}
                     {% endif %}
                 </td>
             </tr>
             {% else %}
-            <tr><td colspan="8">Aucune commande pour le moment.</td></tr>
+            <tr><td colspan="5">Aucune commande pour le moment.</td></tr>
             {% endfor %}
         </tbody>
     </table>
