@@ -4,6 +4,7 @@ __pycache__/
 venv/
 env/
 .env
+.claude/
 
 # Données générées à l'exécution (contiennent des infos clients) : ne pas versionner
 data/commandes.json
