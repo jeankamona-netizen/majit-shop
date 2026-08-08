@@ -12,7 +12,7 @@
         {% if publics is defined and publics|length > 1 %}
         <div class="filtre-public">
             <a href="{{ url_for('categorie', slug=categorie_active) }}" class="filtre-public-lien {{ 'filtre-public-actif' if not public_filtre else '' }}">Tout</a>
-            {% for pub in publics %}
+            {% for pub in publics if pub != 'unisexe' %}
                 <a href="{{ url_for('categorie', slug=categorie_active, public=pub) }}" class="filtre-public-lien {{ 'filtre-public-actif' if public_filtre == pub else '' }}">{{ public_labels[pub] }}</a>
             {% endfor %}
         </div>
