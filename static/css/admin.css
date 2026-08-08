@@ -594,3 +594,28 @@
     color: #888;
     font-size: 0.9rem;
 }
+
+/* Responsive — mobile */
+@media (max-width: 600px) {
+    .admin-notif {
+        margin-left: 0;
+    }
+
+    .admin-notif-panneau {
+        width: min(90vw, 340px);
+        right: -0.5rem;
+    }
+
+    .admin-formulaire {
+        max-width: 100%;
+    }
+
+    .admin-filtre-revenus {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .admin-filtre-revenus select {
+        min-width: 0;
+    }
+}

@@ -147,33 +147,17 @@ a {
 
 /* Bannière d'accueil */
 .banniere {
-    padding: 1.5rem 0 0.5rem;
+    padding: 1rem 0 0.5rem;
 }
 
 .banniere-image {
     width: 100%;
+    max-height: 320px;
+    object-fit: cover;
+    object-position: top;
     display: block;
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
-}
-
-/* Hero */
-.hero {
-    background: linear-gradient(120deg, var(--violet-800), var(--orange-500));
-    color: white;
-    padding: 3.5rem 0;
-    text-align: center;
-}
-
-.hero h1 {
-    font-size: 2.2rem;
-    margin-bottom: 0.5rem;
-}
-
-.hero p {
-    font-size: 1.1rem;
-    opacity: 0.9;
-    margin-bottom: 1.5rem;
 }
 
 .bouton-hero {
@@ -189,40 +173,6 @@ a {
 .bouton-hero:hover {
     transform: translateY(-2px);
     color: var(--orange-600);
-}
-
-/* Fonctionnalités */
-.fonctionnalites {
-    background: white;
-    border-bottom: 1px solid #e5e5e5;
-}
-
-.fonctionnalites-grille {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1.5rem;
-    padding: 1.5rem 0;
-}
-
-.fonctionnalite {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-}
-
-.fonctionnalite .icone {
-    font-size: 1.8rem;
-}
-
-.fonctionnalite strong {
-    display: block;
-    color: var(--violet-700);
-    font-size: 0.95rem;
-}
-
-.fonctionnalite p {
-    font-size: 0.8rem;
-    color: #777;
 }
 
 /* Sections catégories */
@@ -955,4 +905,104 @@ a {
 .guide-liste p {
     color: #555;
     font-size: 0.9rem;
+}
+
+/* Responsive — tablette */
+@media (max-width: 900px) {
+    .detail-grille,
+    .commande-grille {
+        grid-template-columns: 1fr;
+    }
+
+    .banniere-image {
+        max-height: 220px;
+    }
+
+    .entete-bienvenue {
+        display: none;
+    }
+}
+
+/* Responsive — mobile */
+@media (max-width: 600px) {
+    .conteneur {
+        padding: 0 1rem;
+    }
+
+    .entete-inner {
+        flex-wrap: wrap;
+        gap: 0.7rem;
+        padding: 0.6rem 1rem;
+    }
+
+    .logo img {
+        height: 42px;
+    }
+
+    .barre-recherche {
+        order: 3;
+        max-width: 100%;
+        flex-basis: 100%;
+    }
+
+    .panier {
+        margin-left: auto;
+    }
+
+    .nav-categories-inner {
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .nav-categories a {
+        display: inline-block;
+        padding: 0.65rem 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    .banniere-image {
+        max-height: 160px;
+        object-position: center;
+    }
+
+    .grille-produits {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 0.8rem;
+    }
+
+    .carte-produit img {
+        height: 110px;
+    }
+
+    .section-entete {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.3rem;
+    }
+
+    .pied-grille {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .detail-boutons {
+        flex-direction: column;
+    }
+
+    .detail-boutons button {
+        width: 100%;
+    }
+
+    .table-panier th,
+    .table-panier td,
+    .admin-table th,
+    .admin-table td {
+        font-size: 0.78rem;
+        padding: 0.5rem 0.6rem;
+    }
+
+    .commande-formulaire,
+    .commande-recap {
+        max-width: 100%;
+    }
 }
