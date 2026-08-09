@@ -394,6 +394,18 @@
     color: var(--violet-800);
 }
 
+.admin-lien-carte {
+    display: inline-block;
+    font-size: 0.78rem;
+    color: var(--violet-700);
+    font-weight: 600;
+    margin: 0.15rem 0;
+}
+
+.admin-lien-carte:hover {
+    text-decoration: underline;
+}
+
 .admin-commande-articles {
     min-width: 260px;
 }
@@ -778,4 +790,142 @@
     color: var(--orange-500);
     letter-spacing: 1px;
     white-space: nowrap;
+}
+
+/* Interface livreur */
+.livreur-compteur {
+    color: #777;
+    font-size: 0.9rem;
+    margin-bottom: 1.2rem;
+}
+
+.livreur-liste {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 480px;
+}
+
+.livreur-carte {
+    background: white;
+    border-radius: 12px;
+    padding: 1.2rem;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+}
+
+.livreur-entete {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.6rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid #eee;
+}
+
+.livreur-entete strong {
+    color: var(--violet-800);
+    font-size: 1.05rem;
+}
+
+.livreur-date {
+    font-size: 0.75rem;
+    color: #999;
+}
+
+.livreur-client {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.6rem;
+}
+
+.livreur-nom {
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.livreur-tel {
+    background: var(--violet-100);
+    color: var(--violet-800);
+    font-weight: 700;
+    padding: 0.5rem 0.9rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.livreur-adresse {
+    font-size: 0.92rem;
+    color: #444;
+    margin-bottom: 0.8rem;
+    line-height: 1.5;
+}
+
+.livreur-itineraire {
+    display: inline-block;
+    margin-left: 0.5rem;
+    color: var(--orange-600);
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.livreur-articles {
+    list-style: none;
+    background: var(--gris-clair);
+    border-radius: 8px;
+    padding: 0.7rem 0.9rem;
+    margin-bottom: 0.8rem;
+}
+
+.livreur-articles li {
+    font-size: 0.85rem;
+    color: #555;
+    padding: 0.15rem 0;
+}
+
+.livreur-montant {
+    font-size: 1rem;
+    margin-bottom: 0.9rem;
+}
+
+.livreur-montant strong {
+    color: var(--orange-600);
+    font-size: 1.15rem;
+}
+
+.livreur-form {
+    display: flex;
+    gap: 0.6rem;
+}
+
+.livreur-form input {
+    flex: 1;
+    padding: 0.7rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 0.95rem;
+}
+
+.livreur-form button {
+    background: var(--orange-500);
+    color: white;
+    border: none;
+    padding: 0.7rem 1.1rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.livreur-form button:hover {
+    background: var(--orange-600);
+}
+
+.livreur-vide {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    text-align: center;
+    color: #888;
 }

@@ -912,6 +912,41 @@ a {
     font-weight: 600;
 }
 
+.commande-note {
+    font-size: 0.8rem;
+    color: #888;
+    margin-top: 0.2rem;
+}
+
+.bouton-position {
+    margin-top: 0.5rem;
+    background: var(--violet-100);
+    color: var(--violet-800);
+    border: 1px solid var(--violet-500);
+    padding: 0.6rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+    align-self: flex-start;
+}
+
+.bouton-position:hover {
+    background: var(--violet-500);
+    color: white;
+}
+
+.bouton-position:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.commande-position-statut {
+    font-size: 0.8rem;
+    color: var(--violet-700);
+    margin-top: 0.4rem;
+}
+
 .commande-formulaire button {
     margin-top: 1.4rem;
     background: var(--orange-500);

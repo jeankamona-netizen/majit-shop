@@ -18,7 +18,7 @@
       "Noir",
       "Bleu"
     ],
-    "stock": 21,
+    "stock": 20,
     "public": "unisexe"
   },
   {
@@ -371,7 +371,11 @@
     "prix": 279900.0,
     "reduction": 10,
     "image": "telephone9.jpg",
-    "images": ["telephone10.jpg", "telephone11.jpg", "telephone12.jpg"],
+    "images": [
+      "telephone10.jpg",
+      "telephone11.jpg",
+      "telephone12.jpg"
+    ],
     "description": "Téléphone portable double SIM, 128Go.",
     "tailles": [],
     "couleurs": [

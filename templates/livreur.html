@@ -1,0 +1,48 @@
+{% extends "admin/admin_base.html" %}
+
+{% block titre %}Livraisons — Majt Shop{% endblock %}
+
+{% block contenu %}
+<h1>Livraisons à effectuer</h1>
+<p class="livreur-compteur">{{ commandes|length }} commande{{ 's' if commandes|length != 1 else '' }} en attente</p>
+
+<div class="livreur-liste">
+    {% for c in commandes %}
+    <div class="livreur-carte">
+        <div class="livreur-entete">
+            <strong>{{ c.numero }}</strong>
+            <span class="livreur-date">{{ c.date.replace('T', ' ') }}</span>
+        </div>
+
+        <div class="livreur-client">
+            <div class="livreur-nom">{{ c.nom }}</div>
+            <a href="tel:{{ c.telephone }}" class="livreur-tel">📞 {{ c.telephone }}</a>
+        </div>
+
+        <div class="livreur-adresse">
+            📍 {{ c.adresse }}
+            {% if c.latitude and c.longitude %}
+            <a href="https://www.openstreetmap.org/?mlat={{ c.latitude }}&mlon={{ c.longitude }}#map=17/{{ c.latitude }}/{{ c.longitude }}" target="_blank" rel="noopener" class="livreur-itineraire">Itinéraire →</a>
+            {% endif %}
+        </div>
+
+        <ul class="livreur-articles">
+            {% for ligne in c.lignes %}
+            <li>{{ ligne.nom }}{% if ligne.couleur %} ({{ ligne.couleur }}{% if ligne.taille %}, {{ ligne.taille }}{% endif %}){% elif ligne.taille %} ({{ ligne.taille }}){% endif %} × {{ ligne.quantite }}</li>
+            {% endfor %}
+        </ul>
+
+        <div class="livreur-montant">
+            Montant à percevoir : <strong>{{ c.total|cdf }}</strong>
+        </div>
+
+        <form method="post" action="{{ url_for('admin_livrer_commande', numero=c.numero) }}" class="livreur-form" onsubmit="return confirm('Confirmer la livraison de {{ c.numero }} ?');">
+            <input type="number" name="montant_verse" step="1" min="0" value="{{ c.total|round|int }}">
+            <button type="submit">✓ Marquer livrée</button>
+        </form>
+    </div>
+    {% else %}
+    <p class="livreur-vide">Aucune livraison en attente pour le moment.</p>
+    {% endfor %}
+</div>
+{% endblock %}

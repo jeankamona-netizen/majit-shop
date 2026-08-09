@@ -485,6 +485,12 @@ def commander():
             erreurs["adresse"] = "Merci d'indiquer une adresse de livraison."
 
         if not erreurs:
+            try:
+                latitude = float(request.form.get("latitude") or "")
+                longitude = float(request.form.get("longitude") or "")
+            except ValueError:
+                latitude = longitude = None
+
             numero = generer_numero_commande()
             commande = {
                 "numero": numero,
@@ -492,6 +498,8 @@ def commander():
                 "nom": nom,
                 "telephone": telephone,
                 "adresse": adresse,
+                "latitude": latitude,
+                "longitude": longitude,
                 "lignes": [
                     {
                         "produit_id": ligne["produit"]["id"],
@@ -662,6 +670,18 @@ def admin_commandes():
         categories=CATEGORIES,
         statut_filtre=statut_filtre,
     )
+
+
+@app.route("/livreur")
+@admin_requis
+def livreur():
+    commandes = [c for c in charger_commandes() if c["statut"] == "en_attente"]
+    for c in commandes:
+        for ligne in c["lignes"]:
+            if ligne.get("prix_unitaire") is None and ligne.get("quantite"):
+                ligne["prix_unitaire"] = round(ligne["sous_total"] / ligne["quantite"])
+    commandes.sort(key=lambda c: c["date"])
+    return render_template("livreur.html", categories=CATEGORIES, commandes=commandes)
 
 
 @app.route("/admin/revenus")

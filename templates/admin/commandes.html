@@ -33,6 +33,9 @@
                 <td>
                     {{ c.nom }}<br>
                     <span class="admin-commande-contact">{{ c.telephone }} — {{ c.adresse }}</span><br>
+                    {% if c.latitude and c.longitude %}
+                    <a href="https://www.openstreetmap.org/?mlat={{ c.latitude }}&mlon={{ c.longitude }}#map=17/{{ c.latitude }}/{{ c.longitude }}" target="_blank" rel="noopener" class="admin-lien-carte">📍 Voir sur la carte</a><br>
+                    {% endif %}
                     <span class="admin-commande-total">Total : {{ c.total|cdf }}</span>
                 </td>
                 <td class="admin-commande-articles">

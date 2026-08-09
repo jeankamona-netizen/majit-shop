@@ -26,6 +26,13 @@
                 <label>Mode de paiement</label>
                 <p class="commande-paiement">Paiement à la livraison</p>
 
+                <label>Position GPS (facultatif)</label>
+                <p class="commande-note">Aide le livreur à vous localiser plus précisément que l'adresse écrite.</p>
+                <input type="hidden" id="latitude" name="latitude">
+                <input type="hidden" id="longitude" name="longitude">
+                <button type="button" id="bouton-position" class="bouton-position">📍 Partager ma position</button>
+                <p id="position-statut" class="commande-position-statut"></p>
+
                 <button type="submit">Confirmer la commande</button>
             </form>
 
@@ -44,4 +51,6 @@
         </div>
     </div>
 </section>
+
+<script src="{{ url_for('static', filename='js/position.js') }}"></script>
 {% endblock %}
