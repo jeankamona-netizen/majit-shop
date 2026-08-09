@@ -658,6 +658,7 @@ def admin_tableau_de_bord():
 
     aujourd_hui = date.today().isoformat()
     commandes_en_attente = [c for c in commandes if c["statut"] == "en_attente"]
+    commandes_en_livraison = [c for c in commandes if c["statut"] == "en_livraison"]
     commandes_livrees = [c for c in commandes if c["statut"] == "livree"]
     chiffre_affaires = sum(c.get("montant_verse") or 0 for c in commandes_livrees)
 
@@ -666,6 +667,7 @@ def admin_tableau_de_bord():
         categories=CATEGORIES,
         visiteurs_jour=sum(1 for v in visites if v.get("date") == aujourd_hui),
         nb_commandes_attente=len(commandes_en_attente),
+        nb_commandes_en_livraison=len(commandes_en_livraison),
         nb_commandes_livrees=len(commandes_livrees),
         chiffre_affaires=chiffre_affaires,
         nb_produits=len(produits),

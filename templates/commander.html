@@ -30,10 +30,13 @@
                 <p class="commande-note">Aide le livreur à vous localiser plus précisément que l'adresse écrite.</p>
                 <input type="hidden" id="latitude" name="latitude">
                 <input type="hidden" id="longitude" name="longitude">
-                <button type="button" id="bouton-position" class="bouton-position">📍 Partager ma position</button>
+                <button type="button" id="bouton-position" class="bouton-position">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    Partager ma position
+                </button>
                 <p id="position-statut" class="commande-position-statut"></p>
 
-                <button type="submit">Confirmer la commande</button>
+                <button type="submit" class="bouton-confirmer">Confirmer la commande</button>
             </form>
 
             <div class="commande-recap">

@@ -409,11 +409,19 @@
 }
 
 .admin-lien-carte {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
     font-size: 0.78rem;
     color: var(--violet-700);
     font-weight: 600;
     margin: 0.15rem 0;
+}
+
+.admin-lien-carte svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
 }
 
 .admin-lien-carte:hover {
@@ -562,10 +570,16 @@
     position: relative;
     background: none;
     border: none;
-    font-size: 1.3rem;
+    color: white;
     cursor: pointer;
     padding: 0.2rem 0.4rem;
     line-height: 1;
+    display: flex;
+}
+
+.admin-cloche svg {
+    width: 22px;
+    height: 22px;
 }
 
 .admin-cloche-badge {
@@ -872,6 +886,9 @@
 }
 
 .livreur-tel {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
     background: var(--violet-100);
     color: var(--violet-800);
     font-weight: 700;
@@ -881,11 +898,24 @@
     white-space: nowrap;
 }
 
+.livreur-tel svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+}
+
 .livreur-adresse {
     font-size: 0.92rem;
     color: #444;
     margin-bottom: 0.8rem;
     line-height: 1.5;
+}
+
+.livreur-adresse svg {
+    width: 14px;
+    height: 14px;
+    vertical-align: -2px;
+    flex-shrink: 0;
 }
 
 .livreur-itineraire {
@@ -978,6 +1008,10 @@
 }
 
 .livreur-bouton-prendre {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
     flex: 1;
     background: var(--violet-700);
     color: white;
@@ -988,6 +1022,11 @@
     font-size: 0.9rem;
     cursor: pointer;
     width: 100%;
+}
+
+.livreur-bouton-prendre svg {
+    width: 16px;
+    height: 16px;
 }
 
 .livreur-bouton-prendre:hover {

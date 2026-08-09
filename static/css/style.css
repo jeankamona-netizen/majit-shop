@@ -933,16 +933,26 @@ a {
 }
 
 .bouton-position {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
     margin-top: 0.5rem;
     background: var(--violet-100);
     color: var(--violet-800);
     border: 1px solid var(--violet-500);
-    padding: 0.6rem 1rem;
+    padding: 0.7rem 1rem;
     border-radius: 6px;
     font-weight: 600;
     font-size: 0.88rem;
     cursor: pointer;
-    align-self: flex-start;
+    width: 100%;
+}
+
+.bouton-position svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
 }
 
 .bouton-position:hover {
@@ -961,7 +971,7 @@ a {
     margin-top: 0.4rem;
 }
 
-.commande-formulaire button {
+.bouton-confirmer {
     margin-top: 1.4rem;
     background: var(--orange-500);
     color: white;
@@ -970,9 +980,10 @@ a {
     border-radius: 6px;
     font-weight: 700;
     cursor: pointer;
+    width: 100%;
 }
 
-.commande-formulaire button:hover {
+.bouton-confirmer:hover {
     background: var(--orange-600);
 }
 
@@ -1032,8 +1043,13 @@ a {
 }
 
 .confirmation-icone {
-    font-size: 2.5rem;
+    color: #1e8449;
     margin-bottom: 0.6rem;
+}
+
+.confirmation-icone svg {
+    width: 48px;
+    height: 48px;
 }
 
 .confirmation-carte h1 {
