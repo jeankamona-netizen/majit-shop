@@ -33,7 +33,7 @@
                         <div class="admin-notif-entete">Nouvelles commandes</div>
                         {% if nouvelles_commandes %}
                             {% for c in nouvelles_commandes %}
-                            <div class="admin-notif-commande">
+                            <a href="{{ url_for('admin_commandes') }}#commande-{{ c.numero }}" class="admin-notif-commande">
                                 <div class="admin-notif-ligne1">
                                     <strong>{{ c.numero }}</strong>
                                     <span class="admin-notif-date">{{ c.date.replace('T', ' ') }}</span>
@@ -46,7 +46,7 @@
                                     {% endfor %}
                                 </ul>
                                 <div class="admin-notif-total">Total : {{ c.total|cdf }}</div>
-                            </div>
+                            </a>
                             {% endfor %}
                         {% else %}
                             <p class="admin-notif-vide">Aucune nouvelle commande.</p>

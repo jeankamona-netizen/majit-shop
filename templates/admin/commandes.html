@@ -26,7 +26,7 @@
         </thead>
         <tbody>
             {% for c in commandes %}
-            <tr>
+            <tr id="commande-{{ c.numero }}">
                 <td>
                     <strong>{{ c.numero }}</strong><br>
                     <span class="admin-commande-contact">{{ c.date.replace('T', ' ') }}</span>
