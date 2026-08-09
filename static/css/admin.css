@@ -472,6 +472,11 @@
     color: #b9770e;
 }
 
+.statut-en_livraison {
+    background: #dce8fb;
+    color: #1a5fb4;
+}
+
 .statut-livree {
     background: #dcf5e3;
     color: #1e8449;
@@ -928,4 +933,87 @@
     border-radius: 12px;
     text-align: center;
     color: #888;
+}
+
+.livreur-section {
+    max-width: 480px;
+    margin-bottom: 2rem;
+}
+
+.livreur-section h2 {
+    font-size: 1.1rem;
+    color: var(--violet-800);
+    margin-bottom: 0.8rem;
+}
+
+.livreur-carte-active {
+    border: 2px solid var(--violet-300, #c9b6e8);
+}
+
+.livreur-actions {
+    display: flex;
+    gap: 0.6rem;
+}
+
+.livreur-bouton-prendre {
+    flex: 1;
+    background: var(--violet-700);
+    color: white;
+    border: none;
+    padding: 0.7rem 1.1rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    width: 100%;
+}
+
+.livreur-bouton-prendre:hover {
+    background: var(--violet-800);
+}
+
+.livreur-bouton-annuler {
+    background: #fbdada;
+    color: #c0392b;
+    border: none;
+    padding: 0.7rem 1.1rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.livreur-bouton-annuler:hover {
+    background: #f5c2c2;
+}
+
+.livreur-carte-actions-bas {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.livreur-carte-actions-bas .livreur-bouton-annuler {
+    width: 100%;
+}
+
+/* Entête autonome de l'espace livreur */
+.livreur-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.8rem 1.5rem;
+}
+
+.livreur-deconnexion {
+    color: white;
+    font-size: 0.85rem;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+}
+
+.livreur-deconnexion:hover {
+    background: rgba(255, 255, 255, 0.28);
 }

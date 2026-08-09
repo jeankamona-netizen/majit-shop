@@ -31,5 +31,5 @@
         slides[index].classList.remove("actif");
         index = (index + 1) % slides.length;
         slides[index].classList.add("actif");
-    }, 5000);
+    }, 15000);
 })();

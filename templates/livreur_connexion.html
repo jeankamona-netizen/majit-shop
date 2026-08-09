@@ -1,0 +1,19 @@
+{% extends "livreur_base.html" %}
+
+{% block titre %}Connexion livreur — Majt Shop{% endblock %}
+
+{% block contenu %}
+<div class="admin-connexion-carte">
+    <h1>Connexion livreur</h1>
+    {% if erreur %}<p class="admin-erreur">{{ erreur }}</p>{% endif %}
+    <form method="post">
+        <label for="utilisateur">Utilisateur</label>
+        <input type="text" id="utilisateur" name="utilisateur" required autofocus>
+
+        <label for="mot_de_passe">Mot de passe</label>
+        <input type="password" id="mot_de_passe" name="mot_de_passe" required>
+
+        <button type="submit">Se connecter</button>
+    </form>
+</div>
+{% endblock %}

@@ -129,18 +129,15 @@ a {
     height: 34px;
     border-radius: 50%;
     cursor: pointer;
-    font-size: 0;
     flex-shrink: 0;
-    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.barre-recherche button::after {
-    content: "🔍";
-    font-size: 0.85rem;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+.barre-recherche button svg {
+    width: 16px;
+    height: 16px;
 }
 
 .barre-recherche button:hover {
@@ -157,8 +154,12 @@ a {
     border-radius: 50%;
     background: var(--violet-100);
     color: var(--violet-700);
-    font-size: 1.15rem;
     flex-shrink: 0;
+}
+
+.panier svg {
+    width: 21px;
+    height: 21px;
 }
 
 .panier:hover {
@@ -488,14 +489,6 @@ a {
     font-size: 0.8rem;
     padding: 1rem;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.lien-admin {
-    color: #b79ee0;
-}
-
-.lien-admin:hover {
-    color: var(--orange-400);
 }
 
 /* Page détail produit */

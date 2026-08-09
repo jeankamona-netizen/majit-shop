@@ -30,10 +30,15 @@
 
                 <form class="barre-recherche" action="{{ url_for('recherche') }}" method="get">
                     <input type="text" name="q" placeholder="Que recherchez-vous ?" value="{{ request.args.get('q', '') }}">
-                    <button type="submit">Rechercher</button>
+                    <button type="submit" aria-label="Rechercher">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    </button>
                 </form>
 
-                <a href="{{ url_for('panier') }}" class="panier">🛒{% if nombre_panier %}<span class="panier-badge">{{ nombre_panier }}</span>{% endif %}</a>
+                <a href="{{ url_for('panier') }}" class="panier" aria-label="Panier">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                    {% if nombre_panier %}<span class="panier-badge">{{ nombre_panier }}</span>{% endif %}
+                </a>
             </div>
         </header>
     </div>
@@ -73,8 +78,6 @@
         </div>
         <div class="pied-copyright">
             © 2026 Majt Shop. Tous droits réservés.
-            ·
-            <a href="{{ url_for('admin_tableau_de_bord') if admin_connecte else url_for('admin_connexion') }}" class="lien-admin">Espace administrateur</a>
         </div>
     </footer>
 

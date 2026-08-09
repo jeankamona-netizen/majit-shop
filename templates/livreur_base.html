@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block titre %}Espace livreur — Majt Shop{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body class="admin-body">
+    <header class="admin-entete">
+        <div class="livreur-topbar">
+            <div class="admin-logo">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Majt Shop">
+                <span>Espace livreur</span>
+            </div>
+            {% if admin_connecte %}
+            <a href="{{ url_for('admin_tableau_de_bord') }}" class="livreur-deconnexion">← Administration</a>
+            {% elif livreur_connecte %}
+            <a href="{{ url_for('livreur_deconnexion') }}" class="livreur-deconnexion">Déconnexion</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <main class="admin-contenu">
+        {% block contenu %}{% endblock %}
+    </main>
+</body>
+</html>

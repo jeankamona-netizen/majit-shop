@@ -53,6 +53,11 @@ MOTS_VIDES = {"le", "la", "les", "l", "un", "une", "des", "de", "du", "d", "et",
 ADMIN_UTILISATEUR = os.environ.get("ADMIN_UTILISATEUR", "admin")
 ADMIN_MOT_DE_PASSE_HASH = generate_password_hash(os.environ.get("ADMIN_MOT_DE_PASSE", "MajtAdmin2026!"))
 
+# Identifiants livreur : compte distinct de l'administrateur, configurable via
+# variables d'environnement (LIVREUR_UTILISATEUR, LIVREUR_MOT_DE_PASSE).
+LIVREUR_UTILISATEUR = os.environ.get("LIVREUR_UTILISATEUR", "livreur")
+LIVREUR_MOT_DE_PASSE_HASH = generate_password_hash(os.environ.get("LIVREUR_MOT_DE_PASSE", "MajtLivreur2026!"))
+
 
 def charger_produits():
     with open(DATA_FILE, encoding="utf-8") as f:
@@ -242,6 +247,46 @@ def admin_requis(f):
     return wrapper
 
 
+def livreur_requis(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if not (session.get("admin_connecte") or session.get("livreur_connecte")):
+            return redirect(url_for("livreur_connexion", suivant=request.path))
+        return f(*args, **kwargs)
+    return wrapper
+
+
+def marquer_commande_livree(commande, montant_form):
+    if commande["statut"] == "annulee":
+        return False
+    deja_solde = commande["statut"] == "livree" and (commande.get("montant_verse") or 0) >= commande["total"]
+    if deja_solde:
+        return False
+    try:
+        montant = float(montant_form or commande["total"])
+    except ValueError:
+        montant = commande["total"]
+    commande["statut"] = "livree"
+    commande["montant_verse"] = montant
+    if not commande.get("date_livraison"):
+        commande["date_livraison"] = datetime.now().isoformat(timespec="seconds")
+    return True
+
+
+def annuler_commande(commande):
+    if commande["statut"] not in ("en_attente", "en_livraison"):
+        return False
+    produits = charger_produits()
+    for ligne in commande["lignes"]:
+        p = next((x for x in produits if x["id"] == ligne.get("produit_id")), None)
+        if p:
+            p["stock"] = p.get("stock", 0) + ligne["quantite"]
+    sauvegarder_produits(produits)
+    commande["statut"] = "annulee"
+    commande["montant_verse"] = None
+    return True
+
+
 @app.template_filter("cdf")
 def formater_cdf(valeur):
     return f"{round(valeur):,}".replace(",", " ") + " CDF"
@@ -263,6 +308,7 @@ def injecter_globals():
     return {
         "nombre_panier": sum(panier.values()),
         "admin_connecte": admin_connecte,
+        "livreur_connecte": session.get("livreur_connecte", False),
         "nouvelles_commandes": nouvelles_commandes,
     }
 
@@ -271,7 +317,7 @@ def injecter_globals():
 def compter_visite():
     if request.method != "GET":
         return
-    if not request.endpoint or request.endpoint == "static" or request.endpoint.startswith("admin"):
+    if not request.endpoint or request.endpoint == "static" or request.endpoint.startswith("admin") or request.endpoint.startswith("livreur"):
         return
     aujourd_hui = date.today().isoformat()
     if session.get("visite_comptee_le") != aujourd_hui:
@@ -661,7 +707,7 @@ def admin_commandes():
                 ligne["prix_unitaire"] = round(ligne["sous_total"] / ligne["quantite"])
 
     statut_filtre = request.args.get("statut", "")
-    if statut_filtre in ("en_attente", "livree", "annulee"):
+    if statut_filtre in ("en_attente", "en_livraison", "livree", "annulee"):
         commandes = [c for c in commandes if c["statut"] == statut_filtre]
     commandes = sorted(commandes, key=lambda c: c["date"], reverse=True)
     return render_template(
@@ -672,16 +718,74 @@ def admin_commandes():
     )
 
 
+@app.route("/livreur/connexion", methods=["GET", "POST"])
+def livreur_connexion():
+    erreur = None
+    if request.method == "POST":
+        utilisateur = request.form.get("utilisateur", "")
+        mot_de_passe = request.form.get("mot_de_passe", "")
+        if utilisateur == LIVREUR_UTILISATEUR and check_password_hash(LIVREUR_MOT_DE_PASSE_HASH, mot_de_passe):
+            session["livreur_connecte"] = True
+            suivant = request.args.get("suivant") or url_for("livreur")
+            return redirect(suivant)
+        erreur = "Identifiant ou mot de passe incorrect."
+    return render_template("livreur_connexion.html", erreur=erreur)
+
+
+@app.route("/livreur/deconnexion")
+def livreur_deconnexion():
+    session.pop("livreur_connecte", None)
+    return redirect(url_for("livreur_connexion"))
+
+
 @app.route("/livreur")
-@admin_requis
+@livreur_requis
 def livreur():
-    commandes = [c for c in charger_commandes() if c["statut"] == "en_attente"]
+    commandes = charger_commandes()
     for c in commandes:
         for ligne in c["lignes"]:
             if ligne.get("prix_unitaire") is None and ligne.get("quantite"):
                 ligne["prix_unitaire"] = round(ligne["sous_total"] / ligne["quantite"])
-    commandes.sort(key=lambda c: c["date"])
-    return render_template("livreur.html", categories=CATEGORIES, commandes=commandes)
+    disponibles = sorted((c for c in commandes if c["statut"] == "en_attente"), key=lambda c: c["date"])
+    en_cours = sorted((c for c in commandes if c["statut"] == "en_livraison"), key=lambda c: c["date"])
+    return render_template("livreur.html", categories=CATEGORIES, disponibles=disponibles, en_cours=en_cours)
+
+
+@app.route("/livreur/commandes/<numero>/prendre", methods=["POST"])
+@livreur_requis
+def livreur_prendre_commande(numero):
+    commandes = charger_commandes()
+    commande = next((c for c in commandes if c["numero"] == numero), None)
+    if not commande:
+        abort(404)
+    if commande["statut"] == "en_attente":
+        commande["statut"] = "en_livraison"
+        sauvegarder_commandes(commandes)
+    return redirect(url_for("livreur"))
+
+
+@app.route("/livreur/commandes/<numero>/livrer", methods=["POST"])
+@livreur_requis
+def livreur_livrer_commande(numero):
+    commandes = charger_commandes()
+    commande = next((c for c in commandes if c["numero"] == numero), None)
+    if not commande:
+        abort(404)
+    if marquer_commande_livree(commande, request.form.get("montant_verse")):
+        sauvegarder_commandes(commandes)
+    return redirect(url_for("livreur"))
+
+
+@app.route("/livreur/commandes/<numero>/annuler", methods=["POST"])
+@livreur_requis
+def livreur_annuler_commande(numero):
+    commandes = charger_commandes()
+    commande = next((c for c in commandes if c["numero"] == numero), None)
+    if not commande:
+        abort(404)
+    if annuler_commande(commande):
+        sauvegarder_commandes(commandes)
+    return redirect(url_for("livreur"))
 
 
 @app.route("/admin/revenus")
@@ -769,21 +873,8 @@ def admin_livrer_commande(numero):
     commande = next((c for c in commandes if c["numero"] == numero), None)
     if not commande:
         abort(404)
-    if commande["statut"] == "annulee":
-        return redirect(url_for("admin_commandes"))
-    deja_solde = commande["statut"] == "livree" and (commande.get("montant_verse") or 0) >= commande["total"]
-    if deja_solde:
-        return redirect(url_for("admin_commandes"))
-
-    try:
-        montant = float(request.form.get("montant_verse") or commande["total"])
-    except ValueError:
-        montant = commande["total"]
-    commande["statut"] = "livree"
-    commande["montant_verse"] = montant
-    if not commande.get("date_livraison"):
-        commande["date_livraison"] = datetime.now().isoformat(timespec="seconds")
-    sauvegarder_commandes(commandes)
+    if marquer_commande_livree(commande, request.form.get("montant_verse")):
+        sauvegarder_commandes(commandes)
     return redirect(url_for("admin_commandes"))
 
 
@@ -794,16 +885,8 @@ def admin_annuler_commande(numero):
     commande = next((c for c in commandes if c["numero"] == numero), None)
     if not commande:
         abort(404)
-    if commande["statut"] == "en_attente":
-        produits = charger_produits()
-        for ligne in commande["lignes"]:
-            p = next((x for x in produits if x["id"] == ligne.get("produit_id")), None)
-            if p:
-                p["stock"] = p.get("stock", 0) + ligne["quantite"]
-        sauvegarder_produits(produits)
-        commande["statut"] = "annulee"
-        commande["montant_verse"] = None
-    sauvegarder_commandes(commandes)
+    if annuler_commande(commande):
+        sauvegarder_commandes(commandes)
     return redirect(url_for("admin_commandes"))
 
 

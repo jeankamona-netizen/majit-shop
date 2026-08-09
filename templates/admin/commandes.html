@@ -8,6 +8,7 @@
 <div class="admin-filtres">
     <a href="{{ url_for('admin_commandes') }}" class="admin-filtre {{ 'admin-filtre-actif' if not statut_filtre else '' }}">Toutes</a>
     <a href="{{ url_for('admin_commandes', statut='en_attente') }}" class="admin-filtre {{ 'admin-filtre-actif' if statut_filtre == 'en_attente' else '' }}">En attente</a>
+    <a href="{{ url_for('admin_commandes', statut='en_livraison') }}" class="admin-filtre {{ 'admin-filtre-actif' if statut_filtre == 'en_livraison' else '' }}">En livraison</a>
     <a href="{{ url_for('admin_commandes', statut='livree') }}" class="admin-filtre {{ 'admin-filtre-actif' if statut_filtre == 'livree' else '' }}">Livrées</a>
     <a href="{{ url_for('admin_commandes', statut='annulee') }}" class="admin-filtre {{ 'admin-filtre-actif' if statut_filtre == 'annulee' else '' }}">Annulées</a>
 </div>
@@ -59,10 +60,12 @@
                         <span class="statut-badge statut-livree">Livrée</span>
                     {% elif c.statut == 'annulee' %}
                         <span class="statut-badge statut-annulee">Annulée</span>
+                    {% elif c.statut == 'en_livraison' %}
+                        <span class="statut-badge statut-en_livraison">En livraison</span>
                     {% else %}
                         <span class="statut-badge statut-attente">En attente</span>
                     {% endif %}
-                    {% if c.statut == 'en_attente' %}
+                    {% if c.statut in ('en_attente', 'en_livraison') %}
                     <form method="post" action="{{ url_for('admin_annuler_commande', numero=c.numero) }}" onsubmit="return confirm('Annuler cette commande ? Les articles seront remis en stock.');">
                         <button type="submit" class="admin-lien-annuler">Annuler la commande</button>
                     </form>
