@@ -18,3 +18,18 @@
         }
     }, 5000);
 })();
+
+(function () {
+    var carrousel = document.getElementById("banniere-carrousel");
+    if (!carrousel) return;
+
+    var slides = carrousel.querySelectorAll(".banniere-slide");
+    if (slides.length < 2) return;
+
+    var index = 0;
+    setInterval(function () {
+        slides[index].classList.remove("actif");
+        index = (index + 1) % slides.length;
+        slides[index].classList.add("actif");
+    }, 5000);
+})();
