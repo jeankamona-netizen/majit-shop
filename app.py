@@ -622,12 +622,32 @@ def commander():
     )
 
 
+def etape_suivi(statut):
+    if statut == "livree":
+        return 4
+    if statut == "en_livraison":
+        return 3
+    return 1
+
+
 @app.route("/commande/confirmation")
 def confirmation_commande():
     commande = session.pop("derniere_commande", None)
     if not commande:
         return redirect(url_for("accueil"))
-    return render_template("confirmation.html", commande=commande, categories=CATEGORIES)
+    return render_template(
+        "confirmation.html", commande=commande, categories=CATEGORIES, initial_etape=etape_suivi(commande["statut"])
+    )
+
+
+@app.route("/suivi/<numero>")
+def suivi_commande(numero):
+    commande = next((c for c in charger_commandes() if c["numero"] == numero), None)
+    if not commande:
+        abort(404)
+    return render_template(
+        "suivi.html", commande=commande, categories=CATEGORIES, initial_etape=etape_suivi(commande["statut"])
+    )
 
 
 @app.route("/guide/commande")
@@ -668,6 +688,7 @@ def admin_connexion():
         utilisateur = request.form.get("utilisateur", "")
         mot_de_passe = request.form.get("mot_de_passe", "")
         if utilisateur == ADMIN_UTILISATEUR and check_password_hash(ADMIN_MOT_DE_PASSE_HASH, mot_de_passe):
+            session.pop("livreur_numero", None)
             session["admin_connecte"] = True
             suivant = request.args.get("suivant") or url_for("admin_tableau_de_bord")
             return redirect(suivant)
@@ -778,6 +799,7 @@ def livreur_connexion():
         mot_de_passe = request.form.get("mot_de_passe", "")
         livreur_trouve = next((l for l in charger_livreurs() if l["numero"] == identifiant), None)
         if livreur_trouve and livreur_trouve.get("actif", True) and check_password_hash(livreur_trouve["mot_de_passe_hash"], mot_de_passe):
+            session.pop("admin_connecte", None)
             session["livreur_numero"] = livreur_trouve["numero"]
             suivant = request.args.get("suivant") or url_for("livreur")
             return redirect(suivant)

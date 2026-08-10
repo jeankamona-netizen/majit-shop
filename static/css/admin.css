@@ -135,6 +135,40 @@
     background: var(--violet-800);
 }
 
+.champ-mot-de-passe {
+    position: relative;
+    margin-top: 0.3rem;
+}
+
+.champ-mot-de-passe input {
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 0 !important;
+    padding-right: 2.6rem !important;
+}
+
+.bouton-oeil {
+    position: absolute;
+    top: 50%;
+    right: 0.5rem;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 0.3rem;
+    display: flex;
+}
+
+.bouton-oeil svg {
+    width: 18px;
+    height: 18px;
+}
+
+.bouton-oeil:hover {
+    color: var(--violet-700);
+}
+
 .admin-erreur {
     background: #fde2e2;
     color: #b42318;
@@ -1041,6 +1075,17 @@
 
 .livreur-carte-active {
     border: 2px solid var(--violet-300, #c9b6e8);
+}
+
+.livreur-badge-agent {
+    display: inline-block;
+    background: var(--violet-800);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.6rem;
+    border-radius: 12px;
+    margin-bottom: 0.6rem;
 }
 
 .livreur-actions {

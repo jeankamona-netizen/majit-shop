@@ -37,6 +37,7 @@
                 Montant à percevoir : <strong>{{ c.total|cdf }}</strong>
             </div>
 
+            {% if moi %}
             <div class="livreur-actions">
                 <form method="post" action="{{ url_for('livreur_prendre_commande', numero=c.numero) }}">
                     <button type="submit" class="livreur-bouton-prendre"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> Prendre en charge</button>
@@ -45,6 +46,7 @@
                     <button type="submit" class="livreur-bouton-annuler">Annuler</button>
                 </form>
             </div>
+            {% endif %}
         </div>
         {% else %}
         <p class="livreur-vide">Aucune commande disponible pour le moment.</p>
@@ -61,6 +63,10 @@
                 <strong>{{ c.numero }}</strong>
                 <span class="livreur-date">{{ c.date.replace('T', ' ') }}</span>
             </div>
+
+            {% if not moi and c.livreur_nom %}
+            <div class="livreur-badge-agent">Livreur : {{ c.livreur_nom }} ({{ c.livreur_numero }})</div>
+            {% endif %}
 
             <div class="livreur-client">
                 <div class="livreur-nom">{{ c.nom }}</div>
@@ -84,6 +90,7 @@
                 Montant à percevoir : <strong>{{ c.total|cdf }}</strong>
             </div>
 
+            {% if moi %}
             <div class="livreur-carte-actions-bas">
                 <form method="post" action="{{ url_for('livreur_livrer_commande', numero=c.numero) }}" class="livreur-form" onsubmit="return confirm('Confirmer la livraison et le paiement cash de {{ c.numero }} ?');">
                     <input type="number" name="montant_verse" step="1" min="0" value="{{ c.total|round|int }}">
@@ -93,6 +100,7 @@
                     <button type="submit" class="livreur-bouton-annuler">Annuler la commande</button>
                 </form>
             </div>
+            {% endif %}
         </div>
         {% else %}
         <p class="livreur-vide">Aucune livraison en cours. Prenez en charge une commande disponible ci-dessus.</p>
