@@ -600,6 +600,12 @@
     color: #888;
 }
 
+.admin-livree-livreur {
+    font-size: 0.78rem;
+    color: var(--violet-700);
+    font-weight: 600;
+}
+
 /* Cloche de notifications */
 .admin-notif {
     position: relative;

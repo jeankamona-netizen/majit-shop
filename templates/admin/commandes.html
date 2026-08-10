@@ -77,6 +77,9 @@
                         <span class="admin-commande-contact">—</span>
                     {% elif c.statut == 'livree' and solde %}
                         <span class="admin-commande-contact">{{ c.montant_verse|cdf }} versé</span><br>
+                        {% if c.livreur_nom %}
+                        <span class="admin-livree-livreur">Livré par {{ c.livreur_nom }} ({{ c.livreur_numero }})</span><br>
+                        {% endif %}
                         <span class="admin-livree-date">le {{ c.date_livraison.replace('T', ' ') if c.date_livraison else '' }}</span>
                     {% else %}
                     <form method="post" action="{{ url_for('admin_livrer_commande', numero=c.numero) }}" class="admin-form-livraison">
@@ -85,6 +88,9 @@
                     </form>
                     {% if c.statut == 'livree' %}
                         <span class="admin-commande-contact">Paiement partiel — solde restant : {{ (c.total - (c.montant_verse or 0))|cdf }}</span><br>
+                        {% if c.livreur_nom %}
+                        <span class="admin-livree-livreur">Livré par {{ c.livreur_nom }} ({{ c.livreur_numero }})</span><br>
+                        {% endif %}
                         <span class="admin-livree-date">le {{ c.date_livraison.replace('T', ' ') if c.date_livraison else '' }}</span>
                     {% endif %}
                     {% endif %}
