@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block titre %}Questions fréquentes — Majt Shop{% endblock %}
+
+{% block contenu %}
+<section class="section-categorie">
+    <div class="conteneur">
+        <div class="section-entete">
+            <h2>Questions fréquentes</h2>
+        </div>
+
+        <div class="faq-liste">
+            <div class="faq-item">
+                <h3>Majt Shop, comment ça marche ?</h3>
+                <p>Très simplement ! Vous parcourez le catalogue (vêtements, chaussures, sacs, électroniques, automobiles, jouets, bébés...), vous ajoutez ce qui vous plaît au panier, puis vous indiquez où vous livrer. Nous nous occupons du reste, jusqu'à la livraison chez vous.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Pourquoi commander sur Majt Shop plutôt qu'ailleurs ?</h3>
+                <p>Parce que c'est rapide, simple, et sans risque : vous ne payez qu'à la réception de votre commande, en espèces, directement au livreur. Pas de paiement en ligne à l'avance. Et grâce au suivi de commande, vous savez exactement où en est votre colis, en temps réel, sans avoir à nous appeler.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Commander sur Majt Shop, c'est compliqué ?</h3>
+                <p>Pas du tout ! Ajoutez vos articles au panier, cliquez sur « Passer la commande », indiquez votre nom, votre téléphone et votre adresse de livraison, et validez. C'est tout. Le <a href="{{ url_for('guide_commande') }}">guide détaillé</a> vous montre chaque étape en images si besoin.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Puis-je suivre ma commande une fois passée ?</h3>
+                <p>Oui, et c'est l'un des grands avantages de Majt Shop : dès la confirmation, un lien « Suivre ma commande » vous permet de voir en direct son avancement — traitement, préparation, livraison en cours, puis livrée — sans avoir à nous relancer.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Que se passe-t-il après ma commande ?</h3>
+                <p>Nous préparons votre commande, puis un livreur la prend en charge et vous contacte au numéro indiqué pour organiser la remise. Vous réglez en espèces à ce moment-là.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Puis-je modifier ou annuler ma commande ?</h3>
+                <p>Tant qu'elle n'est pas encore en cours de livraison, oui. Contactez-nous rapidement au numéro indiqué sur notre <a href="{{ url_for('contact') }}">page de contact</a> et nous ajusterons votre commande.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Un article ne convient pas, que faire ?</h3>
+                <p>Pas de souci, cela arrive. Consultez notre <a href="{{ url_for('politique_retour') }}">politique de retour</a> : dans la plupart des cas, nous reprenons ou échangeons l'article sans difficulté.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Peut-on commander depuis un smartphone ?</h3>
+                <p>Bien sûr, Majt Shop est pensé pour être aussi agréable à utiliser sur téléphone que sur ordinateur, du choix des articles jusqu'au suivi de la livraison.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

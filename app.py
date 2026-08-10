@@ -838,6 +838,21 @@ def guide_commande():
     return render_template("guide_commande.html", categories=CATEGORIES)
 
 
+@app.route("/aide/faq")
+def faq():
+    return render_template("faq.html", categories=CATEGORIES)
+
+
+@app.route("/aide/retours")
+def politique_retour():
+    return render_template("politique_retour.html", categories=CATEGORIES)
+
+
+@app.route("/aide/contact")
+def contact():
+    return render_template("contact.html", categories=CATEGORIES)
+
+
 @app.route("/avis/<numero>", methods=["POST"])
 def deposer_avis(numero):
     commande = next((c for c in charger_commandes() if c["numero"] == numero), None)
