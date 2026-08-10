@@ -69,6 +69,10 @@
                     <form method="post" action="{{ url_for('admin_annuler_commande', numero=c.numero) }}" onsubmit="return confirm('Annuler cette commande ? Les articles seront remis en stock.');">
                         <button type="submit" class="admin-lien-annuler">Annuler la commande</button>
                     </form>
+                    {% elif c.statut == 'annulee' %}
+                    <form method="post" action="{{ url_for('admin_restaurer_commande', numero=c.numero) }}" onsubmit="return confirm('Restaurer cette commande ? Elle repassera en attente et le stock sera à nouveau déduit.');">
+                        <button type="submit" class="admin-lien-restaurer">Restaurer la commande</button>
+                    </form>
                     {% endif %}
                 </td>
                 <td>

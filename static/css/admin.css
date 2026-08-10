@@ -567,6 +567,22 @@
     color: #922b21;
 }
 
+.admin-lien-restaurer {
+    display: block;
+    background: none;
+    border: none;
+    color: #1e8449;
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+}
+
+.admin-lien-restaurer:hover {
+    color: #166638;
+}
+
 .admin-form-livraison {
     display: flex;
     gap: 0.4rem;

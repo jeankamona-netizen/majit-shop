@@ -437,6 +437,22 @@ def annuler_commande(commande):
     return True
 
 
+def restaurer_commande(commande):
+    if commande["statut"] != "annulee":
+        return False
+    produits = charger_produits()
+    for ligne in commande["lignes"]:
+        p = next((x for x in produits if x["id"] == ligne.get("produit_id")), None)
+        if p:
+            p["stock"] = max(0, p.get("stock", 0) - ligne["quantite"])
+    sauvegarder_produits(produits)
+    commande["statut"] = "en_attente"
+    commande["montant_verse"] = None
+    commande["livreur_numero"] = None
+    commande["livreur_nom"] = None
+    return True
+
+
 @app.template_filter("cdf")
 def formater_cdf(valeur):
     return f"{round(valeur):,}".replace(",", " ") + " CDF"
@@ -1189,6 +1205,18 @@ def admin_annuler_commande(numero):
     if not commande:
         abort(404)
     if annuler_commande(commande):
+        sauvegarder_commandes(commandes)
+    return redirect(url_for("admin_commandes"))
+
+
+@app.route("/admin/commandes/<numero>/restaurer", methods=["POST"])
+@admin_requis
+def admin_restaurer_commande(numero):
+    commandes = charger_commandes()
+    commande = next((c for c in commandes if c["numero"] == numero), None)
+    if not commande:
+        abort(404)
+    if restaurer_commande(commande):
         sauvegarder_commandes(commandes)
     return redirect(url_for("admin_commandes"))
 
