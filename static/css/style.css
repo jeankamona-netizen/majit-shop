@@ -1569,7 +1569,6 @@ a {
     display: flex;
     flex-direction: column;
     gap: 0.9rem;
-    max-width: 760px;
 }
 
 .faq-item {
@@ -1609,7 +1608,6 @@ a {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 1rem;
-    max-width: 760px;
 }
 
 .contact-carte {
