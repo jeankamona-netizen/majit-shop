@@ -5,6 +5,13 @@
 {% block contenu %}
 <h1>Commandes</h1>
 
+{% if livreur_filtre %}
+<p class="admin-filtre-livreur-actif">
+    Livraisons de <strong>{{ livreur_filtre_nom }}</strong> ({{ livreur_filtre }})
+    <a href="{{ url_for('admin_commandes', statut=statut_filtre) }}">✕ Retirer ce filtre</a>
+</p>
+{% endif %}
+
 <div class="admin-filtres">
     <a href="{{ url_for('admin_commandes') }}" class="admin-filtre {{ 'admin-filtre-actif' if not statut_filtre else '' }}">Toutes</a>
     <a href="{{ url_for('admin_commandes', statut='en_attente') }}" class="admin-filtre {{ 'admin-filtre-actif' if statut_filtre == 'en_attente' else '' }}">En attente</a>

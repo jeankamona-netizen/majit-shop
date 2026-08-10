@@ -22,7 +22,7 @@
         <tbody>
             {% for l in livreurs %}
             <tr>
-                <td><strong>{{ l.numero }}</strong>{% if l.nb_en_mission %}<br><span class="statut-badge statut-en_livraison">{{ l.nb_en_mission }} en mission</span>{% endif %}</td>
+                <td><strong>{{ l.numero }}</strong>{% if l.nb_en_mission %}<br><a href="{{ url_for('admin_commandes', statut='en_livraison', livreur=l.numero) }}" class="statut-badge statut-en_livraison">{{ l.nb_en_mission }} en mission</a>{% endif %}</td>
                 <td>{{ l.prenom }} {{ l.nom }}</td>
                 <td>{{ sexes.get(l.sexe, l.sexe) }}</td>
                 <td>{{ l.telephone }}</td>

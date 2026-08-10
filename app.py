@@ -937,12 +937,24 @@ def admin_commandes():
     statut_filtre = request.args.get("statut", "")
     if statut_filtre in ("en_attente", "en_livraison", "livree", "annulee"):
         commandes = [c for c in commandes if c["statut"] == statut_filtre]
+
+    livreur_filtre = request.args.get("livreur", "")
+    if livreur_filtre:
+        commandes = [c for c in commandes if c.get("livreur_numero") == livreur_filtre]
+
     commandes = sorted(commandes, key=lambda c: c["date"], reverse=True)
+    livreur_filtre_nom = None
+    if livreur_filtre:
+        livreur_objet = next((l for l in charger_livreurs() if l["numero"] == livreur_filtre), None)
+        livreur_filtre_nom = f"{livreur_objet['prenom']} {livreur_objet['nom']}" if livreur_objet else livreur_filtre
+
     return render_template(
         "admin/commandes.html",
         commandes=commandes,
         categories=CATEGORIES,
         statut_filtre=statut_filtre,
+        livreur_filtre=livreur_filtre,
+        livreur_filtre_nom=livreur_filtre_nom,
     )
 
 

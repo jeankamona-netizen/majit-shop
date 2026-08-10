@@ -332,6 +332,21 @@
     margin-bottom: 1.2rem;
 }
 
+.admin-filtre-livreur-actif {
+    background: var(--violet-100);
+    color: var(--violet-800);
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+.admin-filtre-livreur-actif a {
+    margin-left: 0.8rem;
+    color: var(--orange-600);
+    font-weight: 600;
+}
+
 .admin-filtre {
     background: white;
     border: 1px solid #ddd;
