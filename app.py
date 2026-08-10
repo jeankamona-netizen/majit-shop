@@ -2,7 +2,7 @@ import os
 import json
 import unicodedata
 import urllib.request
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from functools import wraps
 from pathlib import Path
 
@@ -41,6 +41,13 @@ FILTRES_REVENUS = {
     "semaine": "Semaine",
     "article": "Article",
     "categorie": "Catégorie",
+}
+
+PERIODES_PERFORMANCE = {
+    "jour": "Aujourd'hui",
+    "semaine": "Cette semaine",
+    "mois": "Ce mois-ci",
+    "annee": "Cette année",
 }
 
 MOTS_VIDES = {"le", "la", "les", "l", "un", "une", "des", "de", "du", "d", "et", "ou", "pour", "avec", "en", "au", "aux"}
@@ -883,8 +890,10 @@ def admin_tableau_de_bord():
                 "nom": f"{livreur['prenom']} {livreur['nom']}" if livreur else c.get("livreur_nom", num),
                 "telephone": livreur["telephone"] if livreur else "",
                 "nb_commandes": 0,
+                "adresses": [],
             }
         missions[num]["nb_commandes"] += 1
+        missions[num]["adresses"].append(c["adresse"])
     livreurs_en_mission = sorted(missions.values(), key=lambda m: m["nom"])
 
     return render_template(
@@ -1185,6 +1194,57 @@ def admin_basculer_actif_livreur(numero):
     livreur_cible["actif"] = not livreur_cible.get("actif", True)
     sauvegarder_livreurs(livreurs)
     return redirect(url_for("admin_livreurs"))
+
+
+@app.route("/admin/performance")
+@admin_requis
+def admin_performance():
+    periode = request.args.get("periode", "jour")
+    if periode not in PERIODES_PERFORMANCE:
+        periode = "jour"
+
+    aujourd_hui = date.today()
+    if periode == "jour":
+        debut = aujourd_hui
+    elif periode == "semaine":
+        debut = aujourd_hui - timedelta(days=aujourd_hui.weekday())
+    elif periode == "mois":
+        debut = aujourd_hui.replace(day=1)
+    else:
+        debut = aujourd_hui.replace(month=1, day=1)
+
+    commandes = charger_commandes()
+    livrees_periode = [
+        c for c in commandes
+        if c["statut"] == "livree" and c.get("date_livraison")
+        and date.fromisoformat(c["date_livraison"][:10]) >= debut
+    ]
+    total_periode = len(livrees_periode)
+
+    stats = []
+    for l in charger_livreurs():
+        commandes_livreur = [c for c in livrees_periode if c.get("livreur_numero") == l["numero"]]
+        nb = len(commandes_livreur)
+        montant = sum(c.get("montant_verse") or 0 for c in commandes_livreur)
+        part = (nb / total_periode) if total_periode else 0
+        stats.append({
+            "numero": l["numero"],
+            "nom": f"{l['prenom']} {l['nom']}",
+            "nb_livrees": nb,
+            "part": round(part * 100),
+            "etoiles": round(part * 5),
+            "montant": montant,
+        })
+    stats.sort(key=lambda s: s["nb_livrees"], reverse=True)
+
+    return render_template(
+        "admin/performance.html",
+        categories=CATEGORIES,
+        periodes=PERIODES_PERFORMANCE,
+        periode=periode,
+        stats=stats,
+        total_periode=total_periode,
+    )
 
 
 @app.route("/admin/notifications/marquer-vues", methods=["POST"])

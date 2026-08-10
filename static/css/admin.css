@@ -445,6 +445,20 @@
     color: var(--violet-800);
 }
 
+.admin-adresses-liste {
+    list-style: none;
+    font-size: 0.85rem;
+    color: #555;
+}
+
+.admin-adresses-liste li {
+    padding: 0.15rem 0;
+}
+
+.admin-adresses-liste li:not(:last-child) {
+    border-bottom: 1px dashed #eee;
+}
+
 .admin-lien-secondaire {
     background: var(--violet-700);
 }

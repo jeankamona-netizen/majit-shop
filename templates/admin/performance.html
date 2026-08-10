@@ -1,0 +1,42 @@
+{% extends "admin/admin_base.html" %}
+
+{% block titre %}Performance des livreurs — Administration Majt Shop{% endblock %}
+
+{% block contenu %}
+<h1>Performance des livreurs</h1>
+
+<div class="admin-filtres">
+    {% for cle, label in periodes.items() %}
+    <a href="{{ url_for('admin_performance', periode=cle) }}" class="admin-filtre {{ 'admin-filtre-actif' if periode == cle else '' }}">{{ label }}</a>
+    {% endfor %}
+</div>
+
+<p class="admin-note">{{ total_periode }} commande{{ 's' if total_periode != 1 else '' }} livrée{{ 's' if total_periode != 1 else '' }} sur la période sélectionnée. L'indice de performance reflète la part des livraisons de chaque livreur sur ce total.</p>
+
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Livreur</th>
+                <th>Commandes livrées</th>
+                <th>Part des livraisons</th>
+                <th>Performance</th>
+                <th>Montant encaissé</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in stats %}
+            <tr>
+                <td><strong>{{ s.nom }} ({{ s.numero }})</strong></td>
+                <td>{{ s.nb_livrees }}</td>
+                <td>{{ s.part }}%</td>
+                <td class="admin-etoiles-lecture">{{ '★' * s.etoiles }}{{ '☆' * (5 - s.etoiles) }}</td>
+                <td>{{ s.montant|cdf }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5">Aucun livreur enregistré pour le moment.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

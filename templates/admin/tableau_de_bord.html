@@ -46,18 +46,24 @@
     <table class="admin-table">
         <thead>
             <tr>
-                <th>Numéro</th>
-                <th>Nom</th>
+                <th>Nom (Id)</th>
                 <th>Téléphone</th>
+                <th>Adresses à livrer</th>
                 <th>Commandes en cours</th>
             </tr>
         </thead>
         <tbody>
             {% for m in livreurs_en_mission %}
             <tr>
-                <td><strong>{{ m.numero }}</strong></td>
-                <td>{{ m.nom }}</td>
+                <td><strong>{{ m.nom }} ({{ m.numero }})</strong></td>
                 <td>{{ m.telephone }}</td>
+                <td>
+                    <ul class="admin-adresses-liste">
+                        {% for adresse in m.adresses %}
+                        <li>{{ adresse }}</li>
+                        {% endfor %}
+                    </ul>
+                </td>
                 <td><span class="statut-badge statut-en_livraison">{{ m.nb_commandes }}</span></td>
             </tr>
             {% else %}
