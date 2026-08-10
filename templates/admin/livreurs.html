@@ -4,7 +4,10 @@
 
 {% block contenu %}
 <h1>Gestion des livreurs</h1>
-<a href="{{ url_for('admin_ajouter_livreur') }}" class="admin-lien-ajout">+ Ajouter un livreur</a>
+<div class="admin-liens-rapides">
+    <a href="{{ url_for('admin_ajouter_livreur') }}" class="admin-lien-ajout">+ Ajouter un livreur</a>
+    <a href="{{ url_for('admin_performance') }}" class="admin-lien-ajout admin-lien-secondaire">Performance</a>
+</div>
 
 <div class="admin-table-wrap">
     <table class="admin-table">
