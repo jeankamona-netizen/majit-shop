@@ -1,4 +1,4 @@
-{% extends "livreur_base.html" %}
+{% extends "admin/admin_base.html" if admin_connecte else "livreur_base.html" %}
 
 {% block titre %}Mes livraisons — Majt Shop{% endblock %}
 
