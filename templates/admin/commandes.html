@@ -57,13 +57,13 @@
                 </td>
                 <td>
                     {% if c.statut == 'livree' %}
-                        <span class="statut-badge statut-livree">Livrée</span>
+                        <a href="{{ url_for('admin_commandes', statut='livree') }}" class="statut-badge statut-livree">Livrée</a>
                     {% elif c.statut == 'annulee' %}
-                        <span class="statut-badge statut-annulee">Annulée</span>
+                        <a href="{{ url_for('admin_commandes', statut='annulee') }}" class="statut-badge statut-annulee">Annulée</a>
                     {% elif c.statut == 'en_livraison' %}
-                        <span class="statut-badge statut-en_livraison">En livraison</span>
+                        <a href="{{ url_for('admin_commandes', statut='en_livraison') }}" class="statut-badge statut-en_livraison">En livraison</a>
                     {% else %}
-                        <span class="statut-badge statut-attente">En attente</span>
+                        <a href="{{ url_for('admin_commandes', statut='en_attente') }}" class="statut-badge statut-attente">En attente</a>
                     {% endif %}
                     {% if c.statut in ('en_attente', 'en_livraison') %}
                     <form method="post" action="{{ url_for('admin_annuler_commande', numero=c.numero) }}" onsubmit="return confirm('Annuler cette commande ? Les articles seront remis en stock.');">

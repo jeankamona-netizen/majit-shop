@@ -529,6 +529,13 @@
     border-radius: 14px;
     font-size: 0.78rem;
     font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: filter 0.15s ease;
+}
+
+.statut-badge:hover {
+    filter: brightness(0.92);
 }
 
 .statut-attente {
