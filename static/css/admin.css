@@ -44,38 +44,58 @@
 .admin-nav {
     background: var(--violet-900);
     display: flex;
-    gap: 0.6rem;
+    align-items: flex-end;
+    gap: 0.4rem;
     flex-wrap: wrap;
-    padding: 0 1.5rem 1rem;
+    padding: 0.6rem 1.5rem 0;
 }
 
 .admin-nav a {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    background: #1a1a1a;
-    color: #f2b544;
-    border: 1px solid #3a3a3a;
-    border-radius: 10px;
-    padding: 0.5rem 0.9rem;
-    font-size: 0.78rem;
+    background: var(--violet-800);
+    color: rgba(255, 255, 255, 0.7);
+    border: none;
+    border-radius: 10px 10px 0 0;
+    padding: 0.55rem 1rem;
+    font-size: 0.76rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.3px;
     white-space: nowrap;
-    transition: background 0.15s ease, border-color 0.15s ease;
+    transform: translateY(5px);
+    transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease;
 }
 
 .admin-nav a svg {
     width: 15px;
     height: 15px;
     flex-shrink: 0;
-    color: #f2b544;
+    color: var(--orange-400);
 }
 
 .admin-nav a:hover {
-    background: #2b2b2b;
-    border-color: #f2b544;
+    background: var(--violet-700);
+    color: white;
+    transform: translateY(2px);
+}
+
+.admin-nav a.admin-nav-actif {
+    background: var(--gris-clair);
+    color: var(--violet-800);
+    transform: translateY(0);
+    box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.18);
+    z-index: 2;
+}
+
+.admin-nav a.admin-nav-actif svg {
+    color: var(--orange-500);
+}
+
+.admin-nav a.admin-nav-actif:hover {
+    background: var(--gris-clair);
+    color: var(--violet-800);
 }
 
 .admin-contenu {
@@ -681,9 +701,15 @@
 }
 
 /* Cloche de notifications */
+.admin-entete-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
 .admin-notif {
     position: relative;
-    margin-left: auto;
 }
 
 .admin-cloche {
@@ -692,9 +718,16 @@
     border: none;
     color: white;
     cursor: pointer;
-    padding: 0.2rem 0.4rem;
+    padding: 0.4rem;
     line-height: 1;
     display: flex;
+    text-decoration: none;
+    border-radius: 50%;
+    transition: background 0.15s ease;
+}
+
+.admin-cloche:hover {
+    background: rgba(255, 255, 255, 0.12);
 }
 
 .admin-cloche svg {
@@ -932,6 +965,12 @@
     .admin-nav a {
         justify-content: flex-start;
         padding: 0.7rem 1rem;
+        border-radius: 8px;
+        transform: none;
+    }
+
+    .admin-nav a.admin-nav-actif {
+        box-shadow: none;
     }
 
     .admin-formulaire {
