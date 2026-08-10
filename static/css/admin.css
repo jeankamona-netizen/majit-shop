@@ -388,6 +388,12 @@
     flex-wrap: wrap;
 }
 
+.admin-section-titre {
+    margin: 2rem 0 1rem;
+    font-size: 1.1rem;
+    color: var(--violet-800);
+}
+
 .admin-lien-secondaire {
     background: var(--violet-700);
 }
@@ -985,6 +991,41 @@
     border-radius: 12px;
     text-align: center;
     color: #888;
+}
+
+.livreur-profil-carte {
+    margin-top: 1.5rem;
+}
+
+.livreur-profil-numero {
+    text-align: center;
+    background: var(--violet-100);
+    color: var(--violet-800);
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    padding: 0.6rem;
+    border-radius: 8px;
+    margin-bottom: 1.2rem;
+}
+
+.livreur-profil-liste {
+    margin: 0;
+}
+
+.livreur-profil-liste dt {
+    font-size: 0.78rem;
+    color: #888;
+    margin-top: 0.9rem;
+}
+
+.livreur-profil-liste dd {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--violet-900);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #eee;
 }
 
 .livreur-section {

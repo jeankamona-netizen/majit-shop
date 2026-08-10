@@ -40,4 +40,30 @@
     <a href="{{ url_for('admin_commandes') }}" class="admin-lien-ajout">Voir les commandes</a>
     <a href="{{ url_for('admin_produits') }}" class="admin-lien-ajout admin-lien-secondaire">Gérer les produits</a>
 </div>
+
+<h2 class="admin-section-titre">Livreurs en mission</h2>
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Numéro</th>
+                <th>Nom</th>
+                <th>Téléphone</th>
+                <th>Commandes en cours</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in livreurs_en_mission %}
+            <tr>
+                <td><strong>{{ m.numero }}</strong></td>
+                <td>{{ m.nom }}</td>
+                <td>{{ m.telephone }}</td>
+                <td><span class="statut-badge statut-en_livraison">{{ m.nb_commandes }}</span></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4">Aucun livreur en mission pour le moment.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

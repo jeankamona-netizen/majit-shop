@@ -18,6 +18,7 @@ COMMANDES_FILE = Path(__file__).parent / "data" / "commandes.json"
 VISITES_FILE = Path(__file__).parent / "data" / "visites.json"
 GEOLOC_CACHE_FILE = Path(__file__).parent / "data" / "geoloc_cache.json"
 AVIS_FILE = Path(__file__).parent / "data" / "avis.json"
+LIVREURS_FILE = Path(__file__).parent / "data" / "livreurs.json"
 IMAGES_DIR = Path(__file__).parent / "static" / "images"
 EXTENSIONS_AUTORISEES = {"png", "jpg", "jpeg", "webp", "gif"}
 
@@ -53,10 +54,7 @@ MOTS_VIDES = {"le", "la", "les", "l", "un", "une", "des", "de", "du", "d", "et",
 ADMIN_UTILISATEUR = os.environ.get("ADMIN_UTILISATEUR", "admin")
 ADMIN_MOT_DE_PASSE_HASH = generate_password_hash(os.environ.get("ADMIN_MOT_DE_PASSE", "MajtAdmin2026!"))
 
-# Identifiants livreur : compte distinct de l'administrateur, configurable via
-# variables d'environnement (LIVREUR_UTILISATEUR, LIVREUR_MOT_DE_PASSE).
-LIVREUR_UTILISATEUR = os.environ.get("LIVREUR_UTILISATEUR", "livreur")
-LIVREUR_MOT_DE_PASSE_HASH = generate_password_hash(os.environ.get("LIVREUR_MOT_DE_PASSE", "MajtLivreur2026!"))
+SEXES = {"homme": "Homme", "femme": "Femme"}
 
 
 def charger_produits():
@@ -85,6 +83,24 @@ def generer_numero_commande():
     prefixe = f"MJT{date.today().strftime('%y%m%d')}"
     commandes_du_jour = [c for c in charger_commandes() if c["numero"].startswith(prefixe)]
     return f"{prefixe}{len(commandes_du_jour) + 1}"
+
+
+def charger_livreurs():
+    if LIVREURS_FILE.exists():
+        with open(LIVREURS_FILE, encoding="utf-8") as f:
+            return json.load(f)
+    return []
+
+
+def sauvegarder_livreurs(livreurs):
+    with open(LIVREURS_FILE, "w", encoding="utf-8") as f:
+        json.dump(livreurs, f, ensure_ascii=False, indent=2)
+
+
+def generer_numero_livreur():
+    prefixe = f"LV{date.today().strftime('%y%m')}"
+    livreurs_du_mois = [l for l in charger_livreurs() if l["numero"].startswith(prefixe)]
+    return f"{prefixe}{len(livreurs_du_mois) + 1:02d}"
 
 
 def construire_lignes_ventes():
@@ -250,10 +266,26 @@ def admin_requis(f):
 def livreur_requis(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        if not (session.get("admin_connecte") or session.get("livreur_connecte")):
+        if not (session.get("admin_connecte") or session.get("livreur_numero")):
             return redirect(url_for("livreur_connexion", suivant=request.path))
         return f(*args, **kwargs)
     return wrapper
+
+
+def livreur_seul_requis(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if not session.get("livreur_numero"):
+            return redirect(url_for("livreur_connexion", suivant=request.path))
+        return f(*args, **kwargs)
+    return wrapper
+
+
+def livreur_courant():
+    numero = session.get("livreur_numero")
+    if not numero:
+        return None
+    return next((l for l in charger_livreurs() if l["numero"] == numero), None)
 
 
 def marquer_commande_livree(commande, montant_form):
@@ -308,7 +340,7 @@ def injecter_globals():
     return {
         "nombre_panier": sum(panier.values()),
         "admin_connecte": admin_connecte,
-        "livreur_connecte": session.get("livreur_connecte", False),
+        "livreur_connecte": bool(session.get("livreur_numero")),
         "nouvelles_commandes": nouvelles_commandes,
     }
 
@@ -662,6 +694,23 @@ def admin_tableau_de_bord():
     commandes_livrees = [c for c in commandes if c["statut"] == "livree"]
     chiffre_affaires = sum(c.get("montant_verse") or 0 for c in commandes_livrees)
 
+    livreurs_par_numero = {l["numero"]: l for l in charger_livreurs()}
+    missions = {}
+    for c in commandes_en_livraison:
+        num = c.get("livreur_numero")
+        if not num:
+            continue
+        if num not in missions:
+            livreur = livreurs_par_numero.get(num)
+            missions[num] = {
+                "numero": num,
+                "nom": f"{livreur['prenom']} {livreur['nom']}" if livreur else c.get("livreur_nom", num),
+                "telephone": livreur["telephone"] if livreur else "",
+                "nb_commandes": 0,
+            }
+        missions[num]["nb_commandes"] += 1
+    livreurs_en_mission = sorted(missions.values(), key=lambda m: m["nom"])
+
     return render_template(
         "admin/tableau_de_bord.html",
         categories=CATEGORIES,
@@ -672,6 +721,7 @@ def admin_tableau_de_bord():
         chiffre_affaires=chiffre_affaires,
         nb_produits=len(produits),
         nb_rupture=len([p for p in produits if p.get("stock", 0) <= 0]),
+        livreurs_en_mission=livreurs_en_mission,
     )
 
 
@@ -724,50 +774,65 @@ def admin_commandes():
 def livreur_connexion():
     erreur = None
     if request.method == "POST":
-        utilisateur = request.form.get("utilisateur", "")
+        identifiant = request.form.get("identifiant", "").strip().upper()
         mot_de_passe = request.form.get("mot_de_passe", "")
-        if utilisateur == LIVREUR_UTILISATEUR and check_password_hash(LIVREUR_MOT_DE_PASSE_HASH, mot_de_passe):
-            session["livreur_connecte"] = True
+        livreur_trouve = next((l for l in charger_livreurs() if l["numero"] == identifiant), None)
+        if livreur_trouve and livreur_trouve.get("actif", True) and check_password_hash(livreur_trouve["mot_de_passe_hash"], mot_de_passe):
+            session["livreur_numero"] = livreur_trouve["numero"]
             suivant = request.args.get("suivant") or url_for("livreur")
             return redirect(suivant)
-        erreur = "Identifiant ou mot de passe incorrect."
+        erreur = "Numéro ou mot de passe incorrect, ou compte désactivé."
     return render_template("livreur_connexion.html", erreur=erreur)
 
 
 @app.route("/livreur/deconnexion")
 def livreur_deconnexion():
-    session.pop("livreur_connecte", None)
+    session.pop("livreur_numero", None)
     return redirect(url_for("livreur_connexion"))
 
 
 @app.route("/livreur")
 @livreur_requis
 def livreur():
+    moi = livreur_courant()
     commandes = charger_commandes()
     for c in commandes:
         for ligne in c["lignes"]:
             if ligne.get("prix_unitaire") is None and ligne.get("quantite"):
                 ligne["prix_unitaire"] = round(ligne["sous_total"] / ligne["quantite"])
     disponibles = sorted((c for c in commandes if c["statut"] == "en_attente"), key=lambda c: c["date"])
-    en_cours = sorted((c for c in commandes if c["statut"] == "en_livraison"), key=lambda c: c["date"])
-    return render_template("livreur.html", categories=CATEGORIES, disponibles=disponibles, en_cours=en_cours)
+    if moi:
+        en_cours = [c for c in commandes if c["statut"] == "en_livraison" and c.get("livreur_numero") == moi["numero"]]
+    else:
+        en_cours = [c for c in commandes if c["statut"] == "en_livraison"]
+    en_cours.sort(key=lambda c: c["date"])
+    return render_template("livreur.html", categories=CATEGORIES, disponibles=disponibles, en_cours=en_cours, moi=moi)
+
+
+@app.route("/livreur/profil")
+@livreur_seul_requis
+def livreur_profil():
+    return render_template("livreur_profil.html", moi=livreur_courant(), sexes=SEXES)
 
 
 @app.route("/livreur/commandes/<numero>/prendre", methods=["POST"])
-@livreur_requis
+@livreur_seul_requis
 def livreur_prendre_commande(numero):
+    moi = livreur_courant()
     commandes = charger_commandes()
     commande = next((c for c in commandes if c["numero"] == numero), None)
     if not commande:
         abort(404)
     if commande["statut"] == "en_attente":
         commande["statut"] = "en_livraison"
+        commande["livreur_numero"] = moi["numero"]
+        commande["livreur_nom"] = f"{moi['prenom']} {moi['nom']}"
         sauvegarder_commandes(commandes)
     return redirect(url_for("livreur"))
 
 
 @app.route("/livreur/commandes/<numero>/livrer", methods=["POST"])
-@livreur_requis
+@livreur_seul_requis
 def livreur_livrer_commande(numero):
     commandes = charger_commandes()
     commande = next((c for c in commandes if c["numero"] == numero), None)
@@ -779,7 +844,7 @@ def livreur_livrer_commande(numero):
 
 
 @app.route("/livreur/commandes/<numero>/annuler", methods=["POST"])
-@livreur_requis
+@livreur_seul_requis
 def livreur_annuler_commande(numero):
     commandes = charger_commandes()
     commande = next((c for c in commandes if c["numero"] == numero), None)
@@ -856,6 +921,78 @@ def admin_avis():
         moyenne_articles=moyenne_articles,
         moyenne_procedure=moyenne_procedure,
     )
+
+
+@app.route("/admin/livreurs")
+@admin_requis
+def admin_livreurs():
+    livreurs = sorted(charger_livreurs(), key=lambda l: l["numero"], reverse=True)
+    commandes = charger_commandes()
+    en_mission = {}
+    for c in commandes:
+        if c["statut"] == "en_livraison" and c.get("livreur_numero"):
+            en_mission[c["livreur_numero"]] = en_mission.get(c["livreur_numero"], 0) + 1
+    for l in livreurs:
+        l["nb_en_mission"] = en_mission.get(l["numero"], 0)
+    return render_template("admin/livreurs.html", categories=CATEGORIES, livreurs=livreurs, sexes=SEXES)
+
+
+@app.route("/admin/livreurs/ajouter", methods=["GET", "POST"])
+@admin_requis
+def admin_ajouter_livreur():
+    if request.method == "POST":
+        livreurs = charger_livreurs()
+        nouveau_livreur = {
+            "numero": generer_numero_livreur(),
+            "nom": request.form.get("nom", "").strip(),
+            "prenom": request.form.get("prenom", "").strip(),
+            "sexe": request.form.get("sexe") if request.form.get("sexe") in SEXES else "homme",
+            "adresse": request.form.get("adresse", "").strip(),
+            "telephone": request.form.get("telephone", "").strip(),
+            "mot_de_passe_hash": generate_password_hash(request.form.get("mot_de_passe") or "MajtLivreur2026!"),
+            "actif": True,
+            "date_creation": datetime.now().isoformat(timespec="seconds"),
+        }
+        livreurs.append(nouveau_livreur)
+        sauvegarder_livreurs(livreurs)
+        return redirect(url_for("admin_livreurs"))
+
+    return render_template("admin/formulaire_livreur.html", livreur=None, categories=CATEGORIES, sexes=SEXES)
+
+
+@app.route("/admin/livreurs/<numero>/modifier", methods=["GET", "POST"])
+@admin_requis
+def admin_modifier_livreur(numero):
+    livreurs = charger_livreurs()
+    livreur_cible = next((l for l in livreurs if l["numero"] == numero), None)
+    if not livreur_cible:
+        abort(404)
+
+    if request.method == "POST":
+        livreur_cible["nom"] = request.form.get("nom", "").strip()
+        livreur_cible["prenom"] = request.form.get("prenom", "").strip()
+        livreur_cible["sexe"] = request.form.get("sexe") if request.form.get("sexe") in SEXES else "homme"
+        livreur_cible["adresse"] = request.form.get("adresse", "").strip()
+        livreur_cible["telephone"] = request.form.get("telephone", "").strip()
+        nouveau_mot_de_passe = request.form.get("mot_de_passe")
+        if nouveau_mot_de_passe:
+            livreur_cible["mot_de_passe_hash"] = generate_password_hash(nouveau_mot_de_passe)
+        sauvegarder_livreurs(livreurs)
+        return redirect(url_for("admin_livreurs"))
+
+    return render_template("admin/formulaire_livreur.html", livreur=livreur_cible, categories=CATEGORIES, sexes=SEXES)
+
+
+@app.route("/admin/livreurs/<numero>/basculer-actif", methods=["POST"])
+@admin_requis
+def admin_basculer_actif_livreur(numero):
+    livreurs = charger_livreurs()
+    livreur_cible = next((l for l in livreurs if l["numero"] == numero), None)
+    if not livreur_cible:
+        abort(404)
+    livreur_cible["actif"] = not livreur_cible.get("actif", True)
+    sauvegarder_livreurs(livreurs)
+    return redirect(url_for("admin_livreurs"))
 
 
 @app.route("/admin/notifications/marquer-vues", methods=["POST"])

@@ -21,6 +21,12 @@
             <a href="{{ url_for('livreur_deconnexion') }}" class="livreur-deconnexion">Déconnexion</a>
             {% endif %}
         </div>
+        {% if livreur_connecte %}
+        <nav class="admin-nav">
+            <a href="{{ url_for('livreur') }}">Mes livraisons</a>
+            <a href="{{ url_for('livreur_profil') }}">Mon profil</a>
+        </nav>
+        {% endif %}
     </header>
 
     <main class="admin-contenu">

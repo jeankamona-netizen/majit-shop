@@ -1,0 +1,50 @@
+{% extends "admin/admin_base.html" %}
+
+{% block titre %}Livreurs — Administration Majt Shop{% endblock %}
+
+{% block contenu %}
+<h1>Gestion des livreurs</h1>
+<a href="{{ url_for('admin_ajouter_livreur') }}" class="admin-lien-ajout">+ Ajouter un livreur</a>
+
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Numéro</th>
+                <th>Nom</th>
+                <th>Sexe</th>
+                <th>Téléphone</th>
+                <th>Adresse</th>
+                <th>Statut</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for l in livreurs %}
+            <tr>
+                <td><strong>{{ l.numero }}</strong>{% if l.nb_en_mission %}<br><span class="statut-badge statut-en_livraison">{{ l.nb_en_mission }} en mission</span>{% endif %}</td>
+                <td>{{ l.prenom }} {{ l.nom }}</td>
+                <td>{{ sexes.get(l.sexe, l.sexe) }}</td>
+                <td>{{ l.telephone }}</td>
+                <td>{{ l.adresse }}</td>
+                <td>
+                    {% if l.actif %}
+                        <span class="statut-badge statut-livree">Actif</span>
+                    {% else %}
+                        <span class="statut-badge statut-annulee">Désactivé</span>
+                    {% endif %}
+                </td>
+                <td class="admin-actions">
+                    <a href="{{ url_for('admin_modifier_livreur', numero=l.numero) }}">Modifier</a>
+                    <form method="post" action="{{ url_for('admin_basculer_actif_livreur', numero=l.numero) }}" onsubmit="return confirm('{{ 'Désactiver' if l.actif else 'Réactiver' }} le compte de {{ l.prenom }} {{ l.nom }} ?');">
+                        <button type="submit">{{ 'Désactiver' if l.actif else 'Réactiver' }}</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7">Aucun livreur enregistré pour le moment.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -3,7 +3,7 @@
 {% block titre %}Mes livraisons — Majt Shop{% endblock %}
 
 {% block contenu %}
-<h1>Espace livreur</h1>
+<h1>{{ 'Bonjour ' + moi.prenom if moi else 'Espace livreur' }}</h1>
 
 <section class="livreur-section">
     <h2>Commandes disponibles ({{ disponibles|length }})</h2>

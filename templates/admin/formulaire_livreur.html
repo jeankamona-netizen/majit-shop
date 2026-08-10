@@ -1,0 +1,39 @@
+{% extends "admin/admin_base.html" %}
+
+{% block titre %}{{ 'Modifier' if livreur else 'Ajouter' }} un livreur — Administration{% endblock %}
+
+{% block contenu %}
+<h1>{{ 'Modifier le livreur ' + livreur.numero if livreur else 'Ajouter un livreur' }}</h1>
+
+<form method="post" class="admin-formulaire">
+    <label for="nom">Nom</label>
+    <input type="text" id="nom" name="nom" value="{{ livreur.nom if livreur else '' }}" required>
+
+    <label for="prenom">Prénom</label>
+    <input type="text" id="prenom" name="prenom" value="{{ livreur.prenom if livreur else '' }}" required>
+
+    <label for="sexe">Sexe</label>
+    <select id="sexe" name="sexe" required>
+        {% for cle, label in sexes.items() %}
+            <option value="{{ cle }}" {{ 'selected' if livreur and livreur.sexe == cle else '' }}>{{ label }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="telephone">Numéro de téléphone</label>
+    <input type="tel" id="telephone" name="telephone" value="{{ livreur.telephone if livreur else '' }}" required>
+
+    <label for="adresse">Adresse</label>
+    <textarea id="adresse" name="adresse" rows="2" required>{{ livreur.adresse if livreur else '' }}</textarea>
+
+    <label for="mot_de_passe">{{ 'Nouveau mot de passe (laisser vide pour ne pas changer)' if livreur else 'Mot de passe' }}</label>
+    <input type="password" id="mot_de_passe" name="mot_de_passe" {{ '' if livreur else 'required' }}>
+
+    {% if livreur %}
+    <p class="admin-note">Numéro livreur (identifiant de connexion) : <strong>{{ livreur.numero }}</strong> — non modifiable.</p>
+    {% else %}
+    <p class="admin-note">Le numéro livreur (identifiant de connexion) sera généré automatiquement, au format LV-année-mois-ordre.</p>
+    {% endif %}
+
+    <button type="submit">{{ 'Enregistrer' if livreur else 'Ajouter' }}</button>
+</form>
+{% endblock %}

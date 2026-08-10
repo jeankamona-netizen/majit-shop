@@ -1,0 +1,30 @@
+{% extends "livreur_base.html" %}
+
+{% block titre %}Mon profil — Majt Shop{% endblock %}
+
+{% block contenu %}
+<h1>Mon profil</h1>
+
+<div class="admin-connexion-carte livreur-profil-carte">
+    <p class="livreur-profil-numero">{{ moi.numero }}</p>
+
+    <dl class="livreur-profil-liste">
+        <dt>Nom</dt>
+        <dd>{{ moi.nom }}</dd>
+
+        <dt>Prénom</dt>
+        <dd>{{ moi.prenom }}</dd>
+
+        <dt>Sexe</dt>
+        <dd>{{ sexes.get(moi.sexe, moi.sexe) }}</dd>
+
+        <dt>Téléphone</dt>
+        <dd>{{ moi.telephone }}</dd>
+
+        <dt>Adresse</dt>
+        <dd>{{ moi.adresse }}</dd>
+    </dl>
+
+    <p class="commande-note">Ces informations sont gérées par l'administrateur. Contactez-le pour toute modification.</p>
+</div>
+{% endblock %}
