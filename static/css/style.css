@@ -881,6 +881,47 @@ a {
     font-weight: 600;
 }
 
+.mes-commandes-section {
+    margin-top: 2rem;
+}
+
+.mes-commandes-section h3 {
+    color: var(--violet-800);
+    font-size: 1.05rem;
+    margin-bottom: 0.8rem;
+}
+
+.mes-commandes-liste {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.mes-commandes-carte {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    border-radius: 8px;
+    padding: 0.9rem 1.2rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    color: var(--gris-texte);
+}
+
+.mes-commandes-carte:hover {
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+}
+
+.mes-commandes-carte strong {
+    color: var(--violet-800);
+    margin-right: 0.8rem;
+}
+
+.mes-commandes-date {
+    color: #888;
+    font-size: 0.82rem;
+}
+
 .panier-commander {
     text-align: right;
     margin-top: 1rem;

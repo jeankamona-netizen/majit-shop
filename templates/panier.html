@@ -61,6 +61,27 @@
         {% else %}
         <p class="panier-vide">Votre panier est vide. <a href="{{ url_for('accueil') }}">Continuer vos achats</a></p>
         {% endif %}
+
+        {% if commandes_en_cours %}
+        <div class="mes-commandes-section">
+            <h3>Mes commandes en cours</h3>
+            <div class="mes-commandes-liste">
+                {% for c in commandes_en_cours %}
+                <a href="{{ url_for('suivi_commande', numero=c.numero) }}" class="mes-commandes-carte">
+                    <div>
+                        <strong>{{ c.numero }}</strong>
+                        <span class="mes-commandes-date">{{ c.date.replace('T', ' ') }}</span>
+                    </div>
+                    {% if c.statut == 'en_livraison' %}
+                        <span class="statut-badge statut-en_livraison">En livraison</span>
+                    {% else %}
+                        <span class="statut-badge statut-attente">En attente</span>
+                    {% endif %}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
     </div>
 </section>
 {% endblock %}

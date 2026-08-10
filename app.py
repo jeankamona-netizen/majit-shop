@@ -663,7 +663,18 @@ def produit(produit_id):
 @app.route("/panier")
 def panier():
     lignes, total = obtenir_lignes_panier()
-    return render_template("panier.html", lignes=lignes, total=total, categories=CATEGORIES)
+    numeros_suivis = session.get("mes_commandes", [])
+    commandes_en_cours = []
+    if numeros_suivis:
+        toutes_commandes = {c["numero"]: c for c in charger_commandes()}
+        for numero in numeros_suivis:
+            commande = toutes_commandes.get(numero)
+            if commande and commande["statut"] in ("en_attente", "en_livraison"):
+                commandes_en_cours.append(commande)
+        commandes_en_cours.sort(key=lambda c: c["date"], reverse=True)
+    return render_template(
+        "panier.html", lignes=lignes, total=total, categories=CATEGORIES, commandes_en_cours=commandes_en_cours
+    )
 
 
 @app.route("/panier/ajouter/<int:produit_id>", methods=["POST"])
@@ -779,6 +790,10 @@ def commander():
             sauvegarder_produits(produits)
 
             session["derniere_commande"] = commande
+            mes_commandes = session.get("mes_commandes", [])
+            if numero not in mes_commandes:
+                mes_commandes.append(numero)
+            session["mes_commandes"] = mes_commandes
             session["panier"] = {}
             return redirect(url_for("confirmation_commande"))
 
