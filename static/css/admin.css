@@ -147,10 +147,11 @@
     padding-right: 2.6rem !important;
 }
 
-.bouton-oeil {
+.champ-mot-de-passe button.bouton-oeil {
     position: absolute;
     top: 50%;
-    right: 0.5rem;
+    right: 0.4rem;
+    margin-top: 0;
     transform: translateY(-50%);
     background: none;
     border: none;
@@ -165,7 +166,8 @@
     height: 18px;
 }
 
-.bouton-oeil:hover {
+.champ-mot-de-passe button.bouton-oeil:hover {
+    background: none;
     color: var(--violet-700);
 }
 

@@ -150,7 +150,7 @@ def charger_livreurs():
     try:
         with connexion.cursor() as cur:
             cur.execute("SELECT * FROM livreurs ORDER BY numero")
-            livreurs = cur.fetchall()
+            livreurs = list(cur.fetchall())
             for l in livreurs:
                 l["actif"] = bool(l["actif"])
             return livreurs
@@ -214,7 +214,7 @@ def charger_visites():
     try:
         with connexion.cursor() as cur:
             cur.execute("SELECT date, heure, ip FROM visites ORDER BY id")
-            return cur.fetchall()
+            return list(cur.fetchall())
     finally:
         connexion.close()
 
@@ -236,7 +236,7 @@ def charger_avis():
     try:
         with connexion.cursor() as cur:
             cur.execute("SELECT numero, date, note_articles, note_procedure, commentaire FROM avis ORDER BY id")
-            return cur.fetchall()
+            return list(cur.fetchall())
     finally:
         connexion.close()
 
