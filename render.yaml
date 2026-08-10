@@ -14,3 +14,13 @@ services:
         sync: false
       - key: FLASK_DEBUG
         value: "0"
+      - key: MYSQL_HOTE
+        sync: false
+      - key: MYSQL_PORT
+        sync: false
+      - key: MYSQL_UTILISATEUR
+        sync: false
+      - key: MYSQL_MOT_DE_PASSE
+        sync: false
+      - key: MYSQL_BASE
+        sync: false

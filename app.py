@@ -9,16 +9,12 @@ from pathlib import Path
 from flask import Flask, render_template, abort, request, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from db import obtenir_connexion
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-majt-shop-secret-key")
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5 Mo max par photo
 
-DATA_FILE = Path(__file__).parent / "data" / "produits.json"
-COMMANDES_FILE = Path(__file__).parent / "data" / "commandes.json"
-VISITES_FILE = Path(__file__).parent / "data" / "visites.json"
-GEOLOC_CACHE_FILE = Path(__file__).parent / "data" / "geoloc_cache.json"
-AVIS_FILE = Path(__file__).parent / "data" / "avis.json"
-LIVREURS_FILE = Path(__file__).parent / "data" / "livreurs.json"
 IMAGES_DIR = Path(__file__).parent / "static" / "images"
 EXTENSIONS_AUTORISEES = {"png", "jpg", "jpeg", "webp", "gif"}
 
@@ -57,26 +53,90 @@ ADMIN_MOT_DE_PASSE_HASH = generate_password_hash(os.environ.get("ADMIN_MOT_DE_PA
 SEXES = {"homme": "Homme", "femme": "Femme"}
 
 
+def _produit_depuis_ligne(ligne):
+    ligne["prix"] = float(ligne["prix"])
+    ligne["images"] = json.loads(ligne["images"]) if ligne["images"] else []
+    ligne["tailles"] = json.loads(ligne["tailles"]) if ligne["tailles"] else []
+    ligne["couleurs"] = json.loads(ligne["couleurs"]) if ligne["couleurs"] else []
+    return ligne
+
+
 def charger_produits():
-    with open(DATA_FILE, encoding="utf-8") as f:
-        return json.load(f)
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SELECT * FROM produits ORDER BY id")
+            return [_produit_depuis_ligne(l) for l in cur.fetchall()]
+    finally:
+        connexion.close()
 
 
 def sauvegarder_produits(produits):
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(produits, f, ensure_ascii=False, indent=2)
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("DELETE FROM produits")
+            for p in produits:
+                cur.execute(
+                    """
+                    INSERT INTO produits (id, nom, categorie, prix, reduction, image, images, description,
+                        tailles, couleurs, stock, public)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (
+                        p["id"], p["nom"], p["categorie"], p.get("prix", 0), p.get("reduction", 0),
+                        p.get("image", "placeholder.jpg"), json.dumps(p.get("images", []), ensure_ascii=False),
+                        p.get("description", ""), json.dumps(p.get("tailles", []), ensure_ascii=False),
+                        json.dumps(p.get("couleurs", []), ensure_ascii=False), p.get("stock", 0),
+                        p.get("public", "unisexe"),
+                    ),
+                )
+    finally:
+        connexion.close()
+
+
+def _commande_depuis_ligne(ligne):
+    ligne["latitude"] = float(ligne["latitude"]) if ligne["latitude"] is not None else None
+    ligne["longitude"] = float(ligne["longitude"]) if ligne["longitude"] is not None else None
+    ligne["total"] = float(ligne["total"])
+    ligne["montant_verse"] = float(ligne["montant_verse"]) if ligne["montant_verse"] is not None else None
+    ligne["vue"] = bool(ligne["vue"])
+    ligne["lignes"] = json.loads(ligne["lignes"]) if ligne["lignes"] else []
+    return ligne
 
 
 def charger_commandes():
-    if COMMANDES_FILE.exists():
-        with open(COMMANDES_FILE, encoding="utf-8") as f:
-            return json.load(f)
-    return []
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SELECT * FROM commandes ORDER BY date")
+            return [_commande_depuis_ligne(l) for l in cur.fetchall()]
+    finally:
+        connexion.close()
 
 
 def sauvegarder_commandes(commandes):
-    with open(COMMANDES_FILE, "w", encoding="utf-8") as f:
-        json.dump(commandes, f, ensure_ascii=False, indent=2)
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("DELETE FROM commandes")
+            for c in commandes:
+                cur.execute(
+                    """
+                    INSERT INTO commandes (numero, date, nom, telephone, adresse, latitude, longitude, lignes,
+                        total, statut, montant_verse, date_livraison, vue, livreur_numero, livreur_nom)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (
+                        c["numero"], c["date"], c["nom"], c["telephone"], c["adresse"],
+                        c.get("latitude"), c.get("longitude"), json.dumps(c.get("lignes", []), ensure_ascii=False),
+                        c.get("total", 0), c.get("statut", "en_attente"), c.get("montant_verse"),
+                        c.get("date_livraison"), int(bool(c.get("vue", True))), c.get("livreur_numero"),
+                        c.get("livreur_nom"),
+                    ),
+                )
+    finally:
+        connexion.close()
 
 
 def generer_numero_commande():
@@ -86,15 +146,38 @@ def generer_numero_commande():
 
 
 def charger_livreurs():
-    if LIVREURS_FILE.exists():
-        with open(LIVREURS_FILE, encoding="utf-8") as f:
-            return json.load(f)
-    return []
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SELECT * FROM livreurs ORDER BY numero")
+            livreurs = cur.fetchall()
+            for l in livreurs:
+                l["actif"] = bool(l["actif"])
+            return livreurs
+    finally:
+        connexion.close()
 
 
 def sauvegarder_livreurs(livreurs):
-    with open(LIVREURS_FILE, "w", encoding="utf-8") as f:
-        json.dump(livreurs, f, ensure_ascii=False, indent=2)
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("DELETE FROM livreurs")
+            for l in livreurs:
+                cur.execute(
+                    """
+                    INSERT INTO livreurs (numero, nom, prenom, sexe, adresse, telephone, mot_de_passe_hash,
+                        actif, date_creation)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (
+                        l["numero"], l["nom"], l["prenom"], l.get("sexe", "homme"), l.get("adresse", ""),
+                        l.get("telephone", ""), l["mot_de_passe_hash"], int(bool(l.get("actif", True))),
+                        l["date_creation"],
+                    ),
+                )
+    finally:
+        connexion.close()
 
 
 def generer_numero_livreur():
@@ -127,29 +210,50 @@ def construire_lignes_ventes():
 
 
 def charger_visites():
-    if VISITES_FILE.exists():
-        with open(VISITES_FILE, encoding="utf-8") as f:
-            donnees = json.load(f)
-            return donnees if isinstance(donnees, list) else []
-    return []
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SELECT date, heure, ip FROM visites ORDER BY id")
+            return cur.fetchall()
+    finally:
+        connexion.close()
 
 
-def sauvegarder_visites(visites):
-    with open(VISITES_FILE, "w", encoding="utf-8") as f:
-        json.dump(visites, f, ensure_ascii=False, indent=2)
+def ajouter_visite(visite):
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute(
+                "INSERT INTO visites (date, heure, ip) VALUES (%s, %s, %s)",
+                (visite["date"], visite["heure"], visite["ip"]),
+            )
+    finally:
+        connexion.close()
 
 
 def charger_avis():
-    if AVIS_FILE.exists():
-        with open(AVIS_FILE, encoding="utf-8") as f:
-            donnees = json.load(f)
-            return donnees if isinstance(donnees, list) else []
-    return []
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SELECT numero, date, note_articles, note_procedure, commentaire FROM avis ORDER BY id")
+            return cur.fetchall()
+    finally:
+        connexion.close()
 
 
-def sauvegarder_avis(avis):
-    with open(AVIS_FILE, "w", encoding="utf-8") as f:
-        json.dump(avis, f, ensure_ascii=False, indent=2)
+def ajouter_avis(avis):
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO avis (numero, date, note_articles, note_procedure, commentaire)
+                VALUES (%s, %s, %s, %s, %s)
+                """,
+                (avis["numero"], avis["date"], avis["note_articles"], avis["note_procedure"], avis["commentaire"]),
+            )
+    finally:
+        connexion.close()
 
 
 def obtenir_ip_client():
@@ -160,15 +264,29 @@ def obtenir_ip_client():
 
 
 def charger_cache_geoloc():
-    if GEOLOC_CACHE_FILE.exists():
-        with open(GEOLOC_CACHE_FILE, encoding="utf-8") as f:
-            return json.load(f)
-    return {}
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SELECT ip, localisation FROM geoloc_cache")
+            return {l["ip"]: l["localisation"] for l in cur.fetchall()}
+    finally:
+        connexion.close()
 
 
 def sauvegarder_cache_geoloc(cache):
-    with open(GEOLOC_CACHE_FILE, "w", encoding="utf-8") as f:
-        json.dump(cache, f, ensure_ascii=False, indent=2)
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            for ip, localisation in cache.items():
+                cur.execute(
+                    """
+                    INSERT INTO geoloc_cache (ip, localisation) VALUES (%s, %s)
+                    ON DUPLICATE KEY UPDATE localisation = VALUES(localisation)
+                    """,
+                    (ip, localisation),
+                )
+    finally:
+        connexion.close()
 
 
 def localiser_ip(ip, cache):
@@ -354,13 +472,11 @@ def compter_visite():
     aujourd_hui = date.today().isoformat()
     if session.get("visite_comptee_le") != aujourd_hui:
         session["visite_comptee_le"] = aujourd_hui
-        visites = charger_visites()
-        visites.append({
+        ajouter_visite({
             "date": aujourd_hui,
             "heure": datetime.now().strftime("%H:%M:%S"),
             "ip": obtenir_ip_client(),
         })
-        sauvegarder_visites(visites)
 
 
 # --- Boutique ---
@@ -667,15 +783,13 @@ def deposer_avis(numero):
     except ValueError:
         abort(400)
 
-    avis = charger_avis()
-    avis.append({
+    ajouter_avis({
         "numero": numero,
         "date": datetime.now().isoformat(timespec="seconds"),
         "note_articles": note_articles,
         "note_procedure": note_procedure,
         "commentaire": request.form.get("commentaire", "").strip(),
     })
-    sauvegarder_avis(avis)
     return ("", 204)
 
 
