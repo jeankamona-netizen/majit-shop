@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS produits (
     id INT PRIMARY KEY,
     nom VARCHAR(255) NOT NULL,
     categorie VARCHAR(50) NOT NULL,
+    sous_categorie VARCHAR(50),
     prix DECIMAL(12,2) NOT NULL DEFAULT 0,
     reduction INT NOT NULL DEFAULT 0,
     image VARCHAR(255) NOT NULL DEFAULT 'placeholder.jpg',

@@ -37,8 +37,10 @@
     font-weight: 700;
 }
 
-.admin-logo img {
+.admin-logo img,
+img.admin-logo {
     height: 40px;
+    display: block;
 }
 
 .admin-nav {
@@ -926,12 +928,9 @@
         display: block;
     }
 
-    .admin-logo img {
+    .admin-logo img,
+    img.admin-logo {
         height: 32px;
-    }
-
-    .admin-logo span {
-        font-size: 0.9rem;
     }
 
     .admin-notif-panneau {
@@ -1334,14 +1333,3 @@
     padding: 0.8rem 1.5rem;
 }
 
-.livreur-deconnexion {
-    color: white;
-    font-size: 0.85rem;
-    background: rgba(255, 255, 255, 0.15);
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-}
-
-.livreur-deconnexion:hover {
-    background: rgba(255, 255, 255, 0.28);
-}

@@ -9,11 +9,20 @@
             <h2>{{ nom_categorie }}</h2>
         </div>
 
+        {% if sous_categories_presentes is defined and sous_categories_presentes|length > 1 %}
+        <div class="filtre-public filtre-sous-categorie">
+            <a href="{{ url_for('categorie', slug=categorie_active, public=public_filtre) }}" class="filtre-public-lien {{ 'filtre-public-actif' if not sous_categorie_filtre else '' }}">Tout</a>
+            {% for sc in sous_categories_presentes %}
+                <a href="{{ url_for('categorie', slug=categorie_active, public=public_filtre, sous_categorie=sc) }}" class="filtre-public-lien {{ 'filtre-public-actif' if sous_categorie_filtre == sc else '' }}">{{ sous_categories_options[sc] }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
         {% if publics is defined and publics|length > 1 %}
         <div class="filtre-public">
-            <a href="{{ url_for('categorie', slug=categorie_active) }}" class="filtre-public-lien {{ 'filtre-public-actif' if not public_filtre else '' }}">Tout</a>
+            <a href="{{ url_for('categorie', slug=categorie_active, sous_categorie=sous_categorie_filtre) }}" class="filtre-public-lien {{ 'filtre-public-actif' if not public_filtre else '' }}">Tout</a>
             {% for pub in publics if pub != 'unisexe' %}
-                <a href="{{ url_for('categorie', slug=categorie_active, public=pub) }}" class="filtre-public-lien {{ 'filtre-public-actif' if public_filtre == pub else '' }}">{{ public_labels[pub] }}</a>
+                <a href="{{ url_for('categorie', slug=categorie_active, public=pub, sous_categorie=sous_categorie_filtre) }}" class="filtre-public-lien {{ 'filtre-public-actif' if public_filtre == pub else '' }}">{{ public_labels[pub] }}</a>
             {% endfor %}
         </div>
         {% endif %}

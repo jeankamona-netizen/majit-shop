@@ -11,20 +11,23 @@
 <body class="admin-body">
     <header class="admin-entete">
         <div class="livreur-topbar">
-            <div class="admin-logo">
-                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Majt Shop">
-                <span>Espace livreur</span>
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Majt Shop" class="admin-logo">
+            <div class="admin-entete-actions">
+                {% if admin_connecte %}
+                <a href="{{ url_for('admin_tableau_de_bord') }}" class="admin-cloche" aria-label="Retour à l'administration">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                </a>
+                {% elif livreur_connecte %}
+                <a href="{{ url_for('livreur_deconnexion') }}" class="admin-cloche" aria-label="Déconnexion">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </a>
+                {% endif %}
             </div>
-            {% if admin_connecte %}
-            <a href="{{ url_for('admin_tableau_de_bord') }}" class="livreur-deconnexion">← Administration</a>
-            {% elif livreur_connecte %}
-            <a href="{{ url_for('livreur_deconnexion') }}" class="livreur-deconnexion">Déconnexion</a>
-            {% endif %}
         </div>
         {% if livreur_connecte %}
         <nav class="admin-nav">
-            <a href="{{ url_for('livreur') }}">Mes livraisons</a>
-            <a href="{{ url_for('livreur_profil') }}">Mon profil</a>
+            <a href="{{ url_for('livreur') }}" class="{{ 'admin-nav-actif' if request.endpoint == 'livreur' else '' }}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>Mes livraisons</a>
+            <a href="{{ url_for('livreur_profil') }}" class="{{ 'admin-nav-actif' if request.endpoint == 'livreur_profil' else '' }}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>Mon profil</a>
         </nav>
         {% endif %}
     </header>

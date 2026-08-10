@@ -16,6 +16,18 @@
         {% endfor %}
     </select>
 
+    <div id="champ-sous-categorie">
+        <label for="sous_categorie">Sous-catégorie</label>
+        <select id="sous_categorie" name="sous_categorie">
+            <option value="">— Aucune —</option>
+            {% for cat_slug, options in sous_categories.items() %}
+                {% for sc_slug, sc_nom in options.items() %}
+                <option value="{{ sc_slug }}" data-categorie="{{ cat_slug }}" {{ 'selected' if produit and produit.sous_categorie == sc_slug else '' }}>{{ sc_nom }}</option>
+                {% endfor %}
+            {% endfor %}
+        </select>
+    </div>
+
     <label for="prix">Prix (CDF)</label>
     <input type="number" id="prix" step="1" min="0" name="prix" value="{{ produit.prix if produit else '' }}" required>
 
@@ -60,4 +72,30 @@
 
     <button type="submit">{{ 'Enregistrer' if produit else 'Ajouter' }}</button>
 </form>
+
+<script>
+(function () {
+    var categorie = document.getElementById("categorie");
+    var champSousCategorie = document.getElementById("champ-sous-categorie");
+    var sousCategorie = document.getElementById("sous_categorie");
+    var options = Array.prototype.slice.call(sousCategorie.querySelectorAll("option[data-categorie]"));
+
+    function actualiser() {
+        var cat = categorie.value;
+        var uneOptionVisible = false;
+        options.forEach(function (option) {
+            var correspond = option.dataset.categorie === cat;
+            option.hidden = !correspond;
+            if (correspond) uneOptionVisible = true;
+        });
+        if (!uneOptionVisible) {
+            sousCategorie.value = "";
+        }
+        champSousCategorie.style.display = uneOptionVisible ? "" : "none";
+    }
+
+    categorie.addEventListener("change", actualiser);
+    actualiser();
+})();
+</script>
 {% endblock %}

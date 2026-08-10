@@ -26,6 +26,18 @@ CATEGORIES = {
     "accessoires": "Accessoires",
     "automobiles": "Automobiles",
     "jouets": "Jouets",
+    "bebes": "Bébés et Enfants",
+}
+
+SOUS_CATEGORIES = {
+    "telephones": {
+        "telephones_tablettes": "Téléphones et tablettes",
+        "ordinateurs": "Ordinateurs",
+        "consoles_gaming": "Consoles et gaming",
+        "manettes": "Manettes",
+        "tv_audio": "TV et audio",
+        "accessoires_electroniques": "Accessoires électroniques",
+    },
 }
 
 PUBLICS = {
@@ -86,12 +98,13 @@ def sauvegarder_produits(produits):
             for p in produits:
                 cur.execute(
                     """
-                    INSERT INTO produits (id, nom, categorie, prix, reduction, image, images, description,
-                        tailles, couleurs, stock, public)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    INSERT INTO produits (id, nom, categorie, sous_categorie, prix, reduction, image, images,
+                        description, tailles, couleurs, stock, public)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """,
                     (
-                        p["id"], p["nom"], p["categorie"], p.get("prix", 0), p.get("reduction", 0),
+                        p["id"], p["nom"], p["categorie"], p.get("sous_categorie") or None,
+                        p.get("prix", 0), p.get("reduction", 0),
                         p.get("image", "placeholder.jpg"), json.dumps(p.get("images", []), ensure_ascii=False),
                         p.get("description", ""), json.dumps(p.get("tailles", []), ensure_ascii=False),
                         json.dumps(p.get("couleurs", []), ensure_ascii=False), p.get("stock", 0),
@@ -541,11 +554,26 @@ def accueil():
 def categorie(slug):
     if slug not in CATEGORIES:
         abort(404)
-    produits = [p for p in charger_produits() if p["categorie"] == slug and p.get("stock", 0) > 0]
-    publics = publics_presents_tries(produits)
+    produits_categorie = [p for p in charger_produits() if p["categorie"] == slug and p.get("stock", 0) > 0]
+    publics = publics_presents_tries(produits_categorie)
+
+    sous_categories_options = SOUS_CATEGORIES.get(slug, {})
+    sous_categories_presentes = [
+        sc for sc in sous_categories_options
+        if any(p.get("sous_categorie") == sc for p in produits_categorie)
+    ]
+
+    produits = produits_categorie
     public_filtre = request.args.get("public", "")
     if public_filtre in PUBLICS:
         produits = [p for p in produits if p.get("public", "unisexe") == public_filtre]
+
+    sous_categorie_filtre = request.args.get("sous_categorie", "")
+    if sous_categorie_filtre in sous_categories_presentes:
+        produits = [p for p in produits if p.get("sous_categorie") == sous_categorie_filtre]
+    else:
+        sous_categorie_filtre = ""
+
     return render_template(
         "categorie.html",
         produits=produits,
@@ -555,6 +583,9 @@ def categorie(slug):
         publics=publics,
         public_filtre=public_filtre,
         public_labels=PUBLICS,
+        sous_categories_options=sous_categories_options,
+        sous_categories_presentes=sous_categories_presentes,
+        sous_categorie_filtre=sous_categorie_filtre,
     )
 
 
@@ -1364,10 +1395,16 @@ def admin_ajouter_produit():
             request.files.getlist("photos_supplementaires"), nouvel_id
         )
 
+        categorie_choisie = request.form.get("categorie")
+        sous_categorie_choisie = request.form.get("sous_categorie") or None
+        if sous_categorie_choisie not in SOUS_CATEGORIES.get(categorie_choisie, {}):
+            sous_categorie_choisie = None
+
         nouveau_produit = {
             "id": nouvel_id,
             "nom": request.form.get("nom", "").strip(),
-            "categorie": request.form.get("categorie"),
+            "categorie": categorie_choisie,
+            "sous_categorie": sous_categorie_choisie,
             "prix": float(request.form.get("prix", 0) or 0),
             "reduction": reduction,
             "public": request.form.get("public") if request.form.get("public") in PUBLICS else "unisexe",
@@ -1382,7 +1419,10 @@ def admin_ajouter_produit():
         sauvegarder_produits(produits)
         return redirect(url_for("admin_produits"))
 
-    return render_template("admin/formulaire_produit.html", produit=None, categories=CATEGORIES, publics_options=PUBLICS)
+    return render_template(
+        "admin/formulaire_produit.html", produit=None, categories=CATEGORIES, publics_options=PUBLICS,
+        sous_categories=SOUS_CATEGORIES,
+    )
 
 
 @app.route("/admin/produits/<int:produit_id>/modifier", methods=["GET", "POST"])
@@ -1396,6 +1436,10 @@ def admin_modifier_produit(produit_id):
     if request.method == "POST":
         produit_cible["nom"] = request.form.get("nom", "").strip()
         produit_cible["categorie"] = request.form.get("categorie")
+        sous_categorie_choisie = request.form.get("sous_categorie") or None
+        if sous_categorie_choisie not in SOUS_CATEGORIES.get(produit_cible["categorie"], {}):
+            sous_categorie_choisie = None
+        produit_cible["sous_categorie"] = sous_categorie_choisie
         produit_cible["prix"] = float(request.form.get("prix", 0) or 0)
         try:
             produit_cible["reduction"] = max(0, min(90, int(request.form.get("reduction", 0) or 0)))
@@ -1426,7 +1470,10 @@ def admin_modifier_produit(produit_id):
         sauvegarder_produits(produits)
         return redirect(url_for("admin_produits"))
 
-    return render_template("admin/formulaire_produit.html", produit=produit_cible, categories=CATEGORIES, publics_options=PUBLICS)
+    return render_template(
+        "admin/formulaire_produit.html", produit=produit_cible, categories=CATEGORIES, publics_options=PUBLICS,
+        sous_categories=SOUS_CATEGORIES,
+    )
 
 
 @app.route("/admin/produits/<int:produit_id>/supprimer", methods=["POST"])
