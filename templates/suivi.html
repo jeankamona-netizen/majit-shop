@@ -25,8 +25,4 @@
         </div>
     </div>
 </section>
-
-{% if commande.statut in ('en_attente', 'en_livraison') %}
-<script src="{{ url_for('static', filename='js/auto-actualisation.js') }}"></script>
-{% endif %}
 {% endblock %}

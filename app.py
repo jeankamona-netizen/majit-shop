@@ -376,7 +376,7 @@ def admin_requis(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         if not session.get("admin_connecte"):
-            return redirect(url_for("admin_connexion", suivant=request.path))
+            return redirect(url_for("connexion", suivant=request.path))
         return f(*args, **kwargs)
     return wrapper
 
@@ -385,7 +385,7 @@ def livreur_requis(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         if not (session.get("admin_connecte") or session.get("livreur_numero")):
-            return redirect(url_for("livreur_connexion", suivant=request.path))
+            return redirect(url_for("connexion", suivant=request.path))
         return f(*args, **kwargs)
     return wrapper
 
@@ -394,7 +394,7 @@ def livreur_seul_requis(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         if not session.get("livreur_numero"):
-            return redirect(url_for("livreur_connexion", suivant=request.path))
+            return redirect(url_for("connexion", suivant=request.path))
         return f(*args, **kwargs)
     return wrapper
 
@@ -766,6 +766,19 @@ def suivi_commande(numero):
     )
 
 
+@app.route("/suivi/<numero>/etat")
+def suivi_commande_etat(numero):
+    commande = next((c for c in charger_commandes() if c["numero"] == numero), None)
+    if not commande:
+        abort(404)
+    return {
+        "statut": commande["statut"],
+        "etape": etape_suivi(commande["statut"]),
+        "livreur_nom": commande.get("livreur_nom"),
+        "date_livraison": commande.get("date_livraison"),
+    }
+
+
 @app.route("/guide/commande")
 def guide_commande():
     return render_template("guide_commande.html", categories=CATEGORIES)
@@ -795,25 +808,37 @@ def deposer_avis(numero):
 
 # --- Administration ---
 
-@app.route("/admin/connexion", methods=["GET", "POST"])
-def admin_connexion():
+@app.route("/connexion", methods=["GET", "POST"])
+def connexion():
     erreur = None
     if request.method == "POST":
-        utilisateur = request.form.get("utilisateur", "")
+        identifiant = request.form.get("identifiant", "").strip()
         mot_de_passe = request.form.get("mot_de_passe", "")
-        if utilisateur == ADMIN_UTILISATEUR and check_password_hash(ADMIN_MOT_DE_PASSE_HASH, mot_de_passe):
+
+        if identifiant == ADMIN_UTILISATEUR and check_password_hash(ADMIN_MOT_DE_PASSE_HASH, mot_de_passe):
             session.pop("livreur_numero", None)
             session["admin_connecte"] = True
-            suivant = request.args.get("suivant") or url_for("admin_tableau_de_bord")
-            return redirect(suivant)
+            return redirect(request.args.get("suivant") or url_for("admin_tableau_de_bord"))
+
+        livreur_trouve = next((l for l in charger_livreurs() if l["numero"] == identifiant.upper()), None)
+        if livreur_trouve and livreur_trouve.get("actif", True) and check_password_hash(livreur_trouve["mot_de_passe_hash"], mot_de_passe):
+            session.pop("admin_connecte", None)
+            session["livreur_numero"] = livreur_trouve["numero"]
+            return redirect(request.args.get("suivant") or url_for("livreur"))
+
         erreur = "Identifiant ou mot de passe incorrect."
-    return render_template("admin/connexion.html", erreur=erreur, categories=CATEGORIES)
+    return render_template("connexion.html", erreur=erreur)
+
+
+@app.route("/admin/connexion")
+def admin_connexion():
+    return redirect(url_for("connexion", suivant=request.args.get("suivant")))
 
 
 @app.route("/admin/deconnexion")
 def admin_deconnexion():
     session.pop("admin_connecte", None)
-    return redirect(url_for("admin_connexion"))
+    return redirect(url_for("connexion"))
 
 
 @app.route("/admin")
@@ -905,26 +930,15 @@ def admin_commandes():
     )
 
 
-@app.route("/livreur/connexion", methods=["GET", "POST"])
+@app.route("/livreur/connexion")
 def livreur_connexion():
-    erreur = None
-    if request.method == "POST":
-        identifiant = request.form.get("identifiant", "").strip().upper()
-        mot_de_passe = request.form.get("mot_de_passe", "")
-        livreur_trouve = next((l for l in charger_livreurs() if l["numero"] == identifiant), None)
-        if livreur_trouve and livreur_trouve.get("actif", True) and check_password_hash(livreur_trouve["mot_de_passe_hash"], mot_de_passe):
-            session.pop("admin_connecte", None)
-            session["livreur_numero"] = livreur_trouve["numero"]
-            suivant = request.args.get("suivant") or url_for("livreur")
-            return redirect(suivant)
-        erreur = "Numéro ou mot de passe incorrect, ou compte désactivé."
-    return render_template("livreur_connexion.html", erreur=erreur)
+    return redirect(url_for("connexion", suivant=request.args.get("suivant")))
 
 
 @app.route("/livreur/deconnexion")
 def livreur_deconnexion():
     session.pop("livreur_numero", None)
-    return redirect(url_for("livreur_connexion"))
+    return redirect(url_for("connexion"))
 
 
 @app.route("/livreur")

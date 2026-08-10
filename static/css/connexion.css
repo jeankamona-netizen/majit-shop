@@ -1,0 +1,214 @@
+.connexion-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.2rem;
+    background: radial-gradient(circle at 15% 15%, var(--violet-600) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, var(--orange-500) 0%, transparent 35%),
+                var(--violet-900);
+    position: relative;
+}
+
+.connexion-retour {
+    position: absolute;
+    top: 1.5rem;
+    left: 1.5rem;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--violet-800);
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.6rem 1.1rem;
+    border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.connexion-retour:hover {
+    background: white;
+}
+
+.connexion-carte {
+    display: flex;
+    width: 100%;
+    max-width: 880px;
+    min-height: 520px;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+.connexion-panneau-marque {
+    flex: 1;
+    position: relative;
+    background: linear-gradient(160deg, var(--violet-900), var(--violet-700));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.connexion-points {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.18) 1.4px, transparent 1.4px);
+    background-size: 22px 22px;
+}
+
+.connexion-points::before,
+.connexion-points::after {
+    content: "";
+    position: absolute;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    filter: blur(30px);
+}
+
+.connexion-points::before {
+    top: 12%;
+    right: 15%;
+    background: var(--orange-400);
+    opacity: 0.5;
+}
+
+.connexion-points::after {
+    bottom: 15%;
+    left: 12%;
+    background: var(--violet-500);
+    opacity: 0.55;
+}
+
+.connexion-marque-contenu {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    color: white;
+    padding: 2rem;
+}
+
+.connexion-logo {
+    width: 92px;
+    height: 92px;
+    object-fit: contain;
+    border-radius: 20px;
+    background: white;
+    padding: 0.6rem;
+    margin-bottom: 1.2rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.connexion-marque-contenu h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.4rem;
+}
+
+.connexion-marque-contenu p {
+    color: rgba(255, 255, 255, 0.75);
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+.connexion-panneau-form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 3rem 2.8rem;
+}
+
+.connexion-panneau-form h1 {
+    color: var(--violet-900);
+    font-size: 1.6rem;
+    margin-bottom: 0.4rem;
+}
+
+.connexion-sous-titre {
+    color: #777;
+    font-size: 0.9rem;
+    margin-bottom: 1.6rem;
+}
+
+.connexion-panneau-form form {
+    display: flex;
+    flex-direction: column;
+}
+
+.connexion-panneau-form label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--violet-900);
+    margin-top: 1rem;
+}
+
+.connexion-panneau-form input {
+    margin-top: 0.4rem;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.95rem;
+}
+
+.connexion-panneau-form input:focus {
+    outline: none;
+    border-color: var(--violet-500);
+}
+
+.connexion-bouton {
+    margin-top: 1.8rem;
+    background: linear-gradient(120deg, var(--violet-700), var(--violet-900));
+    color: white;
+    border: none;
+    padding: 0.85rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.connexion-bouton:hover {
+    background: linear-gradient(120deg, var(--violet-800), var(--violet-900));
+}
+
+@media (max-width: 720px) {
+    .connexion-carte {
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .connexion-panneau-marque {
+        padding: 1.6rem;
+    }
+
+    .connexion-marque-contenu {
+        padding: 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        text-align: left;
+    }
+
+    .connexion-logo {
+        width: 56px;
+        height: 56px;
+        margin-bottom: 0;
+        flex-shrink: 0;
+    }
+
+    .connexion-marque-contenu h2 {
+        font-size: 1.15rem;
+    }
+
+    .connexion-marque-contenu p {
+        font-size: 0.8rem;
+    }
+
+    .connexion-panneau-form {
+        padding: 2rem 1.6rem;
+    }
+
+    .connexion-retour {
+        top: 1rem;
+        left: 1rem;
+    }
+}

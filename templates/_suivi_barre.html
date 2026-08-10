@@ -1,53 +1,50 @@
-{% if commande.statut == 'annulee' %}
-<div class="suivi-annulee">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
-    <p>Cette commande a été annulée.</p>
-</div>
-{% else %}
-<div class="suivi-barre" id="suivi-barre" data-etape="{{ initial_etape }}">
-    <div class="suivi-etape" data-n="1">
-        <span class="suivi-cercle">
-            <svg class="suivi-icone-fait" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            <span class="suivi-icone-attente">1</span>
-        </span>
-        <span class="suivi-label">Traitement de la commande</span>
+<div class="suivi-conteneur" id="suivi-conteneur" data-numero="{{ commande.numero }}" data-statut="{{ commande.statut }}" data-etape="{{ initial_etape }}" data-livreur-nom="{{ commande.livreur_nom or '' }}" data-date-livraison="{{ commande.date_livraison or '' }}">
+    <div class="suivi-barre" id="suivi-barre">
+        <div class="suivi-etape" data-n="1">
+            <span class="suivi-cercle">
+                <svg class="suivi-icone-fait" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span class="suivi-icone-attente">1</span>
+            </span>
+            <span class="suivi-label">Traitement de la commande</span>
+        </div>
+        <div class="suivi-trait"></div>
+        <div class="suivi-etape" data-n="2">
+            <span class="suivi-cercle">
+                <svg class="suivi-icone-fait" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span class="suivi-icone-attente">2</span>
+            </span>
+            <span class="suivi-label">Préparation de votre commande</span>
+        </div>
+        <div class="suivi-trait"></div>
+        <div class="suivi-etape" data-n="3">
+            <span class="suivi-cercle">
+                <svg class="suivi-icone-fait" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                <span class="suivi-icone-attente">3</span>
+            </span>
+            <span class="suivi-label">Livraison en cours</span>
+        </div>
+        <div class="suivi-trait"></div>
+        <div class="suivi-etape" data-n="4">
+            <span class="suivi-cercle">
+                <svg class="suivi-icone-fait" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <span class="suivi-icone-attente">4</span>
+            </span>
+            <span class="suivi-label">Livré</span>
+        </div>
     </div>
-    <div class="suivi-trait"></div>
-    <div class="suivi-etape" data-n="2">
-        <span class="suivi-cercle">
-            <svg class="suivi-icone-fait" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            <span class="suivi-icone-attente">2</span>
-        </span>
-        <span class="suivi-label">Préparation de votre commande</span>
-    </div>
-    <div class="suivi-trait"></div>
-    <div class="suivi-etape" data-n="3">
-        <span class="suivi-cercle">
-            <svg class="suivi-icone-fait" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-            <span class="suivi-icone-attente">3</span>
-        </span>
-        <span class="suivi-label">Livraison en cours</span>
-    </div>
-    <div class="suivi-trait"></div>
-    <div class="suivi-etape" data-n="4">
-        <span class="suivi-cercle">
-            <svg class="suivi-icone-fait" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-            <span class="suivi-icone-attente">4</span>
-        </span>
-        <span class="suivi-label">Livré</span>
-    </div>
-</div>
 
-<div class="suivi-illustration" id="suivi-illustration">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-    <p>Votre commande est en cours de traitement…</p>
-</div>
+    <div class="suivi-illustration" id="suivi-illustration">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+        <p>Votre commande est en cours de traitement…</p>
+    </div>
 
-{% if commande.statut == 'en_livraison' %}
-<p class="suivi-message">🚚 Votre colis est en route{% if commande.livreur_nom %} avec {{ commande.livreur_nom }}{% endif %}.</p>
-{% elif commande.statut == 'livree' %}
-<p class="suivi-message suivi-message-succes">Commande livrée avec succès{% if commande.date_livraison %} le {{ commande.date_livraison.replace('T', ' ') }}{% endif %}.</p>
-{% endif %}
+    <p class="suivi-message" id="suivi-message-livraison" hidden>🚚 Votre colis est en route<span id="suivi-livreur-nom"></span>.</p>
+    <p class="suivi-message suivi-message-succes" id="suivi-message-livree" hidden>Commande livrée avec succès<span id="suivi-date-livraison"></span>.</p>
+
+    <div class="suivi-annulee" id="suivi-annulee" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+        <p>Cette commande a été annulée.</p>
+    </div>
+</div>
 
 <script src="{{ url_for('static', filename='js/suivi.js') }}"></script>
-{% endif %}
