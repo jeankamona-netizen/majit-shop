@@ -991,6 +991,20 @@ def livreur_annuler_commande(numero):
     return redirect(url_for("livreur"))
 
 
+@app.route("/livreur/commandes/<numero>/lignes/<int:index>/modifier", methods=["POST"])
+@livreur_seul_requis
+def livreur_modifier_ligne_commande(numero, index):
+    moi = livreur_courant()
+    commandes = charger_commandes()
+    commande = next((c for c in commandes if c["numero"] == numero), None)
+    if not commande:
+        abort(404)
+    if commande["statut"] == "en_livraison" and commande.get("livreur_numero") == moi["numero"]:
+        if modifier_quantite_ligne(commande, index, request.form.get("quantite")):
+            sauvegarder_commandes(commandes)
+    return redirect(url_for("livreur"))
+
+
 @app.route("/admin/revenus")
 @admin_requis
 def admin_revenus():
@@ -1165,19 +1179,13 @@ def admin_annuler_commande(numero):
     return redirect(url_for("admin_commandes"))
 
 
-@app.route("/admin/commandes/<numero>/lignes/<int:index>/modifier", methods=["POST"])
-@admin_requis
-def admin_modifier_ligne_commande(numero, index):
-    commandes = charger_commandes()
-    commande = next((c for c in commandes if c["numero"] == numero), None)
-    if not commande or index < 0 or index >= len(commande["lignes"]):
-        abort(404)
-    if commande["statut"] != "en_attente":
-        return redirect(url_for("admin_commandes"))
+def modifier_quantite_ligne(commande, index, quantite_form):
+    if index < 0 or index >= len(commande["lignes"]):
+        return False
 
     ligne = commande["lignes"][index]
     try:
-        nouvelle_quantite = max(0, int(request.form.get("quantite", ligne["quantite"])))
+        nouvelle_quantite = max(0, int(quantite_form if quantite_form is not None else ligne["quantite"]))
     except ValueError:
         nouvelle_quantite = ligne["quantite"]
     nouvelle_quantite = min(nouvelle_quantite, ligne["quantite"])
@@ -1199,7 +1207,19 @@ def admin_modifier_ligne_commande(numero, index):
         ligne["sous_total"] = prix_unitaire * nouvelle_quantite
 
     commande["total"] = sum(l["sous_total"] for l in commande["lignes"])
-    sauvegarder_commandes(commandes)
+    return True
+
+
+@app.route("/admin/commandes/<numero>/lignes/<int:index>/modifier", methods=["POST"])
+@admin_requis
+def admin_modifier_ligne_commande(numero, index):
+    commandes = charger_commandes()
+    commande = next((c for c in commandes if c["numero"] == numero), None)
+    if not commande:
+        abort(404)
+    if commande["statut"] in ("en_attente", "en_livraison"):
+        if modifier_quantite_ligne(commande, index, request.form.get("quantite")):
+            sauvegarder_commandes(commandes)
     return redirect(url_for("admin_commandes"))
 
 

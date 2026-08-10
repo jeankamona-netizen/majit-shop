@@ -873,6 +873,20 @@
     .admin-filtre-revenus select {
         min-width: 0;
     }
+
+    .livreur-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .livreur-form input {
+        width: 100%;
+    }
+
+    .livreur-form button {
+        width: 100%;
+        text-align: center;
+    }
 }
 
 .admin-etoiles-lecture {
@@ -988,6 +1002,52 @@
     padding: 0.15rem 0;
 }
 
+.livreur-articles-modifiables li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0;
+    border-bottom: 1px dashed #e2ddea;
+}
+
+.livreur-articles-modifiables li:last-child {
+    border-bottom: none;
+}
+
+.livreur-ligne-qte {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.livreur-ligne-qte input {
+    width: 46px;
+    padding: 0.25rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 0.78rem;
+    text-align: center;
+}
+
+.livreur-ligne-qte button {
+    background: var(--violet-100);
+    color: var(--violet-800);
+    border: none;
+    border-radius: 5px;
+    width: 26px;
+    height: 26px;
+    cursor: pointer;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.livreur-ligne-qte button:hover {
+    background: var(--violet-500);
+    color: white;
+}
+
 .livreur-montant {
     font-size: 1rem;
     margin-bottom: 0.9rem;
@@ -1005,6 +1065,7 @@
 
 .livreur-form input {
     flex: 1;
+    min-width: 0;
     padding: 0.7rem;
     border: 1px solid #ccc;
     border-radius: 8px;

@@ -80,9 +80,17 @@
                 {% endif %}
             </div>
 
-            <ul class="livreur-articles">
+            <ul class="livreur-articles livreur-articles-modifiables">
                 {% for ligne in c.lignes %}
-                <li>{{ ligne.nom }}{% if ligne.couleur %} ({{ ligne.couleur }}{% if ligne.taille %}, {{ ligne.taille }}{% endif %}){% elif ligne.taille %} ({{ ligne.taille }}){% endif %} × {{ ligne.quantite }}</li>
+                <li>
+                    <span>{{ ligne.nom }}{% if ligne.couleur %} ({{ ligne.couleur }}{% if ligne.taille %}, {{ ligne.taille }}{% endif %}){% elif ligne.taille %} ({{ ligne.taille }}){% endif %} × {{ ligne.quantite }}</span>
+                    {% if moi %}
+                    <form method="post" action="{{ url_for('livreur_modifier_ligne_commande', numero=c.numero, index=loop.index0) }}" class="livreur-ligne-qte" onsubmit="return confirm('Ajuster la quantité de cet article selon la demande du client ?');">
+                        <input type="number" name="quantite" min="0" max="{{ ligne.quantite }}" value="{{ ligne.quantite }}">
+                        <button type="submit" title="Mettre à jour la quantité">✓</button>
+                    </form>
+                    {% endif %}
+                </li>
                 {% endfor %}
             </ul>
 
@@ -107,4 +115,6 @@
         {% endfor %}
     </div>
 </section>
+
+<script src="{{ url_for('static', filename='js/auto-actualisation.js') }}"></script>
 {% endblock %}
