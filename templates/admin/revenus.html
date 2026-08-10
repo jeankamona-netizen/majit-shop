@@ -21,7 +21,7 @@
 
     {% if type_filtre %}
     <label for="valeur">Valeur</label>
-    <select id="valeur" name="valeur">
+    <select id="valeur" name="valeur" onchange="this.form.submit()">
         <option value="">— Sélectionner —</option>
         {% for v in valeurs_disponibles %}
             <option value="{{ v }}" {{ 'selected' if valeur_filtre == v else '' }}>{{ v }}</option>
