@@ -42,9 +42,13 @@
                 <p class="detail-description">{{ produit.description }}</p>
 
                 {% if produit.stock and produit.stock > 0 %}
-                    <p class="detail-stock">En stock : {{ produit.stock }} disponible{{ 's' if produit.stock > 1 else '' }}</p>
+                    <p class="detail-stock" id="detail-stock">En stock : {{ produit.stock }} disponible{{ 's' if produit.stock > 1 else '' }}</p>
                 {% else %}
-                    <p class="detail-stock detail-stock-vide">Rupture de stock</p>
+                    <p class="detail-stock detail-stock-vide" id="detail-stock">Rupture de stock</p>
+                {% endif %}
+
+                {% if rupture_variante %}
+                <p class="detail-stock detail-stock-vide">Cette combinaison couleur/taille est en rupture de stock. Merci d'en choisir une autre.</p>
                 {% endif %}
 
                 <form method="post" action="{{ url_for('ajouter_au_panier', produit_id=produit.id) }}" class="form-panier {{ 'form-panier-desactive' if not produit.stock else '' }}">
@@ -93,5 +97,10 @@
     </div>
 </section>
 
+{% if produit.variantes %}
+<script>
+    var VARIANTES_STOCK = {{ produit.variantes|tojson }};
+</script>
+{% endif %}
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 {% endblock %}

@@ -77,6 +77,7 @@ def _produit_depuis_ligne(ligne):
     ligne["images"] = json.loads(ligne["images"]) if ligne["images"] else []
     ligne["tailles"] = json.loads(ligne["tailles"]) if ligne["tailles"] else []
     ligne["couleurs"] = json.loads(ligne["couleurs"]) if ligne["couleurs"] else []
+    ligne["variantes"] = json.loads(ligne["variantes"]) if ligne.get("variantes") else {}
     return ligne
 
 
@@ -99,16 +100,17 @@ def sauvegarder_produits(produits):
                 cur.execute(
                     """
                     INSERT INTO produits (id, nom, categorie, sous_categorie, prix, reduction, image, images,
-                        description, tailles, couleurs, stock, public)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        description, tailles, couleurs, variantes, stock, public)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """,
                     (
                         p["id"], p["nom"], p["categorie"], p.get("sous_categorie") or None,
                         p.get("prix", 0), p.get("reduction", 0),
                         p.get("image", "placeholder.jpg"), json.dumps(p.get("images", []), ensure_ascii=False),
                         p.get("description", ""), json.dumps(p.get("tailles", []), ensure_ascii=False),
-                        json.dumps(p.get("couleurs", []), ensure_ascii=False), p.get("stock", 0),
-                        p.get("public", "unisexe"),
+                        json.dumps(p.get("couleurs", []), ensure_ascii=False),
+                        json.dumps(p.get("variantes", {}), ensure_ascii=False) if p.get("variantes") else None,
+                        p.get("stock", 0), p.get("public", "unisexe"),
                     ),
                 )
     finally:
@@ -370,6 +372,48 @@ def parser_liste(chaine):
     return [v.strip() for v in chaine.split(",") if v.strip()]
 
 
+def parser_variantes(form, couleurs, tailles):
+    if not couleurs and not tailles:
+        return {}
+    if couleurs and tailles:
+        combinaisons = [(c, t) for c in couleurs for t in tailles]
+    elif couleurs:
+        combinaisons = [(c, "") for c in couleurs]
+    else:
+        combinaisons = [("", t) for t in tailles]
+
+    variantes = {}
+    for couleur, taille in combinaisons:
+        try:
+            quantite = max(0, int(form.get(f"variante::{couleur}::{taille}", 0) or 0))
+        except ValueError:
+            quantite = 0
+        variantes[cle_variante(couleur, taille)] = quantite
+    return variantes
+
+
+def cle_variante(couleur, taille):
+    return f"{couleur or ''}::{taille or ''}"
+
+
+def stock_variante(produit, couleur, taille):
+    variantes = produit.get("variantes") or {}
+    if not variantes:
+        return produit.get("stock", 0)
+    return variantes.get(cle_variante(couleur, taille), 0)
+
+
+def ajuster_stock_variante(produit, couleur, taille, delta):
+    variantes = produit.get("variantes") or {}
+    if variantes:
+        cle = cle_variante(couleur, taille)
+        variantes[cle] = max(0, variantes.get(cle, 0) + delta)
+        produit["variantes"] = variantes
+        produit["stock"] = sum(variantes.values())
+    else:
+        produit["stock"] = max(0, produit.get("stock", 0) + delta)
+
+
 def prix_final(produit):
     reduction = produit.get("reduction", 0) or 0
     if reduction:
@@ -450,7 +494,7 @@ def annuler_commande(commande):
     for ligne in commande["lignes"]:
         p = next((x for x in produits if x["id"] == ligne.get("produit_id")), None)
         if p:
-            p["stock"] = p.get("stock", 0) + ligne["quantite"]
+            ajuster_stock_variante(p, ligne.get("couleur"), ligne.get("taille"), ligne["quantite"])
     sauvegarder_produits(produits)
     commande["statut"] = "annulee"
     commande["montant_verse"] = None
@@ -464,7 +508,7 @@ def restaurer_commande(commande):
     for ligne in commande["lignes"]:
         p = next((x for x in produits if x["id"] == ligne.get("produit_id")), None)
         if p:
-            p["stock"] = max(0, p.get("stock", 0) - ligne["quantite"])
+            ajuster_stock_variante(p, ligne.get("couleur"), ligne.get("taille"), -ligne["quantite"])
     sauvegarder_produits(produits)
     commande["statut"] = "en_attente"
     commande["montant_verse"] = None
@@ -657,7 +701,9 @@ def produit(produit_id):
         abort(404)
     galerie = [p["image"]] + [img for img in p.get("images", []) if img != p["image"]]
     galerie = galerie[:4]
-    return render_template("produit.html", produit=p, categories=CATEGORIES, galerie=galerie)
+    return render_template(
+        "produit.html", produit=p, categories=CATEGORIES, galerie=galerie, rupture_variante=request.args.get("rupture")
+    )
 
 
 @app.route("/panier")
@@ -687,11 +733,6 @@ def ajouter_au_panier(produit_id):
     except ValueError:
         quantite = 1
 
-    stock_disponible = produit_cible.get("stock", 0)
-    if stock_disponible <= 0:
-        return redirect(url_for("produit", produit_id=produit_id))
-    quantite = min(quantite, stock_disponible)
-
     tailles = produit_cible.get("tailles") or []
     couleurs = produit_cible.get("couleurs") or []
     taille = request.form.get("taille", "")
@@ -705,9 +746,14 @@ def ajouter_au_panier(produit_id):
     if not couleurs:
         couleur = ""
 
+    stock_disponible = stock_variante(produit_cible, couleur, taille)
+    if stock_disponible <= 0:
+        return redirect(url_for("produit", produit_id=produit_id, rupture=1))
+    quantite = min(quantite, stock_disponible)
+
     panier_session = session.get("panier", {})
     cle = f"{produit_id}|{taille}|{couleur}"
-    panier_session[cle] = panier_session.get(cle, 0) + quantite
+    panier_session[cle] = min(panier_session.get(cle, 0) + quantite, stock_disponible)
     session["panier"] = panier_session
 
     if request.form.get("acheter"):
@@ -742,6 +788,15 @@ def commander():
             erreurs["telephone"] = "Merci d'indiquer un numéro de téléphone."
         if not adresse:
             erreurs["adresse"] = "Merci d'indiquer une adresse de livraison."
+
+        produits_actuels = {p["id"]: p for p in charger_produits()}
+        for ligne in lignes:
+            p = produits_actuels.get(ligne["produit"]["id"])
+            disponible = stock_variante(p, ligne["couleur"], ligne["taille"]) if p else 0
+            if ligne["quantite"] > disponible:
+                variante = " (" + ", ".join(v for v in (ligne["couleur"], ligne["taille"]) if v) + ")" if (ligne["couleur"] or ligne["taille"]) else ""
+                erreurs["stock"] = f"Stock insuffisant pour {ligne['produit']['nom']}{variante} — il ne reste que {disponible} en stock. Merci d'ajuster votre panier."
+                break
 
         if not erreurs:
             try:
@@ -786,7 +841,7 @@ def commander():
             for ligne in lignes:
                 p = next((x for x in produits if x["id"] == ligne["produit"]["id"]), None)
                 if p:
-                    p["stock"] = max(0, p.get("stock", 0) - ligne["quantite"])
+                    ajuster_stock_variante(p, ligne["couleur"], ligne["taille"], -ligne["quantite"])
             sauvegarder_produits(produits)
 
             session["derniere_commande"] = commande
@@ -1370,7 +1425,7 @@ def modifier_quantite_ligne(commande, index, quantite_form):
         produits = charger_produits()
         p = next((x for x in produits if x["id"] == ligne.get("produit_id")), None)
         if p:
-            p["stock"] = p.get("stock", 0) + delta
+            ajuster_stock_variante(p, ligne.get("couleur"), ligne.get("taille"), delta)
             sauvegarder_produits(produits)
 
     prix_unitaire = ligne.get("prix_unitaire") or (round(ligne["sous_total"] / ligne["quantite"]) if ligne["quantite"] else 0)
@@ -1430,6 +1485,12 @@ def admin_ajouter_produit():
         if sous_categorie_choisie not in SOUS_CATEGORIES.get(categorie_choisie, {}):
             sous_categorie_choisie = None
 
+        couleurs_liste = parser_liste(request.form.get("couleurs", ""))
+        tailles_liste = parser_liste(request.form.get("tailles", ""))
+        variantes = parser_variantes(request.form, couleurs_liste, tailles_liste)
+        if variantes:
+            stock = sum(variantes.values())
+
         nouveau_produit = {
             "id": nouvel_id,
             "nom": request.form.get("nom", "").strip(),
@@ -1442,8 +1503,9 @@ def admin_ajouter_produit():
             "image": nom_image,
             "images": photos_supplementaires,
             "description": request.form.get("description", "").strip(),
-            "couleurs": parser_liste(request.form.get("couleurs", "")),
-            "tailles": parser_liste(request.form.get("tailles", "")),
+            "couleurs": couleurs_liste,
+            "tailles": tailles_liste,
+            "variantes": variantes,
         }
         produits.append(nouveau_produit)
         sauvegarder_produits(produits)
@@ -1483,6 +1545,11 @@ def admin_modifier_produit(produit_id):
             produit_cible["stock"] = max(0, int(request.form.get("stock", 0) or 0))
         except ValueError:
             produit_cible["stock"] = 0
+
+        variantes = parser_variantes(request.form, produit_cible["couleurs"], produit_cible["tailles"])
+        produit_cible["variantes"] = variantes
+        if variantes:
+            produit_cible["stock"] = sum(variantes.values())
 
         fichier = request.files.get("photo")
         if fichier and fichier.filename and extension_autorisee(fichier.filename):

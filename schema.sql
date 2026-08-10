@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS produits (
     description TEXT,
     tailles JSON,
     couleurs JSON,
+    variantes JSON,
     stock INT NOT NULL DEFAULT 0,
     public VARCHAR(20) NOT NULL DEFAULT 'unisexe',
     INDEX idx_categorie (categorie),

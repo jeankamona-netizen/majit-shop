@@ -352,6 +352,39 @@ img.admin-logo {
     margin-top: 0.3rem;
 }
 
+.admin-grille-variantes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+    padding: 0.9rem;
+    background: var(--gris-clair);
+    border-radius: 8px;
+}
+
+.admin-ligne-variante {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    background: white;
+    border-radius: 6px;
+    padding: 0.4rem 0.6rem;
+}
+
+.admin-ligne-variante span {
+    font-size: 0.82rem;
+    color: var(--gris-texte);
+}
+
+.admin-ligne-variante input {
+    width: 64px;
+    padding: 0.3rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    text-align: center;
+}
+
 .admin-formulaire button {
     margin-top: 1.4rem;
     background: var(--violet-700);
