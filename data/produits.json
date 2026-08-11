@@ -3,31 +3,33 @@
     "id": 1,
     "nom": "T-shirt basique",
     "categorie": "vetements",
+    "sous_categorie": null,
     "prix": 18500.0,
     "reduction": 0,
     "image": "produit-1.jpg",
-    "description": "T-shirt en coton, coupe classique.",
+    "images": [],
+    "description": "Test variantes",
     "tailles": [
       "S",
-      "M",
-      "L",
-      "XL"
+      "M"
     ],
     "couleurs": [
       "Blanc",
-      "Noir",
-      "Bleu"
+      "Noir"
     ],
-    "stock": 20,
+    "variantes": {},
+    "stock": 17,
     "public": "unisexe"
   },
   {
     "id": 2,
     "nom": "Robe d'été fleurie",
     "categorie": "vetements",
+    "sous_categorie": null,
     "prix": 32000.0,
     "reduction": 15,
     "image": "produit-2.jpg",
+    "images": [],
     "description": "Robe légère à motifs floraux.",
     "tailles": [
       "S",
@@ -37,6 +39,7 @@
     "couleurs": [
       "Bleu"
     ],
+    "variantes": {},
     "stock": 14,
     "public": "femme"
   },
@@ -44,9 +47,11 @@
     "id": 3,
     "nom": "Veste en jean",
     "categorie": "vetements",
+    "sous_categorie": null,
     "prix": 45000.0,
     "reduction": 0,
     "image": "produit-3.jpg",
+    "images": [],
     "description": "Veste en denim, coupe unisexe.",
     "tailles": [
       "S",
@@ -58,183 +63,19 @@
       "Bleu",
       "Noir"
     ],
+    "variantes": {},
     "stock": 16,
     "public": "unisexe"
-  },
-  {
-    "id": 19,
-    "nom": "Pantalon habillé homme",
-    "categorie": "vetements",
-    "prix": 35000,
-    "reduction": 0,
-    "image": "vetement6.jpg",
-    "description": "Pantalon habillé coupe droite, plusieurs coloris.",
-    "tailles": [
-      "38",
-      "40",
-      "42",
-      "44",
-      "46"
-    ],
-    "couleurs": [
-      "Beige",
-      "Violet",
-      "Rouge",
-      "Noir",
-      "Bleu marine",
-      "Blanc"
-    ],
-    "stock": 25,
-    "public": "homme"
-  },
-  {
-    "id": 20,
-    "nom": "Chemise fleurie hawaïenne",
-    "categorie": "vetements",
-    "prix": 26000,
-    "reduction": 10,
-    "image": "vetement7.jpg",
-    "description": "Chemise manches courtes à motifs floraux.",
-    "tailles": [
-      "S",
-      "M",
-      "L",
-      "XL"
-    ],
-    "couleurs": [
-      "Multicolore"
-    ],
-    "stock": 12,
-    "public": "homme"
-  },
-  {
-    "id": 21,
-    "nom": "Blouse femme tunique",
-    "categorie": "vetements",
-    "prix": 24000,
-    "reduction": 15,
-    "image": "vetement8.jpg",
-    "description": "Blouse tunique légère, manches 3/4.",
-    "tailles": [
-      "S",
-      "M",
-      "L"
-    ],
-    "couleurs": [
-      "Noir",
-      "Rouge",
-      "Blanc",
-      "Jaune"
-    ],
-    "stock": 20,
-    "public": "femme"
-  },
-  {
-    "id": 14,
-    "nom": "Polo homme blanc chic",
-    "categorie": "vetements",
-    "prix": 32000,
-    "reduction": 10,
-    "image": "vetement1.jpg",
-    "description": "Polo homme élégant, col contrasté, coupe soignée.",
-    "tailles": [
-      "S",
-      "M",
-      "L",
-      "XL"
-    ],
-    "couleurs": [
-      "Blanc"
-    ],
-    "stock": 14,
-    "public": "homme"
-  },
-  {
-    "id": 15,
-    "nom": "Ensemble t-shirt & short",
-    "categorie": "vetements",
-    "prix": 38000,
-    "reduction": 15,
-    "image": "vetement2.jpg",
-    "description": "Ensemble décontracté t-shirt imprimé et short assorti.",
-    "tailles": [
-      "M",
-      "L",
-      "XL"
-    ],
-    "couleurs": [
-      "Blanc"
-    ],
-    "stock": 16,
-    "public": "homme"
-  },
-  {
-    "id": 16,
-    "nom": "Chemise à carreaux",
-    "categorie": "vetements",
-    "prix": 27500,
-    "reduction": 0,
-    "image": "vetement3.jpg",
-    "description": "Chemise homme à carreaux, manches courtes.",
-    "tailles": [
-      "S",
-      "M",
-      "L",
-      "XL"
-    ],
-    "couleurs": [
-      "Bleu"
-    ],
-    "stock": 30,
-    "public": "homme"
-  },
-  {
-    "id": 17,
-    "nom": "Chemise habillée bleu marine",
-    "categorie": "vetements",
-    "prix": 34000,
-    "reduction": 8,
-    "image": "vetement4.jpg",
-    "description": "Chemise habillée manches longues, motifs fins.",
-    "tailles": [
-      "M",
-      "L",
-      "XL"
-    ],
-    "couleurs": [
-      "Bleu marine"
-    ],
-    "stock": 10,
-    "public": "homme"
-  },
-  {
-    "id": 18,
-    "nom": "Chemise imprimée tendance",
-    "categorie": "vetements",
-    "prix": 29500,
-    "reduction": 12,
-    "image": "vetement5.jpg",
-    "description": "Chemise homme imprimée, manches longues, coupe moderne.",
-    "tailles": [
-      "S",
-      "M",
-      "L"
-    ],
-    "couleurs": [
-      "Bleu ciel",
-      "Blanc",
-      "Noir"
-    ],
-    "stock": 7,
-    "public": "homme"
   },
   {
     "id": 4,
     "nom": "Baskets running",
     "categorie": "chaussures",
-    "prix": 72000,
+    "sous_categorie": null,
+    "prix": 72000.0,
     "reduction": 12,
     "image": "chaussure2.jpg",
+    "images": [],
     "description": "Baskets légères pour la course.",
     "tailles": [
       "39",
@@ -247,6 +88,7 @@
       "Blanc",
       "Bleu marine"
     ],
+    "variantes": {},
     "stock": 18,
     "public": "unisexe"
   },
@@ -254,9 +96,11 @@
     "id": 5,
     "nom": "Sandales d'été",
     "categorie": "chaussures",
-    "prix": 24500,
+    "sous_categorie": null,
+    "prix": 24500.0,
     "reduction": 0,
     "image": "chaussure4.jpg",
+    "images": [],
     "description": "Sandales confortables pour l'été.",
     "tailles": [
       "38",
@@ -268,6 +112,7 @@
       "Marron",
       "Noir"
     ],
+    "variantes": {},
     "stock": 6,
     "public": "unisexe"
   },
@@ -275,9 +120,11 @@
     "id": 6,
     "nom": "Chaussures de ville",
     "categorie": "chaussures",
-    "prix": 58000,
+    "sous_categorie": null,
+    "prix": 58000.0,
     "reduction": 8,
     "image": "chaussure1.jpg",
+    "images": [],
     "description": "Chaussures élégantes en cuir synthétique.",
     "tailles": [
       "40",
@@ -290,37 +137,19 @@
       "Gris",
       "Noir"
     ],
+    "variantes": {},
     "stock": 13,
-    "public": "homme"
-  },
-  {
-    "id": 13,
-    "nom": "Sneakers cuir noir",
-    "categorie": "chaussures",
-    "prix": 68000,
-    "reduction": 5,
-    "image": "chaussure3.jpg",
-    "description": "Sneakers en cuir, semelle blanche, look urbain et élégant.",
-    "tailles": [
-      "40",
-      "41",
-      "42",
-      "43",
-      "44"
-    ],
-    "couleurs": [
-      "Noir"
-    ],
-    "stock": 11,
     "public": "homme"
   },
   {
     "id": 7,
     "nom": "Sac à main cuir",
     "categorie": "sacs",
+    "sous_categorie": null,
     "prix": 105000.0,
     "reduction": 0,
     "image": "produit-7.jpg",
+    "images": [],
     "description": "Sac à main en cuir véritable.",
     "tailles": [],
     "couleurs": [
@@ -328,6 +157,7 @@
       "Marron",
       "Beige"
     ],
+    "variantes": {},
     "stock": 12,
     "public": "femme"
   },
@@ -335,15 +165,18 @@
     "id": 8,
     "nom": "Sac bandoulière",
     "categorie": "sacs",
+    "sous_categorie": null,
     "prix": 38000.0,
     "reduction": 10,
     "image": "produit-8.jpg",
+    "images": [],
     "description": "Petit sac bandoulière pratique.",
     "tailles": [],
     "couleurs": [
       "Noir",
       "Rouge"
     ],
+    "variantes": {},
     "stock": 19,
     "public": "femme"
   },
@@ -351,9 +184,11 @@
     "id": 9,
     "nom": "Sac à dos tendance",
     "categorie": "sacs",
+    "sous_categorie": null,
     "prix": 49500.0,
     "reduction": 0,
     "image": "produit-9.jpg",
+    "images": [],
     "description": "Sac à dos spacieux et résistant.",
     "tailles": [],
     "couleurs": [
@@ -361,6 +196,7 @@
       "Bleu",
       "Noir"
     ],
+    "variantes": {},
     "stock": 15,
     "public": "unisexe"
   },
@@ -368,6 +204,7 @@
     "id": 10,
     "nom": "Smartphone X12",
     "categorie": "telephones",
+    "sous_categorie": "telephones_tablettes",
     "prix": 279900.0,
     "reduction": 10,
     "image": "telephone9.jpg",
@@ -384,6 +221,7 @@
       "Or",
       "Bleu"
     ],
+    "variantes": {},
     "stock": 10,
     "public": "unisexe"
   },
@@ -391,15 +229,18 @@
     "id": 11,
     "nom": "Smartphone Lite S3",
     "categorie": "telephones",
-    "prix": 152500,
+    "sous_categorie": "telephones_tablettes",
+    "prix": 152500.0,
     "reduction": 5,
     "image": "telephone2.jpg",
+    "images": [],
     "description": "Téléphone abordable et performant, 64Go.",
     "tailles": [],
     "couleurs": [
       "Noir",
       "Blanc"
     ],
+    "variantes": {},
     "stock": 13,
     "public": "unisexe"
   },
@@ -407,9 +248,11 @@
     "id": 12,
     "nom": "Smartphone Pro Max",
     "categorie": "telephones",
-    "prix": 449000,
+    "sous_categorie": "telephones_tablettes",
+    "prix": 449000.0,
     "reduction": 15,
     "image": "telephone3.jpg",
+    "images": [],
     "description": "Téléphone haut de gamme, 256Go, triple caméra.",
     "tailles": [],
     "couleurs": [
@@ -417,35 +260,254 @@
       "Argent",
       "Or"
     ],
+    "variantes": {},
     "stock": 4,
     "public": "unisexe"
+  },
+  {
+    "id": 13,
+    "nom": "Sneakers cuir noir",
+    "categorie": "chaussures",
+    "sous_categorie": null,
+    "prix": 68000.0,
+    "reduction": 5,
+    "image": "chaussure3.jpg",
+    "images": [],
+    "description": "Sneakers en cuir, semelle blanche, look urbain et élégant.",
+    "tailles": [
+      "40",
+      "41",
+      "42",
+      "43",
+      "44"
+    ],
+    "couleurs": [
+      "Noir"
+    ],
+    "variantes": {},
+    "stock": 11,
+    "public": "homme"
+  },
+  {
+    "id": 14,
+    "nom": "Polo homme blanc chic",
+    "categorie": "vetements",
+    "sous_categorie": null,
+    "prix": 32000.0,
+    "reduction": 10,
+    "image": "vetement1.jpg",
+    "images": [],
+    "description": "Polo homme élégant, col contrasté, coupe soignée.",
+    "tailles": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "couleurs": [
+      "Blanc"
+    ],
+    "variantes": {},
+    "stock": 14,
+    "public": "homme"
+  },
+  {
+    "id": 15,
+    "nom": "Ensemble t-shirt & short",
+    "categorie": "vetements",
+    "sous_categorie": null,
+    "prix": 38000.0,
+    "reduction": 15,
+    "image": "vetement2.jpg",
+    "images": [],
+    "description": "Ensemble décontracté t-shirt imprimé et short assorti.",
+    "tailles": [
+      "M",
+      "L",
+      "XL"
+    ],
+    "couleurs": [
+      "Blanc"
+    ],
+    "variantes": {},
+    "stock": 16,
+    "public": "homme"
+  },
+  {
+    "id": 16,
+    "nom": "Chemise à carreaux",
+    "categorie": "vetements",
+    "sous_categorie": null,
+    "prix": 27500.0,
+    "reduction": 0,
+    "image": "vetement3.jpg",
+    "images": [],
+    "description": "Chemise homme à carreaux, manches courtes.",
+    "tailles": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "couleurs": [
+      "Bleu"
+    ],
+    "variantes": {},
+    "stock": 30,
+    "public": "homme"
+  },
+  {
+    "id": 17,
+    "nom": "Chemise habillée bleu marine",
+    "categorie": "vetements",
+    "sous_categorie": null,
+    "prix": 34000.0,
+    "reduction": 8,
+    "image": "vetement4.jpg",
+    "images": [],
+    "description": "Chemise habillée manches longues, motifs fins.",
+    "tailles": [
+      "M",
+      "L",
+      "XL"
+    ],
+    "couleurs": [
+      "Bleu marine"
+    ],
+    "variantes": {},
+    "stock": 10,
+    "public": "homme"
+  },
+  {
+    "id": 18,
+    "nom": "Chemise imprimée tendance",
+    "categorie": "vetements",
+    "sous_categorie": null,
+    "prix": 29500.0,
+    "reduction": 12,
+    "image": "vetement5.jpg",
+    "images": [],
+    "description": "Chemise homme imprimée, manches longues, coupe moderne.",
+    "tailles": [
+      "S",
+      "M",
+      "L"
+    ],
+    "couleurs": [
+      "Bleu ciel",
+      "Blanc",
+      "Noir"
+    ],
+    "variantes": {},
+    "stock": 7,
+    "public": "homme"
+  },
+  {
+    "id": 19,
+    "nom": "Pantalon habillé homme",
+    "categorie": "vetements",
+    "sous_categorie": null,
+    "prix": 35000.0,
+    "reduction": 0,
+    "image": "vetement6.jpg",
+    "images": [],
+    "description": "Pantalon habillé coupe droite, plusieurs coloris.",
+    "tailles": [
+      "38",
+      "40",
+      "42",
+      "44",
+      "46"
+    ],
+    "couleurs": [
+      "Beige",
+      "Violet",
+      "Rouge",
+      "Noir",
+      "Bleu marine",
+      "Blanc"
+    ],
+    "variantes": {},
+    "stock": 25,
+    "public": "homme"
+  },
+  {
+    "id": 20,
+    "nom": "Chemise fleurie hawaïenne",
+    "categorie": "vetements",
+    "sous_categorie": null,
+    "prix": 26000.0,
+    "reduction": 10,
+    "image": "vetement7.jpg",
+    "images": [],
+    "description": "Chemise manches courtes à motifs floraux.",
+    "tailles": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "couleurs": [
+      "Multicolore"
+    ],
+    "variantes": {},
+    "stock": 12,
+    "public": "homme"
+  },
+  {
+    "id": 21,
+    "nom": "Blouse femme tunique",
+    "categorie": "vetements",
+    "sous_categorie": null,
+    "prix": 24000.0,
+    "reduction": 15,
+    "image": "vetement8.jpg",
+    "images": [],
+    "description": "Blouse tunique légère, manches 3/4.",
+    "tailles": [
+      "S",
+      "M",
+      "L"
+    ],
+    "couleurs": [
+      "Noir",
+      "Rouge",
+      "Blanc",
+      "Jaune"
+    ],
+    "variantes": {},
+    "stock": 20,
+    "public": "femme"
   },
   {
     "id": 22,
     "nom": "SAMSUNG Galaxy A17 5G",
     "categorie": "telephones",
+    "sous_categorie": "telephones_tablettes",
     "prix": 210000.0,
     "reduction": 2,
-    "stock": 10,
     "image": "produit-22.jpg",
+    "images": [],
     "description": "SAMSUNG Galaxy A17 5G\r\nEmpreinte digitale et reconnaissance faciale, très bonne autonomie avec garantie d'une année",
+    "tailles": [],
     "couleurs": [
       "Noir",
       "Marron",
       "Beige"
     ],
-    "tailles": [],
+    "variantes": {},
+    "stock": 10,
     "public": "unisexe"
   },
   {
     "id": 23,
     "nom": "T-shirt blanc essentiel femme",
     "categorie": "vetements",
-    "prix": 17000,
+    "sous_categorie": null,
+    "prix": 17000.0,
     "reduction": 0,
-    "public": "femme",
-    "stock": 20,
     "image": "vetement9.jpg",
+    "images": [],
     "description": "T-shirt blanc coupe cintrée, coton doux.",
     "tailles": [
       "S",
@@ -454,17 +516,20 @@
     ],
     "couleurs": [
       "Blanc"
-    ]
+    ],
+    "variantes": {},
+    "stock": 20,
+    "public": "femme"
   },
   {
     "id": 24,
     "nom": "Robe portefeuille fleurie",
     "categorie": "vetements",
-    "prix": 38000,
+    "sous_categorie": null,
+    "prix": 38000.0,
     "reduction": 15,
-    "public": "femme",
-    "stock": 14,
     "image": "vetement10.jpg",
+    "images": [],
     "description": "Robe longue portefeuille, imprimé fleuri, manches courtes volantées.",
     "tailles": [
       "S",
@@ -473,17 +538,20 @@
     ],
     "couleurs": [
       "Bleu"
-    ]
+    ],
+    "variantes": {},
+    "stock": 14,
+    "public": "femme"
   },
   {
     "id": 25,
     "nom": "Veste en jean crop femme",
     "categorie": "vetements",
-    "prix": 42000,
+    "sous_categorie": null,
+    "prix": 42000.0,
     "reduction": 0,
-    "public": "femme",
-    "stock": 12,
     "image": "vetement11.jpg",
+    "images": [],
     "description": "Veste en jean courte, coupe ajustée, boutonnée.",
     "tailles": [
       "S",
@@ -493,63 +561,75 @@
     ],
     "couleurs": [
       "Bleu"
-    ]
+    ],
+    "variantes": {},
+    "stock": 12,
+    "public": "femme"
   },
   {
     "id": 26,
     "nom": "Sac à main avec portefeuilles assortis",
     "categorie": "sacs",
-    "prix": 95000,
+    "sous_categorie": null,
+    "prix": 95000.0,
     "reduction": 10,
-    "public": "femme",
-    "stock": 9,
     "image": "Sac1.jpg",
+    "images": [],
     "description": "Sac à main structuré avec deux portefeuilles assortis, simili-cuir.",
     "tailles": [],
     "couleurs": [
       "Marron"
-    ]
+    ],
+    "variantes": {},
+    "stock": 9,
+    "public": "femme"
   },
   {
     "id": 27,
     "nom": "Sac bandoulière élégant",
     "categorie": "sacs",
-    "prix": 55000,
+    "sous_categorie": null,
+    "prix": 55000.0,
     "reduction": 0,
-    "public": "femme",
-    "stock": 16,
     "image": "Sac2.jpg",
+    "images": [],
     "description": "Petit sac bandoulière rigide, fermoir doré.",
     "tailles": [],
     "couleurs": [
       "Bleu marine"
-    ]
+    ],
+    "variantes": {},
+    "stock": 16,
+    "public": "femme"
   },
   {
     "id": 28,
     "nom": "Sac à dos avec pochette",
     "categorie": "sacs",
-    "prix": 45000,
+    "sous_categorie": null,
+    "prix": 45000.0,
     "reduction": 5,
-    "public": "unisexe",
-    "stock": 18,
     "image": "Sac3.jpg",
+    "images": [],
     "description": "Sac à dos spacieux avec petite pochette amovible assortie.",
     "tailles": [],
     "couleurs": [
       "Beige",
       "Blanc"
-    ]
+    ],
+    "variantes": {},
+    "stock": 18,
+    "public": "unisexe"
   },
   {
     "id": 29,
     "nom": "Chaussures habillées tricolores",
     "categorie": "chaussures",
-    "prix": 62000,
+    "sous_categorie": null,
+    "prix": 62000.0,
     "reduction": 10,
-    "public": "homme",
-    "stock": 15,
     "image": "chaussure5-1.jpeg",
+    "images": [],
     "description": "Chaussures habillées en cuir, semelle confort.",
     "tailles": [
       "40",
@@ -562,17 +642,20 @@
       "Cognac",
       "Marron",
       "Noir"
-    ]
+    ],
+    "variantes": {},
+    "stock": 15,
+    "public": "homme"
   },
   {
     "id": 30,
     "nom": "Sneakers premium tricolores",
     "categorie": "chaussures",
-    "prix": 68000,
+    "sous_categorie": null,
+    "prix": 68000.0,
     "reduction": 0,
-    "public": "homme",
-    "stock": 13,
     "image": "chaussure5-2.jpeg",
+    "images": [],
     "description": "Sneakers montantes, semelle épaisse, finition daim.",
     "tailles": [
       "40",
@@ -585,17 +668,20 @@
       "Marron",
       "Noir",
       "Camel"
-    ]
+    ],
+    "variantes": {},
+    "stock": 13,
+    "public": "homme"
   },
   {
     "id": 31,
     "nom": "Sneakers derby tricolores",
     "categorie": "chaussures",
-    "prix": 64000,
+    "sous_categorie": null,
+    "prix": 64000.0,
     "reduction": 8,
-    "public": "homme",
-    "stock": 11,
     "image": "chaussure5-3.jpeg",
+    "images": [],
     "description": "Sneakers style derby perforé, semelle blanche.",
     "tailles": [
       "40",
@@ -608,17 +694,20 @@
       "Gris",
       "Marron",
       "Noir"
-    ]
+    ],
+    "variantes": {},
+    "stock": 11,
+    "public": "homme"
   },
   {
     "id": 32,
     "nom": "Baskets montantes classiques",
     "categorie": "chaussures",
-    "prix": 59000,
+    "sous_categorie": null,
+    "prix": 59000.0,
     "reduction": 0,
-    "public": "homme",
-    "stock": 20,
     "image": "chaussure5-4.jpeg",
+    "images": [],
     "description": "Baskets montantes en cuir, look intemporel.",
     "tailles": [
       "40",
@@ -630,17 +719,20 @@
     "couleurs": [
       "Blanc",
       "Noir"
-    ]
+    ],
+    "variantes": {},
+    "stock": 20,
+    "public": "homme"
   },
   {
     "id": 33,
     "nom": "Sneakers classiques 4 coloris",
     "categorie": "chaussures",
-    "prix": 57000,
+    "sous_categorie": null,
+    "prix": 57000.0,
     "reduction": 12,
-    "public": "homme",
-    "stock": 17,
     "image": "chaussure5-5.jpeg",
+    "images": [],
     "description": "Sneakers basses, logo brodé, plusieurs coloris disponibles.",
     "tailles": [
       "40",
@@ -653,17 +745,20 @@
       "Noir",
       "Marine",
       "Gris"
-    ]
+    ],
+    "variantes": {},
+    "stock": 17,
+    "public": "homme"
   },
   {
     "id": 34,
     "nom": "Chaussures habillées vernies",
     "categorie": "chaussures",
-    "prix": 66000,
+    "sous_categorie": null,
+    "prix": 66000.0,
     "reduction": 0,
-    "public": "homme",
-    "stock": 10,
     "image": "chaussure5-6.jpeg",
+    "images": [],
     "description": "Chaussures habillées finition vernie, semelle blanche.",
     "tailles": [
       "40",
@@ -676,17 +771,20 @@
       "Noir",
       "Marron",
       "Camel"
-    ]
+    ],
+    "variantes": {},
+    "stock": 10,
+    "public": "homme"
   },
   {
     "id": 35,
     "nom": "Mocassins sport tricolores",
     "categorie": "chaussures",
-    "prix": 60000,
+    "sous_categorie": null,
+    "prix": 60000.0,
     "reduction": 15,
-    "public": "homme",
-    "stock": 14,
     "image": "chaussure5-7.jpeg",
+    "images": [],
     "description": "Mocassins sport sans lacets, semelle crantée.",
     "tailles": [
       "40",
@@ -699,539 +797,1041 @@
       "Marron",
       "Orange",
       "Noir"
-    ]
+    ],
+    "variantes": {},
+    "stock": 14,
+    "public": "homme"
   },
   {
     "id": 36,
     "nom": "Smartphone Galaxy A16 5G",
     "categorie": "telephones",
-    "prix": 195000,
+    "sous_categorie": "telephones_tablettes",
+    "prix": 195000.0,
     "reduction": 8,
-    "public": "unisexe",
-    "stock": 12,
     "image": "telephone5.jpeg",
+    "images": [],
     "description": "Smartphone 5G, triple caméra, écran fluide, coloris turquoise.",
     "tailles": [],
     "couleurs": [
       "Turquoise"
-    ]
+    ],
+    "variantes": {},
+    "stock": 12,
+    "public": "unisexe"
   },
   {
     "id": 37,
     "nom": "Montre classique cuir",
     "categorie": "accessoires",
-    "prix": 65000,
+    "sous_categorie": null,
+    "prix": 65000.0,
     "reduction": 12,
-    "public": "homme",
-    "stock": 15,
     "image": "accesoire1.jpg",
+    "images": [],
     "description": "Montre chronographe, bracelet en cuir marron.",
     "tailles": [],
     "couleurs": [
       "Marron"
-    ]
+    ],
+    "variantes": {},
+    "stock": 15,
+    "public": "homme"
   },
   {
     "id": 38,
     "nom": "Écouteurs sans fil",
-    "categorie": "accessoires",
-    "prix": 35000,
+    "categorie": "telephones",
+    "sous_categorie": "accessoires_electroniques",
+    "prix": 35000.0,
     "reduction": 20,
-    "public": "unisexe",
-    "stock": 25,
     "image": "accesoire2.jpg",
+    "images": [],
     "description": "Écouteurs Bluetooth avec boîtier de charge.",
     "tailles": [],
     "couleurs": [
       "Noir"
-    ]
+    ],
+    "variantes": {},
+    "stock": 25,
+    "public": "unisexe"
   },
   {
     "id": 39,
     "nom": "Ordinateur portable 15 pouces",
     "categorie": "telephones",
-    "prix": 780000,
+    "sous_categorie": "ordinateurs",
+    "prix": 780000.0,
     "reduction": 5,
-    "public": "unisexe",
-    "stock": 6,
     "image": "electronique1.jpg",
+    "images": [],
     "description": "Ordinateur portable 15,6 pouces, usage bureautique et multimédia.",
     "tailles": [],
     "couleurs": [
       "Bleu"
-    ]
+    ],
+    "variantes": {},
+    "stock": 6,
+    "public": "unisexe"
   },
   {
     "id": 40,
     "nom": "Ordinateur portable HP avec accessoires offerts",
     "categorie": "telephones",
-    "prix": 920000,
+    "sous_categorie": "ordinateurs",
+    "prix": 920000.0,
     "reduction": 10,
-    "public": "unisexe",
-    "stock": 5,
     "image": "electronique2.jpg",
+    "images": [],
     "description": "Ordinateur portable HP avec sacoche, souris et tapis de souris offerts.",
     "tailles": [],
     "couleurs": [
       "Argent"
-    ]
+    ],
+    "variantes": {},
+    "stock": 5,
+    "public": "unisexe"
   },
   {
     "id": 41,
     "nom": "Ordinateur portable Dell Latitude",
     "categorie": "telephones",
-    "prix": 1150000,
+    "sous_categorie": "ordinateurs",
+    "prix": 1150000.0,
     "reduction": 0,
-    "public": "unisexe",
-    "stock": 4,
     "image": "electronique3.jpg",
+    "images": [],
     "description": "Ordinateur portable professionnel Dell Latitude, châssis robuste.",
     "tailles": [],
     "couleurs": [
       "Noir"
-    ]
+    ],
+    "variantes": {},
+    "stock": 4,
+    "public": "unisexe"
   },
   {
     "id": 42,
     "nom": "Ordinateur portable HP EliteBook",
     "categorie": "telephones",
-    "prix": 1050000,
+    "sous_categorie": "ordinateurs",
+    "prix": 1050000.0,
     "reduction": 8,
-    "public": "unisexe",
-    "stock": 5,
     "image": "electronique4.jpg",
+    "images": [],
     "description": "Ordinateur portable HP EliteBook, format compact et léger.",
     "tailles": [],
     "couleurs": [
       "Argent"
-    ]
+    ],
+    "variantes": {},
+    "stock": 5,
+    "public": "unisexe"
   },
   {
     "id": 43,
     "nom": "Housse d'ordinateur portable avec support",
     "categorie": "telephones",
-    "prix": 28000,
+    "sous_categorie": "accessoires_electroniques",
+    "prix": 28000.0,
     "reduction": 0,
-    "public": "unisexe",
-    "stock": 20,
     "image": "electronique5.jpg",
+    "images": [],
     "description": "Housse de protection avec support intégré et tapis de souris assorti.",
     "tailles": [],
     "couleurs": [
       "Vert"
-    ]
+    ],
+    "variantes": {},
+    "stock": 20,
+    "public": "unisexe"
   },
   {
     "id": 44,
     "nom": "Smartphone Tecno Spark",
     "categorie": "telephones",
-    "prix": 145000,
+    "sous_categorie": "telephones_tablettes",
+    "prix": 145000.0,
     "reduction": 10,
-    "public": "unisexe",
-    "stock": 14,
     "image": "telephone6.jpg",
+    "images": [],
     "description": "Smartphone double caméra, écran fluide, coloris vert menthe.",
     "tailles": [],
     "couleurs": [
       "Vert"
-    ]
+    ],
+    "variantes": {},
+    "stock": 14,
+    "public": "unisexe"
   },
   {
     "id": 45,
     "nom": "Téléphone Tecno basique",
     "categorie": "telephones",
-    "prix": 45000,
+    "sous_categorie": "telephones_tablettes",
+    "prix": 45000.0,
     "reduction": 0,
-    "public": "unisexe",
-    "stock": 22,
     "image": "telephone7.jpg",
+    "images": [],
     "description": "Téléphone à clavier, longue autonomie, double SIM.",
     "tailles": [],
     "couleurs": [
       "Noir"
-    ]
+    ],
+    "variantes": {},
+    "stock": 22,
+    "public": "unisexe"
   },
   {
     "id": 46,
     "nom": "Téléphone Samsung basique double SIM",
     "categorie": "telephones",
-    "prix": 55000,
+    "sous_categorie": "telephones_tablettes",
+    "prix": 55000.0,
     "reduction": 0,
-    "public": "unisexe",
-    "stock": 18,
     "image": "telephone8.jpg",
+    "images": [],
     "description": "Téléphone à clavier double SIM, robuste et simple d'utilisation.",
     "tailles": [],
     "couleurs": [
       "Blanc"
-    ]
+    ],
+    "variantes": {},
+    "stock": 18,
+    "public": "unisexe"
   },
   {
     "id": 47,
     "nom": "Écouteurs sans fil compacts",
-    "categorie": "accessoires",
-    "prix": 32000,
+    "categorie": "telephones",
+    "sous_categorie": "accessoires_electroniques",
+    "prix": 32000.0,
     "reduction": 15,
-    "public": "unisexe",
-    "stock": 20,
     "image": "accesoire3.jpg",
+    "images": [],
     "description": "Écouteurs Bluetooth avec boîtier de charge compact.",
     "tailles": [],
     "couleurs": [
       "Gris"
-    ]
+    ],
+    "variantes": {},
+    "stock": 20,
+    "public": "unisexe"
   },
   {
     "id": 48,
     "nom": "Écouteurs sport à crochets avec écran",
-    "categorie": "accessoires",
-    "prix": 42000,
+    "categorie": "telephones",
+    "sous_categorie": "accessoires_electroniques",
+    "prix": 42000.0,
     "reduction": 10,
-    "public": "unisexe",
-    "stock": 15,
     "image": "accesoire4.jpg",
+    "images": [],
     "description": "Écouteurs sport à crochets, boîtier avec écran d'affichage.",
     "tailles": [],
     "couleurs": [
       "Noir"
-    ]
+    ],
+    "variantes": {},
+    "stock": 15,
+    "public": "unisexe"
   },
   {
     "id": 49,
     "nom": "Support téléphone pour voiture",
-    "categorie": "accessoires",
-    "prix": 15000,
+    "categorie": "telephones",
+    "sous_categorie": "accessoires_electroniques",
+    "prix": 15000.0,
     "reduction": 0,
-    "public": "unisexe",
-    "stock": 25,
     "image": "accesoire5.jpg",
+    "images": [],
     "description": "Support téléphone voiture, fixation ventouse et grille d'aération.",
     "tailles": [],
     "couleurs": [
       "Noir"
-    ]
+    ],
+    "variantes": {},
+    "stock": 25,
+    "public": "unisexe"
   },
   {
     "id": 50,
     "nom": "Clavier flexible USB",
-    "categorie": "accessoires",
-    "prix": 25000,
+    "categorie": "telephones",
+    "sous_categorie": "accessoires_electroniques",
+    "prix": 25000.0,
     "reduction": 0,
-    "public": "unisexe",
-    "stock": 12,
     "image": "accesoire6.jpg",
+    "images": [],
     "description": "Clavier silicone flexible et enroulable, connexion USB.",
     "tailles": [],
     "couleurs": [
       "Noir"
-    ]
+    ],
+    "variantes": {},
+    "stock": 12,
+    "public": "unisexe"
   },
   {
     "id": 51,
     "nom": "Micro-cravate sans fil double",
-    "categorie": "accessoires",
-    "prix": 55000,
+    "categorie": "telephones",
+    "sous_categorie": "accessoires_electroniques",
+    "prix": 55000.0,
     "reduction": 5,
-    "public": "unisexe",
-    "stock": 10,
     "image": "accesoire7.jpg",
+    "images": [],
     "description": "Kit de deux micros-cravates sans fil avec adaptateur pour smartphone.",
     "tailles": [],
     "couleurs": [
       "Noir"
-    ]
+    ],
+    "variantes": {},
+    "stock": 10,
+    "public": "unisexe"
   },
   {
     "id": 52,
     "nom": "Support pliable pour ordinateur portable",
-    "categorie": "accessoires",
-    "prix": 20000,
+    "categorie": "telephones",
+    "sous_categorie": "accessoires_electroniques",
+    "prix": 20000.0,
     "reduction": 0,
-    "public": "unisexe",
-    "stock": 18,
     "image": "accesoire8.jpg",
+    "images": [],
     "description": "Support ergonomique pliable, réglable en hauteur.",
     "tailles": [],
     "couleurs": [
       "Noir"
-    ]
+    ],
+    "variantes": {},
+    "stock": 18,
+    "public": "unisexe"
   },
   {
     "id": 53,
     "nom": "Console de jeu portable",
-    "categorie": "jouets",
-    "prix": 650000,
+    "categorie": "telephones",
+    "sous_categorie": "consoles_gaming",
+    "prix": 650000.0,
     "reduction": 5,
-    "public": "unisexe",
-    "stock": 4,
     "image": "accesoire9.jpg",
+    "images": [],
     "description": "Console de jeu portable haute performance, écran tactile intégré.",
     "tailles": [],
     "couleurs": [
       "Noir"
-    ]
+    ],
+    "variantes": {},
+    "stock": 4,
+    "public": "unisexe"
   },
   {
     "id": 54,
     "nom": "Manette de jeu sans fil camouflage",
-    "categorie": "jouets",
-    "prix": 95000,
+    "categorie": "telephones",
+    "sous_categorie": "manettes",
+    "prix": 95000.0,
     "reduction": 0,
-    "public": "unisexe",
-    "stock": 10,
     "image": "accesoire10.jpg",
+    "images": [],
     "description": "Manette sans fil compatible console de salon, finition camouflage.",
     "tailles": [],
     "couleurs": [
       "Gris camouflage"
-    ]
+    ],
+    "variantes": {},
+    "stock": 10,
+    "public": "unisexe"
   },
   {
     "id": 55,
     "nom": "Jeu vidéo — Football 26",
-    "categorie": "jouets",
-    "prix": 65000,
+    "categorie": "telephones",
+    "sous_categorie": "consoles_gaming",
+    "prix": 65000.0,
     "reduction": 0,
-    "public": "unisexe",
-    "stock": 12,
     "image": "accesoire11.jpg",
+    "images": [],
     "description": "Jeu vidéo de football, édition 2026, compatible console de salon.",
     "tailles": [],
-    "couleurs": []
+    "couleurs": [],
+    "variantes": {},
+    "stock": 12,
+    "public": "unisexe"
   },
   {
     "id": 56,
     "nom": "Jeu vidéo — Agent secret",
-    "categorie": "jouets",
-    "prix": 68000,
+    "categorie": "telephones",
+    "sous_categorie": "consoles_gaming",
+    "prix": 68000.0,
     "reduction": 0,
-    "public": "unisexe",
-    "stock": 10,
     "image": "accesoire12.jpg",
+    "images": [],
     "description": "Jeu vidéo d'action-espionnage, compatible console de salon.",
     "tailles": [],
-    "couleurs": []
+    "couleurs": [],
+    "variantes": {},
+    "stock": 10,
+    "public": "unisexe"
   },
   {
     "id": 57,
     "nom": "Jeu vidéo — Mythologie nordique",
-    "categorie": "jouets",
-    "prix": 70000,
+    "categorie": "telephones",
+    "sous_categorie": "consoles_gaming",
+    "prix": 70000.0,
     "reduction": 5,
-    "public": "unisexe",
-    "stock": 9,
     "image": "accesoire13.jpg",
+    "images": [],
     "description": "Jeu vidéo d'aventure épique, compatible console de salon.",
     "tailles": [],
-    "couleurs": []
+    "couleurs": [],
+    "variantes": {},
+    "stock": 9,
+    "public": "unisexe"
   },
   {
     "id": 58,
     "nom": "Jeu vidéo — Légende du singe",
-    "categorie": "jouets",
-    "prix": 68000,
+    "categorie": "telephones",
+    "sous_categorie": "consoles_gaming",
+    "prix": 68000.0,
     "reduction": 0,
-    "public": "unisexe",
-    "stock": 8,
     "image": "accesoire14.jpg",
+    "images": [],
     "description": "Jeu vidéo d'action inspiré d'un mythe classique, édition deluxe.",
     "tailles": [],
-    "couleurs": []
+    "couleurs": [],
+    "variantes": {},
+    "stock": 8,
+    "public": "unisexe"
   },
   {
     "id": 59,
     "nom": "Manette de jeu pour smartphone",
-    "categorie": "jouets",
-    "prix": 30000,
+    "categorie": "telephones",
+    "sous_categorie": "manettes",
+    "prix": 30000.0,
     "reduction": 10,
-    "public": "unisexe",
-    "stock": 16,
     "image": "accesoire15.jpg",
+    "images": [],
     "description": "Manette de jeu mobile clipsable, compatible Android et iOS.",
     "tailles": [],
     "couleurs": [
       "Blanc"
-    ]
+    ],
+    "variantes": {},
+    "stock": 16,
+    "public": "unisexe"
   },
   {
     "id": 60,
     "nom": "Coque de protection pour manette",
-    "categorie": "jouets",
-    "prix": 12000,
+    "categorie": "telephones",
+    "sous_categorie": "manettes",
+    "prix": 12000.0,
     "reduction": 0,
-    "public": "unisexe",
-    "stock": 24,
     "image": "accesoire16.jpg",
+    "images": [],
     "description": "Coque en silicone antidérapante pour manette de console.",
     "tailles": [],
     "couleurs": [
       "Rouge"
-    ]
+    ],
+    "variantes": {},
+    "stock": 24,
+    "public": "unisexe"
   },
   {
     "id": 61,
     "nom": "Étui de transport manette et tablette",
-    "categorie": "jouets",
-    "prix": 22000,
+    "categorie": "telephones",
+    "sous_categorie": "accessoires_electroniques",
+    "prix": 22000.0,
     "reduction": 0,
-    "public": "unisexe",
-    "stock": 14,
     "image": "accesoire17.jpg",
+    "images": [],
     "description": "Étui rigide pour manette combinée à smartphone ou tablette.",
     "tailles": [],
     "couleurs": [
       "Noir"
-    ]
+    ],
+    "variantes": {},
+    "stock": 14,
+    "public": "unisexe"
   },
   {
     "id": 62,
     "nom": "Console de salon avec manette",
-    "categorie": "jouets",
-    "prix": 750000,
+    "categorie": "telephones",
+    "sous_categorie": "consoles_gaming",
+    "prix": 750000.0,
     "reduction": 5,
-    "public": "unisexe",
-    "stock": 3,
     "image": "electronique6.jpg",
+    "images": [],
     "description": "Console de jeu de salon, livrée avec une manette sans fil.",
     "tailles": [],
     "couleurs": [
       "Blanc"
-    ]
+    ],
+    "variantes": {},
+    "stock": 3,
+    "public": "unisexe"
   },
   {
     "id": 63,
     "nom": "Manette sans fil officielle",
-    "categorie": "jouets",
-    "prix": 98000,
+    "categorie": "telephones",
+    "sous_categorie": "manettes",
+    "prix": 98000.0,
     "reduction": 0,
-    "public": "unisexe",
-    "stock": 11,
     "image": "electronique7.jpg",
+    "images": [],
     "description": "Manette sans fil officielle pour console de salon, retour haptique.",
     "tailles": [],
     "couleurs": [
       "Blanc"
-    ]
+    ],
+    "variantes": {},
+    "stock": 11,
+    "public": "unisexe"
   },
   {
     "id": 64,
     "nom": "Sac à dos anti-vol avec port USB",
     "categorie": "sacs",
-    "prix": 48000,
+    "sous_categorie": null,
+    "prix": 48000.0,
     "reduction": 8,
-    "public": "unisexe",
-    "stock": 15,
     "image": "Sac4.jpg",
+    "images": [],
     "description": "Sac à dos anti-vol avec fermeture cachée et port de charge USB.",
     "tailles": [],
     "couleurs": [
       "Noir"
-    ]
+    ],
+    "variantes": {},
+    "stock": 15,
+    "public": "unisexe"
   },
   {
     "id": 65,
     "nom": "Tablette de dessin lumineuse enfant",
     "categorie": "jouets",
-    "prix": 18000,
+    "sous_categorie": null,
+    "prix": 18000.0,
     "reduction": 10,
-    "public": "enfant",
-    "stock": 20,
     "image": "jouet1.jpg",
+    "images": [],
     "description": "Tablette LCD lumineuse pour dessiner, effaçable, avec stylet.",
     "tailles": [],
     "couleurs": [
       "Rose",
       "Bleu"
-    ]
+    ],
+    "variantes": {},
+    "stock": 20,
+    "public": "enfant"
   },
   {
     "id": 66,
     "nom": "Piano jouet pour enfant",
     "categorie": "jouets",
-    "prix": 22000,
+    "sous_categorie": null,
+    "prix": 22000.0,
     "reduction": 0,
-    "public": "enfant",
-    "stock": 15,
     "image": "jouet2.jpg",
+    "images": [],
     "description": "Petit clavier musical jouet, sons et mélodies pour enfant.",
     "tailles": [],
     "couleurs": [
       "Turquoise"
-    ]
+    ],
+    "variantes": {},
+    "stock": 15,
+    "public": "enfant"
   },
   {
     "id": 67,
     "nom": "Mallette docteur pour enfant",
     "categorie": "jouets",
-    "prix": 25000,
+    "sous_categorie": null,
+    "prix": 25000.0,
     "reduction": 5,
-    "public": "enfant",
-    "stock": 14,
     "image": "jouet3.jpg",
+    "images": [],
     "description": "Mallette de docteur avec accessoires médicaux jouets.",
     "tailles": [],
     "couleurs": [
       "Rose"
-    ]
+    ],
+    "variantes": {},
+    "stock": 14,
+    "public": "enfant"
   },
   {
     "id": 68,
     "nom": "Fusil jouet pour enfant",
     "categorie": "jouets",
-    "prix": 20000,
+    "sous_categorie": null,
+    "prix": 20000.0,
     "reduction": 0,
-    "public": "enfant",
-    "stock": 16,
     "image": "jouet4.jpg",
+    "images": [],
     "description": "Fusil jouet lumineux avec effets sonores, pour jeux d'extérieur.",
     "tailles": [],
     "couleurs": [
       "Noir/Jaune"
-    ]
+    ],
+    "variantes": {},
+    "stock": 16,
+    "public": "enfant"
   },
   {
     "id": 69,
     "nom": "Moto de course miniature",
     "categorie": "jouets",
-    "prix": 15000,
+    "sous_categorie": null,
+    "prix": 15000.0,
     "reduction": 0,
-    "public": "enfant",
-    "stock": 22,
     "image": "jouet5.jpg",
+    "images": [],
     "description": "Moto de course miniature à friction, détails réalistes.",
     "tailles": [],
     "couleurs": [
       "Rouge"
-    ]
+    ],
+    "variantes": {},
+    "stock": 22,
+    "public": "enfant"
   },
   {
     "id": 70,
     "nom": "Camion benne jouet",
     "categorie": "jouets",
-    "prix": 24000,
+    "sous_categorie": null,
+    "prix": 24000.0,
     "reduction": 8,
-    "public": "enfant",
-    "stock": 18,
     "image": "jouet6.jpg",
+    "images": [],
     "description": "Camion benne jouet robuste, benne basculante.",
     "tailles": [],
     "couleurs": [
       "Jaune"
-    ]
+    ],
+    "variantes": {},
+    "stock": 18,
+    "public": "enfant"
   },
   {
     "id": 71,
     "nom": "Transat balancelle pour bébé",
-    "categorie": "jouets",
-    "prix": 85000,
+    "categorie": "bebes",
+    "sous_categorie": null,
+    "prix": 85000.0,
     "reduction": 10,
-    "public": "enfant",
-    "stock": 8,
     "image": "jouet7.jpg",
+    "images": [],
     "description": "Transat évolutif pour bébé avec arche de jeux amovible.",
     "tailles": [],
     "couleurs": [
       "Gris"
-    ]
+    ],
+    "variantes": {},
+    "stock": 8,
+    "public": "enfant"
+  },
+  {
+    "id": 72,
+    "nom": "Sneakers plateforme épaisse",
+    "categorie": "chaussures",
+    "sous_categorie": null,
+    "prix": 75000.0,
+    "reduction": 0,
+    "image": "chaussure2 (1).jpeg",
+    "images": [
+      "chaussure2 (2).jpeg",
+      "chaussure2 (3).jpeg"
+    ],
+    "description": "Sneakers plateforme épaisse en cuir nubuck perforé, semelle blanche confort. Disponible en plusieurs coloris.",
+    "tailles": [
+      "40",
+      "41",
+      "42",
+      "43",
+      "44"
+    ],
+    "couleurs": [
+      "Marron",
+      "Noir",
+      "Kaki"
+    ],
+    "variantes": {},
+    "stock": 12,
+    "public": "homme"
+  },
+  {
+    "id": 73,
+    "nom": "Chaussures casual bicolores",
+    "categorie": "chaussures",
+    "sous_categorie": null,
+    "prix": 65000.0,
+    "reduction": 0,
+    "image": "chaussure2 (4).jpeg",
+    "images": [],
+    "description": "Chaussures casual en cuir, semelle confort, coloris noir ou café.",
+    "tailles": [
+      "40",
+      "41",
+      "42",
+      "43",
+      "44"
+    ],
+    "couleurs": [
+      "Noir",
+      "Café"
+    ],
+    "variantes": {},
+    "stock": 15,
+    "public": "homme"
+  },
+  {
+    "id": 74,
+    "nom": "Sneakers habillées semelle blanche",
+    "categorie": "chaussures",
+    "sous_categorie": null,
+    "prix": 70000.0,
+    "reduction": 0,
+    "image": "chaussure2 (5).jpeg",
+    "images": [],
+    "description": "Sneakers habillées en cuir véritable, semelle blanche, coloris noir ou café.",
+    "tailles": [
+      "40",
+      "41",
+      "42",
+      "43",
+      "44"
+    ],
+    "couleurs": [
+      "Noir",
+      "Café"
+    ],
+    "variantes": {},
+    "stock": 15,
+    "public": "homme"
+  },
+  {
+    "id": 75,
+    "nom": "Mocassins suède à pompon",
+    "categorie": "chaussures",
+    "sous_categorie": null,
+    "prix": 58000.0,
+    "reduction": 0,
+    "image": "chaussure2 (6).jpeg",
+    "images": [],
+    "description": "Mocassins en daim avec lien à pompon, semelle blanche confort.",
+    "tailles": [
+      "40",
+      "41",
+      "42",
+      "43",
+      "44"
+    ],
+    "couleurs": [
+      "Marron",
+      "Noir"
+    ],
+    "variantes": {},
+    "stock": 15,
+    "public": "homme"
+  },
+  {
+    "id": 76,
+    "nom": "Chaussures oxford bicolores cuir",
+    "categorie": "chaussures",
+    "sous_categorie": null,
+    "prix": 72000.0,
+    "reduction": 0,
+    "image": "chaussure2 (7).jpeg",
+    "images": [],
+    "description": "Chaussures habillées oxford en cuir véritable, finition bicolore, coloris noir ou café.",
+    "tailles": [
+      "40",
+      "41",
+      "42",
+      "43",
+      "44"
+    ],
+    "couleurs": [
+      "Noir",
+      "Café"
+    ],
+    "variantes": {},
+    "stock": 12,
+    "public": "homme"
+  },
+  {
+    "id": 77,
+    "nom": "Sneakers rayures tricolores",
+    "categorie": "chaussures",
+    "sous_categorie": null,
+    "prix": 78000.0,
+    "reduction": 0,
+    "image": "chaussure2 (8).jpeg",
+    "images": [],
+    "description": "Sneakers basses à rayures, semelle gomme, plusieurs coloris disponibles.",
+    "tailles": [
+      "37",
+      "38",
+      "39",
+      "40",
+      "41",
+      "42"
+    ],
+    "couleurs": [
+      "Noir",
+      "Blanc",
+      "Blanc/Rose"
+    ],
+    "variantes": {},
+    "stock": 15,
+    "public": "unisexe"
+  },
+  {
+    "id": 78,
+    "nom": "Coffret bijoux montre & parure",
+    "categorie": "accessoires",
+    "sous_categorie": null,
+    "prix": 45000.0,
+    "reduction": 0,
+    "image": "accesoiredame1.jpg",
+    "images": [],
+    "description": "Coffret cadeau : montre bracelet, bracelet perles, boucles d'oreilles et collier assortis, finition dorée.",
+    "tailles": [],
+    "couleurs": [],
+    "variantes": {},
+    "stock": 10,
+    "public": "femme"
+  },
+  {
+    "id": 79,
+    "nom": "Collier pendentif croissant doré",
+    "categorie": "accessoires",
+    "sous_categorie": null,
+    "prix": 28000.0,
+    "reduction": 0,
+    "image": "accesoiredame2.jpg",
+    "images": [
+      "accesoiredame2a.jpg"
+    ],
+    "description": "Collier chaîne fine dorée avec pendentif croissant, finition sablée.",
+    "tailles": [],
+    "couleurs": [],
+    "variantes": {},
+    "stock": 15,
+    "public": "femme"
+  },
+  {
+    "id": 80,
+    "nom": "Montre cuir élégante",
+    "categorie": "accessoires",
+    "sous_categorie": null,
+    "prix": 38000.0,
+    "reduction": 0,
+    "image": "accesoiredame3.jpg",
+    "images": [
+      "accesoiredame3a.jpg"
+    ],
+    "description": "Montre à quartz, cadran doré chiffres romains, bracelet en cuir véritable.",
+    "tailles": [],
+    "couleurs": [
+      "Vert",
+      "Marron"
+    ],
+    "variantes": {},
+    "stock": 12,
+    "public": "femme"
+  },
+  {
+    "id": 81,
+    "nom": "Lot de bagues dorées (22 pièces)",
+    "categorie": "accessoires",
+    "sous_categorie": null,
+    "prix": 22000.0,
+    "reduction": 0,
+    "image": "accesoiredame4.jpg",
+    "images": [],
+    "description": "Ensemble de 22 bagues dorées, designs variés (torsadées, cœur, papillon, anneaux fins...), à porter seules ou empilées.",
+    "tailles": [],
+    "couleurs": [],
+    "variantes": {},
+    "stock": 15,
+    "public": "femme"
+  },
+  {
+    "id": 82,
+    "nom": "Set de pinceaux maquillage",
+    "categorie": "accessoires",
+    "sous_categorie": null,
+    "prix": 18000.0,
+    "reduction": 0,
+    "image": "accesoiredame5.jpg",
+    "images": [],
+    "description": "Kit de pinceaux de maquillage avec pochette de rangement zippée. Plusieurs coloris disponibles.",
+    "tailles": [],
+    "couleurs": [
+      "Corail",
+      "Gris",
+      "Beige",
+      "Bleu"
+    ],
+    "variantes": {},
+    "stock": 20,
+    "public": "femme"
+  },
+  {
+    "id": 83,
+    "nom": "Ceinture cuir boucle noire",
+    "categorie": "accessoires",
+    "sous_categorie": null,
+    "prix": 25000.0,
+    "reduction": 0,
+    "image": "accesoirehome1.jpg",
+    "images": [],
+    "description": "Ceinture homme en cuir véritable, boucle ardillon noire mate.",
+    "tailles": [],
+    "couleurs": [
+      "Marron"
+    ],
+    "variantes": {},
+    "stock": 15,
+    "public": "homme"
+  },
+  {
+    "id": 84,
+    "nom": "Ceinture cuir boucle argentée",
+    "categorie": "accessoires",
+    "sous_categorie": null,
+    "prix": 25000.0,
+    "reduction": 0,
+    "image": "accesoirehome2.jpg",
+    "images": [],
+    "description": "Ceinture homme en cuir véritable, boucle ardillon métal argenté vieilli.",
+    "tailles": [],
+    "couleurs": [
+      "Marron"
+    ],
+    "variantes": {},
+    "stock": 15,
+    "public": "homme"
+  },
+  {
+    "id": 85,
+    "nom": "Montre digitale sport homme",
+    "categorie": "accessoires",
+    "sous_categorie": null,
+    "prix": 32000.0,
+    "reduction": 0,
+    "image": "accesoirehome3.png",
+    "images": [],
+    "description": "Montre digitale robuste, bracelet silicone, chronomètre, alarme et rétroéclairage.",
+    "tailles": [],
+    "couleurs": [
+      "Noir"
+    ],
+    "variantes": {},
+    "stock": 15,
+    "public": "homme"
+  },
+  {
+    "id": 86,
+    "nom": "Autocollants déco capot voiture",
+    "categorie": "automobiles",
+    "sous_categorie": null,
+    "prix": 15000.0,
+    "reduction": 0,
+    "image": "automobiles1.jpg",
+    "images": [],
+    "description": "Stickers décoratifs pour capot, effet grilles d'aération sport, pose facile.",
+    "tailles": [],
+    "couleurs": [
+      "Noir"
+    ],
+    "variantes": {},
+    "stock": 20,
+    "public": "unisexe"
+  },
+  {
+    "id": 87,
+    "nom": "Chaussures bébé fille nœud doré",
+    "categorie": "bebes",
+    "sous_categorie": null,
+    "prix": 12000.0,
+    "reduction": 0,
+    "image": "bebe1.jpeg",
+    "images": [],
+    "description": "Chaussures souples pour bébé, nœud papillon et motif cœurs, coloris doré.",
+    "tailles": [
+      "0-6 mois",
+      "6-12 mois",
+      "12-18 mois"
+    ],
+    "couleurs": [],
+    "variantes": {},
+    "stock": 15,
+    "public": "enfant"
+  },
+  {
+    "id": 88,
+    "nom": "Chaussures bébé fille fleur",
+    "categorie": "bebes",
+    "sous_categorie": null,
+    "prix": 13000.0,
+    "reduction": 0,
+    "image": "bebe2.jpg",
+    "images": [
+      "bebe2a.jpg",
+      "bebe2b.jpg"
+    ],
+    "description": "Chaussures souples pour bébé avec grande fleur décorative, plusieurs coloris.",
+    "tailles": [
+      "0-6 mois",
+      "6-12 mois",
+      "12-18 mois"
+    ],
+    "couleurs": [
+      "Rose",
+      "Violet",
+      "Rouge"
+    ],
+    "variantes": {},
+    "stock": 18,
+    "public": "enfant"
+  },
+  {
+    "id": 89,
+    "nom": "Escarpins talon fin boucle dorée",
+    "categorie": "chaussures",
+    "sous_categorie": null,
+    "prix": 62000.0,
+    "reduction": 0,
+    "image": "chaussure6.jpg",
+    "images": [],
+    "description": "Escarpins pointus en suède, talon fin, boucle décorative dorée.",
+    "tailles": [
+      "36",
+      "37",
+      "38",
+      "39",
+      "40"
+    ],
+    "couleurs": [
+      "Gris"
+    ],
+    "variantes": {},
+    "stock": 12,
+    "public": "femme"
   }
 ]
