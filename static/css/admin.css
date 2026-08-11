@@ -1361,6 +1361,147 @@ img.admin-logo {
     width: 100%;
 }
 
+/* Facturation sur place */
+.admin-facturation-grille {
+    display: grid;
+    grid-template-columns: minmax(260px, 380px) 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.admin-formulaire-facturation {
+    max-width: none;
+    margin: 0;
+}
+
+.admin-facturation-brouillon {
+    background: white;
+    padding: 1.4rem;
+    border-radius: 10px;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+}
+
+.admin-facturation-brouillon .admin-section-titre {
+    margin-top: 0;
+}
+
+.admin-facturation-brouillon .admin-formulaire-facturation {
+    margin-top: 1.2rem;
+    padding: 0;
+    box-shadow: none;
+}
+
+.admin-facturation-total {
+    text-align: right;
+    font-size: 1.05rem;
+    color: var(--violet-800);
+    margin-top: 0.8rem;
+}
+
+@media (max-width: 800px) {
+    .admin-facturation-grille {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Facture imprimable */
+.facture-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.2rem;
+}
+
+.facture-actions button {
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.facture-papier {
+    max-width: 640px;
+    margin: 0 auto;
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+}
+
+.facture-entete {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 2px solid var(--orange-500);
+    padding-bottom: 1rem;
+    margin-bottom: 1.2rem;
+}
+
+.facture-logo {
+    height: 56px;
+}
+
+.facture-entete-texte h1 {
+    color: var(--violet-800);
+    font-size: 1.3rem;
+    margin-bottom: 0.2rem;
+}
+
+.facture-entete-texte p {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.facture-client {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 1.4rem;
+}
+
+.facture-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.2rem;
+}
+
+.facture-table th,
+.facture-table td {
+    padding: 0.6rem 0.5rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    font-size: 0.88rem;
+}
+
+.facture-table th {
+    background: var(--violet-100);
+    color: var(--violet-800);
+}
+
+.facture-total {
+    text-align: right;
+    font-size: 1.15rem;
+    color: var(--violet-800);
+    margin-bottom: 1rem;
+}
+
+.facture-pied {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #888;
+}
+
+@media print {
+    .admin-entete-fixe,
+    .facture-actions {
+        display: none !important;
+    }
+
+    .facture-papier {
+        box-shadow: none;
+        margin: 0;
+        max-width: none;
+    }
+}
+
 /* Entête autonome de l'espace livreur */
 .livreur-topbar {
     display: flex;

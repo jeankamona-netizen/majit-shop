@@ -167,6 +167,12 @@ def generer_numero_commande():
     return f"{prefixe}{len(commandes_du_jour) + 1}"
 
 
+def generer_numero_facture():
+    prefixe = f"FAC{date.today().strftime('%y%m%d')}"
+    factures_du_jour = [c for c in charger_commandes() if c["numero"].startswith(prefixe)]
+    return f"{prefixe}{len(factures_du_jour) + 1}"
+
+
 def charger_livreurs():
     connexion = obtenir_connexion()
     try:
@@ -1024,6 +1030,157 @@ def admin_tableau_de_bord():
         nb_rupture=len([p for p in produits if p.get("stock", 0) <= 0]),
         livreurs_en_mission=livreurs_en_mission,
     )
+
+
+def obtenir_lignes_facture_brouillon():
+    brouillon = session.get("facture_brouillon", {})
+    produits = charger_produits()
+    lignes = []
+    total = 0
+    for cle, quantite in brouillon.items():
+        pid_str, taille, couleur = (cle.split("|", 2) + ["", ""])[:3]
+        p = next((x for x in produits if x["id"] == int(pid_str)), None)
+        if p:
+            sous_total = prix_final(p) * quantite
+            total += sous_total
+            lignes.append({
+                "cle": cle, "produit": p, "taille": taille, "couleur": couleur,
+                "quantite": quantite, "sous_total": sous_total,
+            })
+    return lignes, total
+
+
+@app.route("/admin/facturation")
+@admin_requis
+def admin_facturation():
+    lignes, total = obtenir_lignes_facture_brouillon()
+    factures = sorted(
+        (c for c in charger_commandes() if c["numero"].startswith("FAC")),
+        key=lambda c: c["date"], reverse=True,
+    )
+    return render_template(
+        "admin/facturation.html", categories=CATEGORIES, produits=charger_produits(),
+        lignes=lignes, total=total, factures=factures,
+    )
+
+
+@app.route("/admin/facturation/ajouter", methods=["POST"])
+@admin_requis
+def admin_facturation_ajouter():
+    produit_id = request.form.get("produit_id", "")
+    if not produit_id.isdigit():
+        return redirect(url_for("admin_facturation"))
+
+    produit_cible = next((p for p in charger_produits() if p["id"] == int(produit_id)), None)
+    if not produit_cible:
+        return redirect(url_for("admin_facturation"))
+
+    try:
+        quantite = max(1, int(request.form.get("quantite", 1)))
+    except ValueError:
+        quantite = 1
+
+    tailles = produit_cible.get("tailles") or []
+    couleurs = produit_cible.get("couleurs") or []
+    taille = request.form.get("taille", "")
+    couleur = request.form.get("couleur", "")
+    if tailles and taille not in tailles:
+        taille = tailles[0]
+    if couleurs and couleur not in couleurs:
+        couleur = couleurs[0]
+    if not tailles:
+        taille = ""
+    if not couleurs:
+        couleur = ""
+
+    stock_disponible = stock_variante(produit_cible, couleur, taille)
+    if stock_disponible > 0:
+        brouillon = session.get("facture_brouillon", {})
+        cle = f"{produit_id}|{taille}|{couleur}"
+        brouillon[cle] = min(brouillon.get(cle, 0) + quantite, stock_disponible)
+        session["facture_brouillon"] = brouillon
+
+    return redirect(url_for("admin_facturation"))
+
+
+@app.route("/admin/facturation/supprimer", methods=["POST"])
+@admin_requis
+def admin_facturation_supprimer():
+    cle = request.form.get("cle", "")
+    brouillon = session.get("facture_brouillon", {})
+    brouillon.pop(cle, None)
+    session["facture_brouillon"] = brouillon
+    return redirect(url_for("admin_facturation"))
+
+
+@app.route("/admin/facturation/vider", methods=["POST"])
+@admin_requis
+def admin_facturation_vider():
+    session["facture_brouillon"] = {}
+    return redirect(url_for("admin_facturation"))
+
+
+@app.route("/admin/facturation/valider", methods=["POST"])
+@admin_requis
+def admin_facturation_valider():
+    lignes, total = obtenir_lignes_facture_brouillon()
+    if not lignes:
+        return redirect(url_for("admin_facturation"))
+
+    nom = request.form.get("nom", "").strip() or "Client de passage"
+    telephone = request.form.get("telephone", "").strip()
+    maintenant = datetime.now().isoformat(timespec="seconds")
+    numero = generer_numero_facture()
+
+    facture = {
+        "numero": numero,
+        "date": maintenant,
+        "nom": nom,
+        "telephone": telephone or "—",
+        "adresse": "Vente en boutique (facturation directe)",
+        "latitude": None,
+        "longitude": None,
+        "lignes": [
+            {
+                "produit_id": ligne["produit"]["id"],
+                "nom": ligne["produit"]["nom"],
+                "taille": ligne["taille"],
+                "couleur": ligne["couleur"],
+                "quantite": ligne["quantite"],
+                "prix_unitaire": prix_final(ligne["produit"]),
+                "sous_total": ligne["sous_total"],
+            }
+            for ligne in lignes
+        ],
+        "total": total,
+        "statut": "livree",
+        "montant_verse": total,
+        "date_livraison": maintenant,
+        "vue": True,
+    }
+
+    commandes = charger_commandes()
+    commandes.append(facture)
+    sauvegarder_commandes(commandes)
+
+    produits = charger_produits()
+    for ligne in lignes:
+        p = next((x for x in produits if x["id"] == ligne["produit"]["id"]), None)
+        if p:
+            ajuster_stock_variante(p, ligne["couleur"], ligne["taille"], -ligne["quantite"])
+    sauvegarder_produits(produits)
+
+    session["facture_brouillon"] = {}
+    return redirect(url_for("admin_facture_voir", numero=numero))
+
+
+@app.route("/admin/facturation/<numero>")
+@admin_requis
+def admin_facture_voir(numero):
+    facture = next((c for c in charger_commandes() if c["numero"] == numero and c["numero"].startswith("FAC")), None)
+    if not facture:
+        abort(404)
+    return render_template("admin/facture.html", facture=facture, categories=CATEGORIES)
 
 
 @app.route("/admin/produits")

@@ -1,0 +1,192 @@
+{% extends "admin/admin_base.html" %}
+
+{% block titre %}Facturation — Administration Majt Shop{% endblock %}
+
+{% block contenu %}
+<h1>Facturation sur place</h1>
+<p class="admin-note">Un client se présente à la boutique sans avoir commandé en ligne ? Ajoutez ses articles ci-dessous puis générez sa facture. Le stock est déduit immédiatement.</p>
+
+<div class="admin-facturation-grille">
+    <div class="admin-facturation-ajout">
+        <h2 class="admin-section-titre">Ajouter un article</h2>
+        <form method="post" action="{{ url_for('admin_facturation_ajouter') }}" class="admin-formulaire admin-formulaire-facturation" id="form-ajout-article">
+            <label for="produit_id">Article</label>
+            <select id="produit_id" name="produit_id" required>
+                <option value="">— Choisir un article —</option>
+                {% for p in produits %}
+                <option value="{{ p.id }}">{{ p.nom }} — {{ (p|prix_final)|cdf }} (stock : {{ p.stock }})</option>
+                {% endfor %}
+            </select>
+
+            <div id="champ-couleur" hidden>
+                <label for="couleur">Couleur</label>
+                <select id="couleur" name="couleur"></select>
+            </div>
+
+            <div id="champ-taille" hidden>
+                <label for="taille">Taille / pointure</label>
+                <select id="taille" name="taille"></select>
+            </div>
+
+            <p class="admin-note" id="note-stock" hidden></p>
+
+            <label for="quantite">Quantité</label>
+            <input type="number" id="quantite" name="quantite" min="1" step="1" value="1" required>
+
+            <button type="submit">Ajouter à la facture</button>
+        </form>
+    </div>
+
+    <div class="admin-facturation-brouillon">
+        <h2 class="admin-section-titre">Facture en cours</h2>
+        {% if lignes %}
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Article</th>
+                        <th>Qté</th>
+                        <th>Sous-total</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ligne in lignes %}
+                    <tr>
+                        <td>{{ ligne.produit.nom }}{% if ligne.couleur %} ({{ ligne.couleur }}{% if ligne.taille %}, {{ ligne.taille }}{% endif %}){% elif ligne.taille %} ({{ ligne.taille }}){% endif %}</td>
+                        <td>{{ ligne.quantite }}</td>
+                        <td>{{ ligne.sous_total|cdf }}</td>
+                        <td>
+                            <form method="post" action="{{ url_for('admin_facturation_supprimer') }}">
+                                <input type="hidden" name="cle" value="{{ ligne.cle }}">
+                                <button type="submit" class="admin-lien-annuler" title="Retirer cet article">✕</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="admin-facturation-total">Total : <strong>{{ total|cdf }}</strong></div>
+
+        <form method="post" action="{{ url_for('admin_facturation_valider') }}" class="admin-formulaire admin-formulaire-facturation">
+            <label for="nom">Nom du client (optionnel)</label>
+            <input type="text" id="nom" name="nom" placeholder="Client de passage">
+
+            <label for="telephone">Téléphone (optionnel)</label>
+            <input type="text" id="telephone" name="telephone">
+
+            <button type="submit">Générer la facture</button>
+        </form>
+        <form method="post" action="{{ url_for('admin_facturation_vider') }}" onsubmit="return confirm('Vider la facture en cours ?');">
+            <button type="submit" class="admin-lien-annuler">Vider la facture en cours</button>
+        </form>
+        {% else %}
+        <p>Aucun article ajouté pour le moment.</p>
+        {% endif %}
+    </div>
+</div>
+
+<h2 class="admin-section-titre">Historique des factures sur place</h2>
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>N° Facture</th>
+                <th>Client</th>
+                <th>Total</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for f in factures %}
+            <tr>
+                <td><strong>{{ f.numero }}</strong><br><span class="admin-commande-contact">{{ f.date.replace('T', ' ') }}</span></td>
+                <td>{{ f.nom }}</td>
+                <td>{{ f.total|cdf }}</td>
+                <td><a href="{{ url_for('admin_facture_voir', numero=f.numero) }}" class="admin-lien-carte">Voir / Imprimer</a></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4">Aucune facture émise pour le moment.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+(function () {
+    var PRODUITS = {{ produits|tojson }};
+    var selectProduit = document.getElementById("produit_id");
+    var champCouleur = document.getElementById("champ-couleur");
+    var selectCouleur = document.getElementById("couleur");
+    var champTaille = document.getElementById("champ-taille");
+    var selectTaille = document.getElementById("taille");
+    var noteStock = document.getElementById("note-stock");
+    var champQuantite = document.getElementById("quantite");
+
+    function cleVariante(couleur, taille) {
+        return (couleur || "") + "::" + (taille || "");
+    }
+
+    function remplirSelect(select, valeurs) {
+        select.innerHTML = "";
+        valeurs.forEach(function (v) {
+            var option = document.createElement("option");
+            option.value = v;
+            option.textContent = v;
+            select.appendChild(option);
+        });
+    }
+
+    function produitActuel() {
+        var id = parseInt(selectProduit.value, 10);
+        return PRODUITS.find(function (p) { return p.id === id; });
+    }
+
+    function actualiserStock() {
+        var produit = produitActuel();
+        if (!produit) {
+            noteStock.hidden = true;
+            return;
+        }
+        var stock = produit.variantes && Object.keys(produit.variantes).length
+            ? (produit.variantes[cleVariante(selectCouleur.value, selectTaille.value)] || 0)
+            : produit.stock;
+        noteStock.hidden = false;
+        noteStock.textContent = stock > 0 ? "Stock disponible : " + stock : "Rupture de stock pour cette combinaison.";
+        champQuantite.max = stock > 0 ? stock : 1;
+    }
+
+    function actualiser() {
+        var produit = produitActuel();
+        if (!produit) {
+            champCouleur.hidden = true;
+            champTaille.hidden = true;
+            noteStock.hidden = true;
+            return;
+        }
+
+        if (produit.couleurs && produit.couleurs.length) {
+            remplirSelect(selectCouleur, produit.couleurs);
+            champCouleur.hidden = false;
+        } else {
+            champCouleur.hidden = true;
+        }
+
+        if (produit.tailles && produit.tailles.length) {
+            remplirSelect(selectTaille, produit.tailles);
+            champTaille.hidden = false;
+        } else {
+            champTaille.hidden = true;
+        }
+
+        actualiserStock();
+    }
+
+    selectProduit.addEventListener("change", actualiser);
+    selectCouleur.addEventListener("change", actualiserStock);
+    selectTaille.addEventListener("change", actualiserStock);
+    actualiser();
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "admin/admin_base.html" %}
+
+{% block titre %}Facture {{ facture.numero }} — Administration Majt Shop{% endblock %}
+
+{% block contenu %}
+<div class="facture-actions">
+    <a href="{{ url_for('admin_facturation') }}" class="admin-lien-carte">← Retour à la facturation</a>
+    <button type="button" onclick="window.print()" class="admin-lien-ajout">Imprimer la facture</button>
+</div>
+
+<div class="facture-papier">
+    <div class="facture-entete">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Majt Shop" class="facture-logo">
+        <div class="facture-entete-texte">
+            <h1>Facture</h1>
+            <p>N° {{ facture.numero }}</p>
+            <p>{{ facture.date.replace('T', ' ') }}</p>
+        </div>
+    </div>
+
+    <div class="facture-client">
+        <strong>Client :</strong> {{ facture.nom }}<br>
+        {% if facture.telephone and facture.telephone != '—' %}<strong>Téléphone :</strong> {{ facture.telephone }}<br>{% endif %}
+        <strong>Vente :</strong> {{ facture.adresse }}
+    </div>
+
+    <table class="facture-table">
+        <thead>
+            <tr>
+                <th>Article</th>
+                <th>Prix unitaire</th>
+                <th>Qté</th>
+                <th>Sous-total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ligne in facture.lignes %}
+            <tr>
+                <td>{{ ligne.nom }}{% if ligne.couleur %} ({{ ligne.couleur }}{% if ligne.taille %}, {{ ligne.taille }}{% endif %}){% elif ligne.taille %} ({{ ligne.taille }}){% endif %}</td>
+                <td>{{ ligne.prix_unitaire|cdf }}</td>
+                <td>{{ ligne.quantite }}</td>
+                <td>{{ ligne.sous_total|cdf }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="facture-total">Total payé : <strong>{{ facture.total|cdf }}</strong></div>
+
+    <p class="facture-pied">Merci pour votre achat chez Majt Shop !</p>
+</div>
+{% endblock %}
