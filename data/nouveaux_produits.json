@@ -1,0 +1,359 @@
+[
+  {
+    "id": 90,
+    "nom": "Sneakers cuir gaufré à lacets tricolores",
+    "categorie": "chaussures",
+    "public": "homme",
+    "prix": 70000,
+    "couleurs": [
+      "Marron",
+      "Noir",
+      "Cognac"
+    ],
+    "description": "Sneakers en cuir texturé avec logo circulaire, semelle bicolore épaisse.",
+    "images": [
+      "produit-90-2.jpeg",
+      "produit-90-3.jpeg"
+    ],
+    "sous_categorie": null,
+    "reduction": 0,
+    "image": "produit-90.jpeg",
+    "tailles": [],
+    "variantes": {
+      "Marron::": 2,
+      "Noir::": 2,
+      "Cognac::": 2
+    },
+    "stock": 6
+  },
+  {
+    "id": 91,
+    "nom": "Sneakers cuir wingtip tricolores",
+    "categorie": "chaussures",
+    "public": "homme",
+    "prix": 70000,
+    "couleurs": [
+      "Marron",
+      "Camel",
+      "Noir"
+    ],
+    "description": "Sneakers derby façon richelieu, bout golf perforé, semelle blanche épaisse.",
+    "images": [
+      "produit-91-2.jpeg",
+      "produit-91-3.jpeg"
+    ],
+    "sous_categorie": null,
+    "reduction": 0,
+    "image": "produit-91.jpeg",
+    "tailles": [],
+    "variantes": {
+      "Marron::": 2,
+      "Camel::": 2,
+      "Noir::": 2
+    },
+    "stock": 6
+  },
+  {
+    "id": 92,
+    "nom": "Sneakers bicolores noir et blanc",
+    "categorie": "chaussures",
+    "public": "homme",
+    "prix": 66000,
+    "couleurs": [
+      "Noir",
+      "Blanc"
+    ],
+    "description": "Sneakers running légères, empiècement contrasté, semelle amortissante.",
+    "images": [
+      "produit-92-2.jpeg"
+    ],
+    "sous_categorie": null,
+    "reduction": 0,
+    "image": "produit-92.jpeg",
+    "tailles": [],
+    "variantes": {
+      "Noir::": 2,
+      "Blanc::": 2
+    },
+    "stock": 4
+  },
+  {
+    "id": 93,
+    "nom": "Chaussures vernies noires élégantes",
+    "categorie": "chaussures",
+    "public": "homme",
+    "prix": 64000,
+    "couleurs": [
+      "Noir"
+    ],
+    "description": "Derby vernie noire, finition brillante, semelle blanche confort.",
+    "images": [],
+    "sous_categorie": null,
+    "reduction": 0,
+    "image": "produit-93.jpeg",
+    "tailles": [],
+    "variantes": {
+      "Noir::": 2
+    },
+    "stock": 2
+  },
+  {
+    "id": 94,
+    "nom": "Sneakers casual bicolores noir et café",
+    "categorie": "chaussures",
+    "public": "homme",
+    "prix": 65000,
+    "couleurs": [
+      "Noir",
+      "Marron café"
+    ],
+    "description": "Sneakers casual en cuir, doublure contrastée, semelle souple.",
+    "images": [],
+    "sous_categorie": null,
+    "reduction": 0,
+    "image": "produit-94.jpeg",
+    "tailles": [],
+    "variantes": {
+      "Noir::": 2,
+      "Marron café::": 2
+    },
+    "stock": 4
+  },
+  {
+    "id": 95,
+    "nom": "Sneakers plateforme bicolores tendance",
+    "categorie": "chaussures",
+    "public": "unisexe",
+    "prix": 72000,
+    "couleurs": [
+      "Noir",
+      "Blanc"
+    ],
+    "description": "Sneakers plateforme épaisse, look streetwear, semelle contrastée.",
+    "images": [],
+    "sous_categorie": null,
+    "reduction": 0,
+    "image": "produit-95.jpeg",
+    "tailles": [],
+    "variantes": {
+      "Noir::": 2,
+      "Blanc::": 2
+    },
+    "stock": 4
+  },
+  {
+    "id": 96,
+    "nom": "Sneakers chunky femme blanches",
+    "categorie": "chaussures",
+    "public": "femme",
+    "prix": 68000,
+    "couleurs": [
+      "Blanc"
+    ],
+    "description": "Sneakers chunky femme, semelle épaisse, coloris blanc intégral.",
+    "images": [],
+    "sous_categorie": null,
+    "reduction": 0,
+    "image": "produit-96.jpeg",
+    "tailles": [],
+    "variantes": {
+      "Blanc::": 2
+    },
+    "stock": 2
+  },
+  {
+    "id": 97,
+    "nom": "Chaussures bébé sneakers blanches et noires",
+    "categorie": "bebes",
+    "public": "enfant",
+    "prix": 15000,
+    "couleurs": [
+      "Blanc",
+      "Noir"
+    ],
+    "description": "Sneakers bébé confortables, lacets élastiques, disponibles en deux coloris.",
+    "images": [
+      "produit-97-2.jpeg"
+    ],
+    "sous_categorie": null,
+    "reduction": 0,
+    "image": "produit-97.jpeg",
+    "tailles": [],
+    "variantes": {
+      "Blanc::": 2,
+      "Noir::": 2
+    },
+    "stock": 4
+  },
+  {
+    "id": 98,
+    "nom": "Jean noir slim homme",
+    "categorie": "vetements",
+    "public": "homme",
+    "prix": 38000,
+    "couleurs": [
+      "Noir"
+    ],
+    "description": "Jean slim noir homme, coupe ajustée, poches arrière brodées.",
+    "images": [
+      "produit-98-2.jpeg",
+      "produit-98-3.jpeg"
+    ],
+    "sous_categorie": null,
+    "reduction": 0,
+    "image": "produit-98.jpeg",
+    "tailles": [],
+    "variantes": {
+      "Noir::": 2
+    },
+    "stock": 2
+  },
+  {
+    "id": 99,
+    "nom": "Chemise cargo homme multicolore",
+    "categorie": "vetements",
+    "public": "homme",
+    "prix": 29000,
+    "couleurs": [
+      "Noir",
+      "Blanc",
+      "Vert militaire",
+      "Beige",
+      "Bleu marine",
+      "Orange"
+    ],
+    "description": "Chemise cargo à poches poitrine, manches longues, plusieurs coloris disponibles.",
+    "images": [
+      "produit-99-2.jpeg",
+      "produit-99-3.jpeg",
+      "produit-99-4.jpeg"
+    ],
+    "sous_categorie": null,
+    "reduction": 0,
+    "image": "produit-99.jpeg",
+    "tailles": [],
+    "variantes": {
+      "Noir::": 2,
+      "Blanc::": 2,
+      "Vert militaire::": 2,
+      "Beige::": 2,
+      "Bleu marine::": 2,
+      "Orange::": 2
+    },
+    "stock": 12
+  },
+  {
+    "id": 100,
+    "nom": "Chemise en lin homme multicolore",
+    "categorie": "vetements",
+    "public": "homme",
+    "prix": 31000,
+    "couleurs": [
+      "Blanc",
+      "Gris",
+      "Beige",
+      "Bleu marine",
+      "Rose",
+      "Bleu ciel"
+    ],
+    "description": "Chemise en lin léger et respirant, coupe classique, plusieurs coloris disponibles.",
+    "images": [
+      "produit-100-2.jpeg",
+      "produit-100-3.jpeg"
+    ],
+    "sous_categorie": null,
+    "reduction": 0,
+    "image": "produit-100.jpeg",
+    "tailles": [],
+    "variantes": {
+      "Blanc::": 2,
+      "Gris::": 2,
+      "Beige::": 2,
+      "Bleu marine::": 2,
+      "Rose::": 2,
+      "Bleu ciel::": 2
+    },
+    "stock": 12
+  },
+  {
+    "id": 101,
+    "nom": "T-shirt uni multicolore collection 1",
+    "categorie": "vetements",
+    "public": "unisexe",
+    "prix": 18000,
+    "couleurs": [
+      "Beige",
+      "Blanc",
+      "Bordeaux",
+      "Turquoise",
+      "Rouille",
+      "Vert foncé",
+      "Rose",
+      "Vert bouteille",
+      "Noir"
+    ],
+    "description": "T-shirt basique uni en coton, coupe droite, large choix de coloris.",
+    "images": [
+      "produit-101-2.jpeg",
+      "produit-101-3.jpeg"
+    ],
+    "sous_categorie": null,
+    "reduction": 0,
+    "image": "produit-101.jpeg",
+    "tailles": [],
+    "variantes": {
+      "Beige::": 2,
+      "Blanc::": 2,
+      "Bordeaux::": 2,
+      "Turquoise::": 2,
+      "Rouille::": 2,
+      "Vert foncé::": 2,
+      "Rose::": 2,
+      "Vert bouteille::": 2,
+      "Noir::": 2
+    },
+    "stock": 18
+  },
+  {
+    "id": 102,
+    "nom": "T-shirt uni multicolore collection 2",
+    "categorie": "vetements",
+    "public": "unisexe",
+    "prix": 18500,
+    "couleurs": [
+      "Marron",
+      "Gris foncé",
+      "Magenta",
+      "Rouge",
+      "Orange",
+      "Noir",
+      "Bleu",
+      "Bleu ciel",
+      "Rose",
+      "Crème",
+      "Bordeaux",
+      "Blanc"
+    ],
+    "description": "T-shirt basique uni en coton, coupe droite, très large choix de coloris.",
+    "images": [],
+    "sous_categorie": null,
+    "reduction": 0,
+    "image": "produit-102.jpeg",
+    "tailles": [],
+    "variantes": {
+      "Marron::": 2,
+      "Gris foncé::": 2,
+      "Magenta::": 2,
+      "Rouge::": 2,
+      "Orange::": 2,
+      "Noir::": 2,
+      "Bleu::": 2,
+      "Bleu ciel::": 2,
+      "Rose::": 2,
+      "Crème::": 2,
+      "Bordeaux::": 2,
+      "Blanc::": 2
+    },
+    "stock": 24
+  }
+]

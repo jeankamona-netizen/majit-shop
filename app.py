@@ -1612,6 +1612,31 @@ def admin_modifier_ligne_commande(numero, index):
     return redirect(url_for("admin_commandes"))
 
 
+@app.route("/admin/produits/importer-lot", methods=["POST"])
+@admin_requis
+def admin_importer_lot_produits():
+    chemin = Path(__file__).parent / "data" / "nouveaux_produits.json"
+    if not chemin.exists():
+        return {"erreur": "fichier introuvable"}, 404
+
+    with open(chemin, encoding="utf-8") as f:
+        nouveaux = json.load(f)
+
+    produits = charger_produits()
+    ids_existants = {p["id"] for p in produits}
+    ajoutes = []
+    for p in nouveaux:
+        if p["id"] in ids_existants:
+            continue
+        produits.append(p)
+        ajoutes.append(p["id"])
+
+    if ajoutes:
+        sauvegarder_produits(produits)
+
+    return {"ajoutes": ajoutes, "deja_presents": [p["id"] for p in nouveaux if p["id"] not in ajoutes]}
+
+
 @app.route("/admin/produits/ajouter", methods=["GET", "POST"])
 @admin_requis
 def admin_ajouter_produit():
