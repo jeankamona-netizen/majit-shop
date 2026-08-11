@@ -1667,7 +1667,10 @@ def admin_migration_ajouter_vues():
 @app.route("/admin/produits/importer-lot", methods=["POST"])
 @admin_requis
 def admin_importer_lot_produits():
-    chemin = Path(__file__).parent / "data" / "nouveaux_produits.json"
+    nom_fichier = request.args.get("fichier", "nouveaux_produits.json")
+    if "/" in nom_fichier or "\\" in nom_fichier:
+        return {"erreur": "nom de fichier invalide"}, 400
+    chemin = Path(__file__).parent / "data" / nom_fichier
     if not chemin.exists():
         return {"erreur": "fichier introuvable"}, 404
 
