@@ -1217,7 +1217,9 @@ def admin_commandes():
                 ligne["prix_unitaire"] = round(ligne["sous_total"] / ligne["quantite"])
 
     statut_filtre = request.args.get("statut", "")
-    if statut_filtre in ("en_attente", "en_livraison", "livree", "annulee"):
+    if statut_filtre == "sur_place":
+        commandes = [c for c in commandes if c["numero"].startswith("FAC")]
+    elif statut_filtre in ("en_attente", "en_livraison", "livree", "annulee"):
         commandes = [c for c in commandes if c["statut"] == statut_filtre]
 
     livreur_filtre = request.args.get("livreur", "")

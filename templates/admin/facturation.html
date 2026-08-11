@@ -10,13 +10,13 @@
     <div class="admin-facturation-ajout">
         <h2 class="admin-section-titre">Ajouter un article</h2>
         <form method="post" action="{{ url_for('admin_facturation_ajouter') }}" class="admin-formulaire admin-formulaire-facturation" id="form-ajout-article">
-            <label for="produit_id">Article</label>
-            <select id="produit_id" name="produit_id" required>
-                <option value="">— Choisir un article —</option>
-                {% for p in produits %}
-                <option value="{{ p.id }}">{{ p.nom }} — {{ (p|prix_final)|cdf }} (stock : {{ p.stock }})</option>
-                {% endfor %}
-            </select>
+            <label for="produit_recherche">Article</label>
+            <div class="admin-autocomplete">
+                <input type="text" id="produit_recherche" placeholder="Tapez une lettre ou un nom d'article..." autocomplete="off">
+                <input type="hidden" id="produit_id" name="produit_id" value="">
+                <ul class="admin-autocomplete-liste" id="produit-suggestions" hidden></ul>
+            </div>
+            <p class="admin-erreur-champ" id="erreur-article" hidden>Merci de choisir un article dans la liste proposée.</p>
 
             <div id="champ-couleur" hidden>
                 <label for="couleur">Couleur</label>
@@ -116,7 +116,10 @@
 <script>
 (function () {
     var PRODUITS = {{ produits|tojson }};
-    var selectProduit = document.getElementById("produit_id");
+    var champRecherche = document.getElementById("produit_recherche");
+    var champId = document.getElementById("produit_id");
+    var listeSuggestions = document.getElementById("produit-suggestions");
+    var erreurArticle = document.getElementById("erreur-article");
     var champCouleur = document.getElementById("champ-couleur");
     var selectCouleur = document.getElementById("couleur");
     var champTaille = document.getElementById("champ-taille");
@@ -139,9 +142,71 @@
     }
 
     function produitActuel() {
-        var id = parseInt(selectProduit.value, 10);
+        var id = parseInt(champId.value, 10);
         return PRODUITS.find(function (p) { return p.id === id; });
     }
+
+    function choisirProduit(p) {
+        champRecherche.value = p.nom;
+        champId.value = p.id;
+        listeSuggestions.hidden = true;
+        erreurArticle.hidden = true;
+        actualiser();
+    }
+
+    function afficherSuggestions() {
+        var texte = champRecherche.value.trim().toLowerCase();
+        listeSuggestions.innerHTML = "";
+        if (!texte) {
+            listeSuggestions.hidden = true;
+            return;
+        }
+
+        var correspondances = PRODUITS.filter(function (p) {
+            return p.nom.toLowerCase().indexOf(texte) !== -1;
+        }).slice(0, 8);
+
+        if (!correspondances.length) {
+            listeSuggestions.hidden = true;
+            return;
+        }
+
+        correspondances.forEach(function (p) {
+            var li = document.createElement("li");
+            li.textContent = p.nom + " — stock : " + p.stock;
+            li.addEventListener("mousedown", function (e) {
+                e.preventDefault();
+                choisirProduit(p);
+            });
+            listeSuggestions.appendChild(li);
+        });
+        listeSuggestions.hidden = false;
+    }
+
+    champRecherche.addEventListener("input", function () {
+        var produit = produitActuel();
+        if (produit && produit.nom !== champRecherche.value) {
+            champId.value = "";
+            actualiser();
+        }
+        afficherSuggestions();
+    });
+
+    champRecherche.addEventListener("focus", function () {
+        if (champRecherche.value.trim()) afficherSuggestions();
+    });
+
+    champRecherche.addEventListener("blur", function () {
+        listeSuggestions.hidden = true;
+    });
+
+    document.getElementById("form-ajout-article").addEventListener("submit", function (e) {
+        if (!champId.value || !produitActuel()) {
+            e.preventDefault();
+            erreurArticle.hidden = false;
+            champRecherche.focus();
+        }
+    });
 
     function actualiserStock() {
         var produit = produitActuel();
@@ -183,7 +248,6 @@
         actualiserStock();
     }
 
-    selectProduit.addEventListener("change", actualiser);
     selectCouleur.addEventListener("change", actualiserStock);
     selectTaille.addEventListener("change", actualiserStock);
     actualiser();

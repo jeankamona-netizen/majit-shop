@@ -1361,6 +1361,49 @@ img.admin-logo {
     width: 100%;
 }
 
+/* Autocomplétion article (facturation) */
+.admin-autocomplete {
+    position: relative;
+}
+
+.admin-autocomplete input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.admin-autocomplete-liste {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    margin-top: 0.2rem;
+    max-height: 220px;
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    list-style: none;
+    padding: 0.2rem 0;
+}
+
+.admin-autocomplete-liste li {
+    padding: 0.55rem 0.8rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.admin-autocomplete-liste li:hover {
+    background: var(--violet-100);
+}
+
+.admin-erreur-champ {
+    font-size: 0.78rem;
+    color: #c0392b;
+    margin-top: 0.3rem;
+}
+
 /* Facturation sur place */
 .admin-facturation-grille {
     display: grid;
