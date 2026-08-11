@@ -100,8 +100,8 @@ def sauvegarder_produits(produits):
                 cur.execute(
                     """
                     INSERT INTO produits (id, nom, categorie, sous_categorie, prix, reduction, image, images,
-                        description, tailles, couleurs, variantes, stock, public)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        description, tailles, couleurs, variantes, stock, public, vues)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """,
                     (
                         p["id"], p["nom"], p["categorie"], p.get("sous_categorie") or None,
@@ -110,11 +110,41 @@ def sauvegarder_produits(produits):
                         p.get("description", ""), json.dumps(p.get("tailles", []), ensure_ascii=False),
                         json.dumps(p.get("couleurs", []), ensure_ascii=False),
                         json.dumps(p.get("variantes", {}), ensure_ascii=False) if p.get("variantes") else None,
-                        p.get("stock", 0), p.get("public", "unisexe"),
+                        p.get("stock", 0), p.get("public", "unisexe"), p.get("vues", 0),
                     ),
                 )
     finally:
         connexion.close()
+
+
+def incrementer_vues_produit(produit_id):
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("UPDATE produits SET vues = vues + 1 WHERE id = %s", (produit_id,))
+    finally:
+        connexion.close()
+
+
+def quantites_vendues_par_produit():
+    totaux = {}
+    for c in charger_commandes():
+        if c["statut"] == "annulee":
+            continue
+        for ligne in c["lignes"]:
+            pid = ligne.get("produit_id")
+            if pid is not None:
+                totaux[pid] = totaux.get(pid, 0) + ligne.get("quantite", 0)
+    return totaux
+
+
+def trier_par_popularite(produits):
+    ventes = quantites_vendues_par_produit()
+
+    def score(p):
+        return ventes.get(p["id"], 0) * 5 + p.get("vues", 0)
+
+    return sorted(produits, key=score, reverse=True)
 
 
 def _commande_depuis_ligne(ligne):
@@ -569,7 +599,7 @@ def compter_visite():
 
 @app.route("/")
 def accueil():
-    tous_produits = [p for p in charger_produits() if p.get("stock", 0) > 0]
+    tous_produits = trier_par_popularite([p for p in charger_produits() if p.get("stock", 0) > 0])
     publics_presents = publics_presents_tries(tous_produits)
     categories_presentes = {p["categorie"] for p in tous_produits}
 
@@ -705,6 +735,7 @@ def produit(produit_id):
     p = trouver_produit(produit_id)
     if not p:
         abort(404)
+    incrementer_vues_produit(produit_id)
     galerie = [p["image"]] + [img for img in p.get("images", []) if img != p["image"]]
     galerie = galerie[:4]
     return render_template(
@@ -997,7 +1028,12 @@ def admin_tableau_de_bord():
     commandes_en_attente = [c for c in commandes if c["statut"] == "en_attente"]
     commandes_en_livraison = [c for c in commandes if c["statut"] == "en_livraison"]
     commandes_livrees = [c for c in commandes if c["statut"] == "livree"]
-    chiffre_affaires = sum(c.get("montant_verse") or 0 for c in commandes_livrees)
+    chiffre_affaires_en_ligne = sum(
+        c.get("montant_verse") or 0 for c in commandes_livrees if not c["numero"].startswith("FAC")
+    )
+    chiffre_affaires_boutique = sum(
+        c.get("montant_verse") or 0 for c in commandes_livrees if c["numero"].startswith("FAC")
+    )
 
     livreurs_par_numero = {l["numero"]: l for l in charger_livreurs()}
     missions = {}
@@ -1025,7 +1061,8 @@ def admin_tableau_de_bord():
         nb_commandes_attente=len(commandes_en_attente),
         nb_commandes_en_livraison=len(commandes_en_livraison),
         nb_commandes_livrees=len(commandes_livrees),
-        chiffre_affaires=chiffre_affaires,
+        chiffre_affaires_en_ligne=chiffre_affaires_en_ligne,
+        chiffre_affaires_boutique=chiffre_affaires_boutique,
         nb_produits=len(produits),
         nb_rupture=len([p for p in produits if p.get("stock", 0) <= 0]),
         livreurs_en_mission=livreurs_en_mission,
@@ -1610,6 +1647,21 @@ def admin_modifier_ligne_commande(numero, index):
         if modifier_quantite_ligne(commande, index, request.form.get("quantite")):
             sauvegarder_commandes(commandes)
     return redirect(url_for("admin_commandes"))
+
+
+@app.route("/admin/migrations/ajouter-colonne-vues", methods=["POST"])
+@admin_requis
+def admin_migration_ajouter_vues():
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SHOW COLUMNS FROM produits LIKE 'vues'")
+            if cur.fetchone():
+                return {"statut": "colonne deja presente"}
+            cur.execute("ALTER TABLE produits ADD COLUMN vues INT NOT NULL DEFAULT 0")
+        return {"statut": "colonne ajoutee"}
+    finally:
+        connexion.close()
 
 
 @app.route("/admin/produits/importer-lot", methods=["POST"])

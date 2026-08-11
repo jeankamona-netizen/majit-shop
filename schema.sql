@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS produits (
     variantes JSON,
     stock INT NOT NULL DEFAULT 0,
     public VARCHAR(20) NOT NULL DEFAULT 'unisexe',
+    vues INT NOT NULL DEFAULT 0,
     INDEX idx_categorie (categorie),
     INDEX idx_public (public)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

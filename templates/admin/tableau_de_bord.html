@@ -22,10 +22,6 @@
         <span class="admin-stat-valeur">{{ nb_commandes_livrees }}</span>
         <span class="admin-stat-label">Commandes livrées</span>
     </a>
-    <a href="{{ url_for('admin_revenus') }}" class="admin-stat-carte admin-stat-accent">
-        <span class="admin-stat-valeur">{{ chiffre_affaires|cdf }}</span>
-        <span class="admin-stat-label">Chiffre d'affaires généré (après livraison)</span>
-    </a>
     <a href="{{ url_for('admin_produits') }}" class="admin-stat-carte">
         <span class="admin-stat-valeur">{{ nb_produits }}</span>
         <span class="admin-stat-label">Articles au catalogue</span>
@@ -33,6 +29,14 @@
     <a href="{{ url_for('admin_produits', stock='rupture') }}" class="admin-stat-carte {{ 'admin-stat-alerte' if nb_rupture else '' }}">
         <span class="admin-stat-valeur">{{ nb_rupture }}</span>
         <span class="admin-stat-label">Articles en rupture de stock</span>
+    </a>
+    <a href="{{ url_for('admin_revenus') }}" class="admin-stat-carte admin-stat-accent">
+        <span class="admin-stat-valeur">{{ chiffre_affaires_en_ligne|cdf }}</span>
+        <span class="admin-stat-label">Chiffre d'affaires généré en ligne (après livraison)</span>
+    </a>
+    <a href="{{ url_for('admin_facturation') }}" class="admin-stat-carte admin-stat-accent">
+        <span class="admin-stat-valeur">{{ chiffre_affaires_boutique|cdf }}</span>
+        <span class="admin-stat-label">Chiffre d'affaires généré en boutique (après facturation)</span>
     </a>
 </div>
 
