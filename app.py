@@ -1970,6 +1970,40 @@ def marquer_notifications_vues():
     return ("", 204)
 
 
+@app.route("/admin/activite/etat")
+@livreur_requis
+def admin_activite_etat():
+    commandes = charger_commandes()
+    compteurs = {
+        "total": len(commandes),
+        "en_attente": sum(1 for c in commandes if c["statut"] == "en_attente"),
+        "en_livraison": sum(1 for c in commandes if c["statut"] == "en_livraison"),
+        "livree": sum(1 for c in commandes if c["statut"] == "livree"),
+        "annulee": sum(1 for c in commandes if c["statut"] == "annulee"),
+    }
+    nouvelles = sorted(
+        (c for c in commandes if not c.get("vue", True)),
+        key=lambda c: c["date"], reverse=True,
+    )
+    return {
+        "compteurs": compteurs,
+        "nouvelles_commandes": [
+            {
+                "numero": c["numero"], "date": c["date"], "nom": c["nom"],
+                "telephone": c["telephone"], "adresse": c["adresse"], "total": c["total"],
+                "lignes": [
+                    {
+                        "nom": l["nom"], "couleur": l.get("couleur"), "taille": l.get("taille"),
+                        "quantite": l["quantite"], "sous_total": l["sous_total"],
+                    }
+                    for l in c["lignes"]
+                ],
+            }
+            for c in nouvelles
+        ],
+    }
+
+
 @app.route("/admin/commandes/<numero>/livrer", methods=["POST"])
 @admin_requis
 def admin_livrer_commande(numero):
