@@ -56,6 +56,8 @@ CREATE TABLE IF NOT EXISTS commandes (
     total DECIMAL(12,2) NOT NULL,
     statut VARCHAR(20) NOT NULL DEFAULT 'en_attente',
     montant_verse DECIMAL(12,2),
+    montant_verse_cdf DECIMAL(12,2),
+    montant_verse_usd DECIMAL(12,2),
     date_livraison VARCHAR(30),
     vue TINYINT(1) NOT NULL DEFAULT 0,
     livreur_numero VARCHAR(20),

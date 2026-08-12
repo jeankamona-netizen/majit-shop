@@ -157,6 +157,8 @@ def _commande_depuis_ligne(ligne):
     ligne["longitude"] = float(ligne["longitude"]) if ligne["longitude"] is not None else None
     ligne["total"] = float(ligne["total"])
     ligne["montant_verse"] = float(ligne["montant_verse"]) if ligne["montant_verse"] is not None else None
+    ligne["montant_verse_cdf"] = float(ligne["montant_verse_cdf"]) if ligne.get("montant_verse_cdf") is not None else None
+    ligne["montant_verse_usd"] = float(ligne["montant_verse_usd"]) if ligne.get("montant_verse_usd") is not None else None
     ligne["vue"] = bool(ligne["vue"])
     ligne["lignes"] = json.loads(ligne["lignes"]) if ligne["lignes"] else []
     return ligne
@@ -176,22 +178,44 @@ def sauvegarder_commandes(commandes):
     connexion = obtenir_connexion()
     try:
         with connexion.cursor() as cur:
+            cur.execute("SHOW COLUMNS FROM commandes")
+            colonnes_existantes = {ligne["Field"] for ligne in cur.fetchall()}
+            colonnes_devises_ok = "montant_verse_cdf" in colonnes_existantes and "montant_verse_usd" in colonnes_existantes
+
             cur.execute("DELETE FROM commandes")
             for c in commandes:
-                cur.execute(
-                    """
-                    INSERT INTO commandes (numero, date, nom, telephone, adresse, latitude, longitude, lignes,
-                        total, statut, montant_verse, date_livraison, vue, livreur_numero, livreur_nom)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """,
-                    (
-                        c["numero"], c["date"], c["nom"], c["telephone"], c["adresse"],
-                        c.get("latitude"), c.get("longitude"), json.dumps(c.get("lignes", []), ensure_ascii=False),
-                        c.get("total", 0), c.get("statut", "en_attente"), c.get("montant_verse"),
-                        c.get("date_livraison"), int(bool(c.get("vue", True))), c.get("livreur_numero"),
-                        c.get("livreur_nom"),
-                    ),
-                )
+                if colonnes_devises_ok:
+                    cur.execute(
+                        """
+                        INSERT INTO commandes (numero, date, nom, telephone, adresse, latitude, longitude, lignes,
+                            total, statut, montant_verse, montant_verse_cdf, montant_verse_usd, date_livraison, vue,
+                            livreur_numero, livreur_nom)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        """,
+                        (
+                            c["numero"], c["date"], c["nom"], c["telephone"], c["adresse"],
+                            c.get("latitude"), c.get("longitude"), json.dumps(c.get("lignes", []), ensure_ascii=False),
+                            c.get("total", 0), c.get("statut", "en_attente"), c.get("montant_verse"),
+                            c.get("montant_verse_cdf"), c.get("montant_verse_usd"),
+                            c.get("date_livraison"), int(bool(c.get("vue", True))), c.get("livreur_numero"),
+                            c.get("livreur_nom"),
+                        ),
+                    )
+                else:
+                    cur.execute(
+                        """
+                        INSERT INTO commandes (numero, date, nom, telephone, adresse, latitude, longitude, lignes,
+                            total, statut, montant_verse, date_livraison, vue, livreur_numero, livreur_nom)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        """,
+                        (
+                            c["numero"], c["date"], c["nom"], c["telephone"], c["adresse"],
+                            c.get("latitude"), c.get("longitude"), json.dumps(c.get("lignes", []), ensure_ascii=False),
+                            c.get("total", 0), c.get("statut", "en_attente"), c.get("montant_verse"),
+                            c.get("date_livraison"), int(bool(c.get("vue", True))), c.get("livreur_numero"),
+                            c.get("livreur_nom"),
+                        ),
+                    )
     finally:
         connexion.close()
 
@@ -557,18 +581,31 @@ def livreur_courant():
     return next((l for l in charger_livreurs() if l["numero"] == numero), None)
 
 
-def marquer_commande_livree(commande, montant_form):
+def marquer_commande_livree(commande, montant_cdf_form, montant_usd_form=None):
     if commande["statut"] == "annulee":
         return False
     deja_solde = commande["statut"] == "livree" and (commande.get("montant_verse") or 0) >= commande["total"]
     if deja_solde:
         return False
+
     try:
-        montant = float(montant_form or commande["total"])
+        montant_usd = float(montant_usd_form or 0)
     except ValueError:
-        montant = commande["total"]
+        montant_usd = 0
+
+    try:
+        if montant_cdf_form in (None, ""):
+            montant_cdf = 0 if montant_usd else commande["total"]
+        else:
+            montant_cdf = float(montant_cdf_form)
+    except ValueError:
+        montant_cdf = commande["total"]
+
+    taux = obtenir_taux_usd()
     commande["statut"] = "livree"
-    commande["montant_verse"] = montant
+    commande["montant_verse"] = montant_cdf + montant_usd * taux
+    commande["montant_verse_cdf"] = montant_cdf
+    commande["montant_verse_usd"] = montant_usd
     if not commande.get("date_livraison"):
         commande["date_livraison"] = datetime.now().isoformat(timespec="seconds")
     return True
@@ -1239,6 +1276,20 @@ def admin_facturation_valider():
     maintenant = datetime.now().isoformat(timespec="seconds")
     numero = generer_numero_facture()
 
+    try:
+        montant_usd = float(request.form.get("montant_verse_usd") or 0)
+    except ValueError:
+        montant_usd = 0
+    try:
+        montant_cdf_form = request.form.get("montant_verse_cdf")
+        if montant_cdf_form in (None, ""):
+            montant_cdf = 0 if montant_usd else total
+        else:
+            montant_cdf = float(montant_cdf_form)
+    except ValueError:
+        montant_cdf = total
+    taux = obtenir_taux_usd()
+
     facture = {
         "numero": numero,
         "date": maintenant,
@@ -1261,7 +1312,9 @@ def admin_facturation_valider():
         ],
         "total": total,
         "statut": "livree",
-        "montant_verse": total,
+        "montant_verse": montant_cdf + montant_usd * taux,
+        "montant_verse_cdf": montant_cdf,
+        "montant_verse_usd": montant_usd,
         "date_livraison": maintenant,
         "vue": True,
     }
@@ -1433,7 +1486,7 @@ def livreur_livrer_commande(numero):
     commande = next((c for c in commandes if c["numero"] == numero), None)
     if not commande:
         abort(404)
-    if marquer_commande_livree(commande, request.form.get("montant_verse")):
+    if marquer_commande_livree(commande, request.form.get("montant_verse_cdf"), request.form.get("montant_verse_usd")):
         sauvegarder_commandes(commandes)
     return redirect(url_for("livreur"))
 
@@ -1473,6 +1526,19 @@ def admin_revenus():
     lignes = construire_lignes_ventes(canal=canal)
     total = sum(l["montant"] for l in lignes)
 
+    encaisse_cdf = 0.0
+    encaisse_usd = 0.0
+    for c in charger_commandes():
+        if c["statut"] != "livree":
+            continue
+        est_boutique = c["numero"].startswith("FAC")
+        if canal == "en_ligne" and est_boutique:
+            continue
+        if canal == "boutique" and not est_boutique:
+            continue
+        encaisse_cdf += c.get("montant_verse_cdf") or 0
+        encaisse_usd += c.get("montant_verse_usd") or 0
+
     type_filtre = request.args.get("type", "")
     valeur_filtre = request.args.get("valeur", "")
 
@@ -1491,6 +1557,8 @@ def admin_revenus():
         categories=CATEGORIES,
         canal=canal,
         total=total,
+        encaisse_cdf=encaisse_cdf,
+        encaisse_usd=encaisse_usd,
         filtres=FILTRES_REVENUS,
         type_filtre=type_filtre,
         valeur_filtre=valeur_filtre,
@@ -1680,7 +1748,7 @@ def admin_livrer_commande(numero):
     commande = next((c for c in commandes if c["numero"] == numero), None)
     if not commande:
         abort(404)
-    if marquer_commande_livree(commande, request.form.get("montant_verse")):
+    if marquer_commande_livree(commande, request.form.get("montant_verse_cdf"), request.form.get("montant_verse_usd")):
         sauvegarder_commandes(commandes)
     return redirect(url_for("admin_commandes"))
 
@@ -1811,6 +1879,26 @@ def admin_migration_ajouter_table_parametres():
             )
             cur.execute("INSERT IGNORE INTO parametres (id, taux_usd) VALUES (1, 2800)")
         return {"statut": "table prete"}
+    finally:
+        connexion.close()
+
+
+@app.route("/admin/migrations/ajouter-colonnes-devises", methods=["POST"])
+@admin_requis
+def admin_migration_ajouter_colonnes_devises():
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SHOW COLUMNS FROM commandes")
+            colonnes_existantes = {ligne["Field"] for ligne in cur.fetchall()}
+            ajoutees = []
+            if "montant_verse_cdf" not in colonnes_existantes:
+                cur.execute("ALTER TABLE commandes ADD COLUMN montant_verse_cdf DECIMAL(12,2)")
+                ajoutees.append("montant_verse_cdf")
+            if "montant_verse_usd" not in colonnes_existantes:
+                cur.execute("ALTER TABLE commandes ADD COLUMN montant_verse_usd DECIMAL(12,2)")
+                ajoutees.append("montant_verse_usd")
+        return {"colonnes_ajoutees": ajoutees}
     finally:
         connexion.close()
 

@@ -12,7 +12,18 @@
 
 <div class="admin-revenu-total">
     <span class="admin-stat-valeur">{{ total|cdf }}</span>
-    <span class="admin-stat-label">{{ 'Total facturé en boutique' if canal == 'boutique' else 'Total encaissé après livraison' }}</span>
+    <span class="admin-stat-label">{{ 'Total facturé en boutique' if canal == 'boutique' else 'Total encaissé après livraison' }} (équivalent CDF)</span>
+</div>
+
+<div class="admin-encaissements-devises">
+    <div class="admin-encaissement-carte">
+        <span class="admin-stat-valeur">{{ encaisse_cdf|cdf }}</span>
+        <span class="admin-stat-label">Encaissé en francs (CDF)</span>
+    </div>
+    <div class="admin-encaissement-carte">
+        <span class="admin-stat-valeur">{{ "%.2f"|format(encaisse_usd) }} $</span>
+        <span class="admin-stat-label">Encaissé en dollars (USD)</span>
+    </div>
 </div>
 
 <form method="get" class="admin-filtre-revenus">

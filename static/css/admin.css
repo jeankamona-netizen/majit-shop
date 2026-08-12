@@ -736,6 +736,19 @@ img.admin-logo {
     font-size: 0.82rem;
 }
 
+.paiement-mixte-inline {
+    display: flex;
+    gap: 0.35rem;
+}
+
+.paiement-mixte-inline input {
+    width: 80px;
+    padding: 0.35rem 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.82rem;
+}
+
 .admin-form-livraison button {
     background: var(--orange-500);
     color: white;
@@ -920,6 +933,34 @@ img.admin-logo {
 
 .admin-revenu-total .admin-stat-valeur {
     font-size: 2rem;
+}
+
+.admin-encaissements-devises {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.admin-encaissement-carte {
+    background: white;
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.admin-encaissement-carte .admin-stat-valeur {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--violet-800);
+}
+
+.admin-encaissement-carte .admin-stat-label {
+    font-size: 0.8rem;
+    color: #777;
 }
 
 .admin-filtre-revenus {
@@ -1568,6 +1609,32 @@ img.admin-logo {
     font-size: 0.82rem;
 }
 
+.paiement-mixte {
+    display: flex;
+    gap: 0.8rem;
+    margin-top: 0.3rem;
+}
+
+.paiement-mixte-champ {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.paiement-mixte-champ span {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--violet-700);
+}
+
+.paiement-mixte-champ input {
+    padding: 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
 @media (max-width: 800px) {
     .admin-facturation-grille {
         grid-template-columns: 1fr;
@@ -1661,6 +1728,14 @@ img.admin-logo {
     text-align: right;
     font-size: 1.15rem;
     color: var(--violet-800);
+    margin-bottom: 1rem;
+}
+
+.facture-detail-paiement {
+    text-align: right;
+    font-size: 0.85rem;
+    color: #777;
+    margin-top: -0.6rem;
     margin-bottom: 1rem;
 }
 

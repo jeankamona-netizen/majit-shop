@@ -100,12 +100,11 @@
 
             {% if moi %}
             <div class="livreur-carte-actions-bas">
-                <form method="post" action="{{ url_for('livreur_livrer_commande', numero=c.numero) }}" class="livreur-form devise-form-paiement" data-taux="{{ taux_usd }}" onsubmit="return confirm('Confirmer la livraison et le paiement cash de {{ c.numero }} ?');">
-                    <select name="devise_saisie" class="devise-select">
-                        <option value="CDF" selected>CDF</option>
-                        <option value="USD">$ USD</option>
-                    </select>
-                    <input type="number" name="montant_verse" step="1" min="0" value="{{ c.total|round|int }}">
+                <form method="post" action="{{ url_for('livreur_livrer_commande', numero=c.numero) }}" class="livreur-form" onsubmit="return confirm('Confirmer la livraison et le paiement cash de {{ c.numero }} ?');">
+                    <div class="paiement-mixte-inline">
+                        <input type="number" name="montant_verse_cdf" step="1" min="0" placeholder="CDF" value="{{ c.total|round|int }}">
+                        <input type="number" name="montant_verse_usd" step="0.01" min="0" placeholder="$">
+                    </div>
                     <button type="submit">✓ Livrée + payée</button>
                 </form>
                 <form method="post" action="{{ url_for('livreur_annuler_commande', numero=c.numero) }}" onsubmit="return confirm('Annuler la commande {{ c.numero }} ? Les articles seront remis en stock.');">

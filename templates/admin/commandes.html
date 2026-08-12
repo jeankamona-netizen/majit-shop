@@ -90,18 +90,23 @@
                     {% if c.statut == 'annulee' %}
                         <span class="admin-commande-contact">—</span>
                     {% elif c.statut == 'livree' and solde %}
-                        <span class="admin-commande-contact">{{ c.montant_verse|cdf }} versé</span><br>
+                        <span class="admin-commande-contact">
+                            {% if c.montant_verse_usd %}
+                                {% if c.montant_verse_cdf %}{{ c.montant_verse_cdf|cdf }} + {% endif %}{{ c.montant_verse_usd|round(2) }} $ versés
+                            {% else %}
+                                {{ c.montant_verse|cdf }} versé
+                            {% endif %}
+                        </span><br>
                         {% if c.livreur_nom %}
                         <span class="admin-livree-livreur">Livré par {{ c.livreur_nom }} ({{ c.livreur_numero }})</span><br>
                         {% endif %}
                         <span class="admin-livree-date">le {{ c.date_livraison.replace('T', ' ') if c.date_livraison else '' }}</span>
                     {% else %}
-                    <form method="post" action="{{ url_for('admin_livrer_commande', numero=c.numero) }}" class="admin-form-livraison devise-form-paiement" data-taux="{{ taux_usd }}">
-                        <select name="devise_saisie" class="devise-select">
-                            <option value="CDF" selected>CDF</option>
-                            <option value="USD">$ USD</option>
-                        </select>
-                        <input type="number" name="montant_verse" step="1" min="0" value="{{ (c.montant_verse if c.montant_verse is not none else c.total)|round|int }}">
+                    <form method="post" action="{{ url_for('admin_livrer_commande', numero=c.numero) }}" class="admin-form-livraison">
+                        <div class="paiement-mixte-inline">
+                            <input type="number" name="montant_verse_cdf" step="1" min="0" placeholder="CDF" value="{{ (c.montant_verse_cdf if c.montant_verse_cdf is not none else c.total)|round|int }}">
+                            <input type="number" name="montant_verse_usd" step="0.01" min="0" placeholder="$" value="{{ c.montant_verse_usd or '' }}">
+                        </div>
                         <button type="submit">{{ 'Mettre à jour' if c.statut == 'livree' else 'Marquer livrée' }}</button>
                     </form>
                     {% if c.statut == 'livree' %}

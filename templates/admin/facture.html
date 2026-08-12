@@ -51,6 +51,12 @@
     </table>
 
     <div class="facture-total">Total payé : <strong>{{ facture.total|cdf }}</strong></div>
+    {% if facture.montant_verse_usd %}
+    <div class="facture-detail-paiement">
+        {% if facture.montant_verse_cdf %}<span>Reçu en francs : {{ facture.montant_verse_cdf|cdf }}</span><br>{% endif %}
+        <span>Reçu en dollars : {{ "%.2f"|format(facture.montant_verse_usd) }} $</span>
+    </div>
+    {% endif %}
 
     <p class="facture-pied">Merci pour votre achat chez Majt Shop !</p>
 </div>
