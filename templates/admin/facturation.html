@@ -67,7 +67,15 @@
                 </tbody>
             </table>
         </div>
-        <div class="admin-facturation-total">Total : <strong>{{ total|cdf }}</strong></div>
+        <div class="admin-facturation-total">
+            Total à percevoir :
+            <strong id="facturation-total-cdf">{{ total|cdf }}</strong>
+            <strong id="facturation-total-usd" hidden>{{ total|usd }}</strong>
+            <div class="admin-devise-toggle" id="facturation-devise-toggle">
+                <button type="button" class="devise-bouton devise-bouton-actif" data-devise="cdf">Francs (CDF)</button>
+                <button type="button" class="devise-bouton" data-devise="usd">Dollars ($)</button>
+            </div>
+        </div>
 
         <form method="post" action="{{ url_for('admin_facturation_valider') }}" class="admin-formulaire admin-formulaire-facturation">
             <label for="nom">Nom du client (optionnel)</label>
@@ -259,6 +267,23 @@
     selectCouleur.addEventListener("change", actualiserStock);
     selectTaille.addEventListener("change", actualiserStock);
     actualiser();
+})();
+
+(function () {
+    var toggle = document.getElementById("facturation-devise-toggle");
+    if (!toggle) return;
+    var totalCdf = document.getElementById("facturation-total-cdf");
+    var totalUsd = document.getElementById("facturation-total-usd");
+
+    toggle.querySelectorAll(".devise-bouton").forEach(function (bouton) {
+        bouton.addEventListener("click", function () {
+            toggle.querySelectorAll(".devise-bouton").forEach(function (b) { b.classList.remove("devise-bouton-actif"); });
+            bouton.classList.add("devise-bouton-actif");
+            var devise = bouton.dataset.devise;
+            totalCdf.hidden = devise !== "cdf";
+            totalUsd.hidden = devise !== "usd";
+        });
+    });
 })();
 </script>
 {% endblock %}

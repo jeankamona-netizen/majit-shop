@@ -96,7 +96,11 @@
                         {% endif %}
                         <span class="admin-livree-date">le {{ c.date_livraison.replace('T', ' ') if c.date_livraison else '' }}</span>
                     {% else %}
-                    <form method="post" action="{{ url_for('admin_livrer_commande', numero=c.numero) }}" class="admin-form-livraison">
+                    <form method="post" action="{{ url_for('admin_livrer_commande', numero=c.numero) }}" class="admin-form-livraison devise-form-paiement" data-taux="{{ taux_usd }}">
+                        <select name="devise_saisie" class="devise-select">
+                            <option value="CDF" selected>CDF</option>
+                            <option value="USD">$ USD</option>
+                        </select>
                         <input type="number" name="montant_verse" step="1" min="0" value="{{ (c.montant_verse if c.montant_verse is not none else c.total)|round|int }}">
                         <button type="submit">{{ 'Mettre à jour' if c.statut == 'livree' else 'Marquer livrée' }}</button>
                     </form>

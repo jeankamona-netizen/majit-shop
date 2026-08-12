@@ -1,12 +1,3 @@
-document.querySelectorAll(".qte-bouton").forEach(function (bouton) {
-    bouton.addEventListener("click", function () {
-        var input = document.getElementById("quantite");
-        var delta = parseInt(bouton.dataset.delta, 10);
-        var valeur = Math.max(1, (parseInt(input.value, 10) || 1) + delta);
-        input.value = valeur;
-    });
-});
-
 (function () {
     var imagePrincipale = document.getElementById("image-principale");
     var vignettes = document.querySelectorAll(".detail-vignette");
@@ -25,43 +16,87 @@ document.querySelectorAll(".qte-bouton").forEach(function (bouton) {
 })();
 
 (function () {
-    if (typeof VARIANTES_STOCK === "undefined") return;
+    var quantite = document.getElementById("quantite");
+    if (!quantite) return;
 
     var form = document.querySelector(".form-panier");
     var stockTexte = document.getElementById("detail-stock");
+    var stockAlerte = document.getElementById("stock-alerte");
     var boutons = document.querySelectorAll(".bouton-ajouter, .bouton-acheter");
-    if (!form) return;
+    var variantes = typeof VARIANTES_STOCK !== "undefined" ? VARIANTES_STOCK : null;
 
     function valeurCochee(nom) {
+        if (!form) return "";
         var champ = form.querySelector('input[name="' + nom + '"]:checked');
         return champ ? champ.value : "";
     }
 
-    function actualiser() {
-        var couleur = valeurCochee("couleur");
-        var taille = valeurCochee("taille");
-        var cle = couleur + "::" + taille;
-        var disponible = VARIANTES_STOCK[cle] || 0;
+    function disponibleActuel() {
+        if (variantes) {
+            var cle = valeurCochee("couleur") + "::" + valeurCochee("taille");
+            return variantes[cle] || 0;
+        }
+        return parseInt(quantite.dataset.stock, 10) || 0;
+    }
+
+    function actualiserEtatStock() {
+        var disponible = disponibleActuel();
 
         if (stockTexte) {
             if (disponible > 0) {
-                stockTexte.textContent = "En stock : " + disponible + " disponible" + (disponible > 1 ? "s" : "") + " pour cette combinaison";
+                stockTexte.textContent = variantes ? "En stock pour cette combinaison" : "En stock";
                 stockTexte.classList.remove("detail-stock-vide");
             } else {
-                stockTexte.textContent = "Rupture de stock pour cette combinaison";
+                stockTexte.textContent = variantes ? "Rupture de stock pour cette combinaison" : "Rupture de stock";
                 stockTexte.classList.add("detail-stock-vide");
             }
         }
 
         boutons.forEach(function (bouton) { bouton.disabled = disponible <= 0; });
-
-        var quantite = document.getElementById("quantite");
-        if (quantite) quantite.max = disponible || 1;
+        return disponible;
     }
 
-    form.querySelectorAll('input[name="couleur"], input[name="taille"]').forEach(function (champ) {
-        champ.addEventListener("change", actualiser);
+    function appliquerQuantite(valeurDemandee) {
+        var disponible = actualiserEtatStock();
+
+        if (disponible <= 0) {
+            quantite.value = 1;
+            if (stockAlerte) stockAlerte.hidden = true;
+            return;
+        }
+
+        if (valeurDemandee > disponible) {
+            quantite.value = disponible;
+            if (stockAlerte) {
+                stockAlerte.textContent = "Il ne reste que " + disponible + " en stock.";
+                stockAlerte.hidden = false;
+            }
+        } else {
+            if (valeurDemandee < 1) valeurDemandee = 1;
+            quantite.value = valeurDemandee;
+            if (stockAlerte) stockAlerte.hidden = true;
+        }
+    }
+
+    document.querySelectorAll(".qte-bouton").forEach(function (bouton) {
+        bouton.addEventListener("click", function () {
+            var delta = parseInt(bouton.dataset.delta, 10);
+            var valeur = (parseInt(quantite.value, 10) || 1) + delta;
+            appliquerQuantite(valeur);
+        });
     });
 
-    actualiser();
+    quantite.addEventListener("input", function () {
+        appliquerQuantite(parseInt(quantite.value, 10) || 1);
+    });
+
+    if (form) {
+        form.querySelectorAll('input[name="couleur"], input[name="taille"]').forEach(function (champ) {
+            champ.addEventListener("change", function () {
+                appliquerQuantite(parseInt(quantite.value, 10) || 1);
+            });
+        });
+    }
+
+    actualiserEtatStock();
 })();

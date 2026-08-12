@@ -95,12 +95,16 @@
             </ul>
 
             <div class="livreur-montant">
-                Montant à percevoir : <strong>{{ c.total|cdf }}</strong>
+                Montant à percevoir : <strong>{{ c.total|cdf }}</strong> <span class="livreur-montant-usd">({{ c.total|usd }})</span>
             </div>
 
             {% if moi %}
             <div class="livreur-carte-actions-bas">
-                <form method="post" action="{{ url_for('livreur_livrer_commande', numero=c.numero) }}" class="livreur-form" onsubmit="return confirm('Confirmer la livraison et le paiement cash de {{ c.numero }} ?');">
+                <form method="post" action="{{ url_for('livreur_livrer_commande', numero=c.numero) }}" class="livreur-form devise-form-paiement" data-taux="{{ taux_usd }}" onsubmit="return confirm('Confirmer la livraison et le paiement cash de {{ c.numero }} ?');">
+                    <select name="devise_saisie" class="devise-select">
+                        <option value="CDF" selected>CDF</option>
+                        <option value="USD">$ USD</option>
+                    </select>
                     <input type="number" name="montant_verse" step="1" min="0" value="{{ c.total|round|int }}">
                     <button type="submit">✓ Livrée + payée</button>
                 </form>

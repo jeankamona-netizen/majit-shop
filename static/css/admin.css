@@ -1291,6 +1291,11 @@ img.admin-logo {
     font-size: 1.15rem;
 }
 
+.livreur-montant-usd {
+    font-size: 0.82rem;
+    color: #888;
+}
+
 .livreur-form {
     display: flex;
     gap: 0.6rem;
@@ -1532,6 +1537,35 @@ img.admin-logo {
     font-size: 1.05rem;
     color: var(--violet-800);
     margin-top: 0.8rem;
+}
+
+.admin-devise-toggle {
+    display: inline-flex;
+    gap: 0.4rem;
+    margin-left: 0.8rem;
+}
+
+.devise-bouton {
+    background: white;
+    border: 1px solid var(--violet-700);
+    color: var(--violet-700);
+    border-radius: 16px;
+    padding: 0.25rem 0.7rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.devise-bouton.devise-bouton-actif {
+    background: var(--violet-700);
+    color: white;
+}
+
+.devise-select {
+    padding: 0.4rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.82rem;
 }
 
 @media (max-width: 800px) {

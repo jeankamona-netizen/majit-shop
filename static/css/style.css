@@ -658,6 +658,14 @@ a {
     color: #c0392b;
 }
 
+.detail-stock-alerte {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #c0392b;
+    margin-top: -0.6rem;
+    margin-bottom: 1rem;
+}
+
 .bouton-ajouter:disabled,
 .bouton-acheter:disabled {
     background: #ccc;

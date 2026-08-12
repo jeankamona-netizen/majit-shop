@@ -1167,6 +1167,7 @@ def admin_facturation():
     return render_template(
         "admin/facturation.html", categories=CATEGORIES, produits=charger_produits(),
         lignes=lignes, total=total, factures=factures, total_jour=total_jour,
+        taux_usd=obtenir_taux_usd(),
     )
 
 
@@ -1367,6 +1368,7 @@ def admin_commandes():
         statut_filtre=statut_filtre,
         livreur_filtre=livreur_filtre,
         livreur_filtre_nom=livreur_filtre_nom,
+        taux_usd=obtenir_taux_usd(),
     )
 
 
@@ -1396,7 +1398,10 @@ def livreur():
     else:
         en_cours = [c for c in commandes if c["statut"] == "en_livraison"]
     en_cours.sort(key=lambda c: c["date"])
-    return render_template("livreur.html", categories=CATEGORIES, disponibles=disponibles, en_cours=en_cours, moi=moi)
+    return render_template(
+        "livreur.html", categories=CATEGORIES, disponibles=disponibles, en_cours=en_cours, moi=moi,
+        taux_usd=obtenir_taux_usd(),
+    )
 
 
 @app.route("/livreur/profil")

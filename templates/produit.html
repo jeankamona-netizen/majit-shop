@@ -43,10 +43,11 @@
                 <p class="detail-description">{{ produit.description }}</p>
 
                 {% if produit.stock and produit.stock > 0 %}
-                    <p class="detail-stock" id="detail-stock">En stock : {{ produit.stock }} disponible{{ 's' if produit.stock > 1 else '' }}</p>
+                    <p class="detail-stock" id="detail-stock">En stock</p>
                 {% else %}
                     <p class="detail-stock detail-stock-vide" id="detail-stock">Rupture de stock</p>
                 {% endif %}
+                <p class="detail-stock-alerte" id="stock-alerte" hidden></p>
 
                 {% if rupture_variante %}
                 <p class="detail-stock detail-stock-vide">Cette combinaison couleur/taille est en rupture de stock. Merci d'en choisir une autre.</p>
@@ -84,7 +85,7 @@
                     <label for="quantite">Quantité</label>
                     <div class="selecteur-quantite">
                         <button type="button" class="qte-bouton" data-delta="-1">−</button>
-                        <input type="number" id="quantite" name="quantite" value="1" min="1">
+                        <input type="number" id="quantite" name="quantite" value="1" min="1" data-stock="{{ produit.stock or 0 }}">
                         <button type="button" class="qte-bouton" data-delta="1">+</button>
                     </div>
 
