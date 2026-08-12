@@ -11,6 +11,7 @@
 .admin-entete {
     background: var(--violet-900);
     color: white;
+    position: relative;
 }
 
 .admin-entete-inner {
@@ -237,7 +238,7 @@ img.admin-logo {
 
 .admin-table th,
 .admin-table td {
-    padding: 0.7rem 0.9rem;
+    padding: 0.6rem 0.5rem;
     text-align: left;
     border-bottom: 1px solid #eee;
     font-size: 0.88rem;
@@ -984,6 +985,25 @@ img.admin-logo {
         gap: 0.6rem;
     }
 
+    .admin-table th,
+    .admin-table td {
+        padding: 0.5rem 0.35rem;
+        font-size: 0.8rem;
+    }
+
+    .admin-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.35rem;
+    }
+
+    .admin-actions a,
+    .admin-actions button {
+        text-align: center;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
     .admin-menu-bouton {
         display: block;
     }
@@ -1007,6 +1027,7 @@ img.admin-logo {
         max-height: 0;
         overflow: hidden;
         flex-direction: column;
+        flex-wrap: nowrap;
         align-items: stretch;
         gap: 0.5rem;
         padding: 0 1rem;

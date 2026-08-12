@@ -7,6 +7,7 @@ from functools import wraps
 from pathlib import Path
 
 from flask import Flask, render_template, abort, request, redirect, url_for, session
+from markupsafe import Markup, escape
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from db import obtenir_connexion
@@ -576,7 +577,8 @@ def restaurer_commande(commande):
 
 @app.template_filter("cdf")
 def formater_cdf(valeur):
-    return f"{round(valeur):,}".replace(",", " ") + " CDF"
+    nombre = f"{round(valeur):,}".replace(",", " ")
+    return Markup(f"{escape(nombre)} <span class=\"cdf-suffixe\">CDF</span>")
 
 
 @app.template_filter("prix_final")

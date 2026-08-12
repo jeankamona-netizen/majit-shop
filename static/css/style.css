@@ -432,6 +432,12 @@ a {
     font-weight: 700;
 }
 
+.cdf-suffixe {
+    font-size: 0.62em;
+    font-weight: 600;
+    opacity: 0.85;
+}
+
 .carte-produit h3 {
     font-size: 0.95rem;
     color: var(--gris-texte);
