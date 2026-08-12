@@ -45,6 +45,7 @@
                         {{ produit.prix|cdf }}
                     {% endif %}
                 </p>
+                <p class="prix-usd">{{ (produit|prix_final)|usd }}</p>
             </a>
             {% else %}
             <p>Aucun produit trouvé.</p>

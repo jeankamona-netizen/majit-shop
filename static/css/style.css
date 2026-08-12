@@ -455,6 +455,13 @@ a {
     color: var(--orange-600);
 }
 
+.prix-usd {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: #888;
+    margin-top: 0.1rem;
+}
+
 /* Pied de page */
 .pied-de-page {
     background: var(--violet-900);
@@ -614,6 +621,14 @@ a {
     font-size: 1.8rem;
     font-weight: 800;
     color: var(--orange-600);
+}
+
+.detail-prix-usd {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #777;
 }
 
 .pastille-reduction {

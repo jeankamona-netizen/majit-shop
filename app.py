@@ -6,6 +6,7 @@ from datetime import date, datetime, timedelta
 from functools import wraps
 from pathlib import Path
 
+import pymysql
 from flask import Flask, render_template, abort, request, redirect, url_for, session
 from markupsafe import Markup, escape
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -331,6 +332,34 @@ def obtenir_ip_client():
     return request.remote_addr or ""
 
 
+def obtenir_taux_usd():
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SELECT taux_usd FROM parametres WHERE id = 1")
+            ligne = cur.fetchone()
+            return float(ligne["taux_usd"]) if ligne else 2800.0
+    except pymysql.err.ProgrammingError:
+        return 2800.0
+    finally:
+        connexion.close()
+
+
+def definir_taux_usd(valeur):
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO parametres (id, taux_usd) VALUES (1, %s)
+                ON DUPLICATE KEY UPDATE taux_usd = VALUES(taux_usd)
+                """,
+                (valeur,),
+            )
+    finally:
+        connexion.close()
+
+
 def charger_cache_geoloc():
     connexion = obtenir_connexion()
     try:
@@ -584,6 +613,15 @@ def formater_cdf(valeur):
 @app.template_filter("prix_final")
 def prix_final_filter(produit):
     return prix_final(produit)
+
+
+@app.template_filter("usd")
+def formater_usd(valeur_cdf):
+    taux = obtenir_taux_usd()
+    if not taux:
+        return ""
+    montant = valeur_cdf / taux
+    return f"≈ {montant:,.2f} $".replace(",", " ")
 
 
 @app.context_processor
@@ -1094,6 +1132,7 @@ def admin_tableau_de_bord():
         nb_produits=len(produits),
         nb_rupture=len([p for p in produits if p.get("stock", 0) <= 0]),
         livreurs_en_mission=livreurs_en_mission,
+        taux_usd=obtenir_taux_usd(),
     )
 
 
@@ -1749,6 +1788,38 @@ def admin_migration_vider_cache_geoloc():
     finally:
         connexion.close()
     return {"statut": "cache vide"}
+
+
+@app.route("/admin/migrations/ajouter-table-parametres", methods=["POST"])
+@admin_requis
+def admin_migration_ajouter_table_parametres():
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS parametres (
+                    id INT PRIMARY KEY,
+                    taux_usd DECIMAL(10,2) NOT NULL DEFAULT 2800
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                """
+            )
+            cur.execute("INSERT IGNORE INTO parametres (id, taux_usd) VALUES (1, 2800)")
+        return {"statut": "table prete"}
+    finally:
+        connexion.close()
+
+
+@app.route("/admin/parametres/taux-usd", methods=["POST"])
+@admin_requis
+def admin_definir_taux_usd():
+    try:
+        valeur = float(request.form.get("taux_usd", "0").replace(",", "."))
+    except ValueError:
+        valeur = 0
+    if valeur > 0:
+        definir_taux_usd(valeur)
+    return redirect(url_for("admin_tableau_de_bord"))
 
 
 @app.route("/admin/produits/importer-lot", methods=["POST"])

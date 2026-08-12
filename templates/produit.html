@@ -37,6 +37,7 @@
                     {% if produit.reduction %}
                         <span class="pastille-reduction">Prix réduit de {{ produit.reduction }}%</span>
                     {% endif %}
+                    <span class="detail-prix-usd">{{ (produit|prix_final)|usd }}</span>
                 </div>
 
                 <p class="detail-description">{{ produit.description }}</p>

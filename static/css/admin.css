@@ -934,6 +934,46 @@ img.admin-logo {
     margin-bottom: 1.5rem;
 }
 
+.admin-taux-usd {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: white;
+    padding: 1rem 1.4rem;
+    border-radius: 10px;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.admin-taux-usd label {
+    font-weight: 600;
+    font-size: 0.88rem;
+}
+
+.admin-taux-usd input {
+    width: 110px;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.admin-taux-usd button {
+    background: var(--violet-700);
+    color: white;
+    border: none;
+    padding: 0.55rem 1.1rem;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.admin-taux-usd button:hover {
+    background: var(--violet-800);
+}
+
 .admin-filtre-revenus label {
     display: block;
     font-size: 0.8rem;

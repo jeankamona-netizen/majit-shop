@@ -46,6 +46,15 @@
     <a href="{{ url_for('admin_facturation') }}" class="admin-lien-ajout admin-lien-secondaire">Facturation</a>
 </div>
 
+<h2 class="admin-section-titre">Taux de change</h2>
+<form method="post" action="{{ url_for('admin_definir_taux_usd') }}" class="admin-taux-usd">
+    <label for="taux_usd">1 USD ($) =</label>
+    <input type="number" id="taux_usd" name="taux_usd" step="0.01" min="0" value="{{ taux_usd }}">
+    <span>CDF</span>
+    <button type="submit">Enregistrer</button>
+</form>
+<p class="admin-note">Affiché aux clients sous le prix des articles, ex : « {{ 18500|usd }} ».</p>
+
 <h2 class="admin-section-titre">Livreurs en mission</h2>
 <div class="admin-table-wrap">
     <table class="admin-table">
