@@ -25,8 +25,8 @@
     <table class="admin-table">
         <thead>
             <tr>
-                <th>N°</th>
-                <th>N° Facture</th>
+                <th class="admin-col-numero">N°</th>
+                <th>Facture N°</th>
                 <th>Client</th>
                 <th>Articles</th>
                 <th>Statut</th>
@@ -36,7 +36,7 @@
         <tbody>
             {% for c in commandes %}
             <tr id="commande-{{ c.numero }}">
-                <td>{{ loop.index }}</td>
+                <td class="admin-col-numero">{{ loop.index }}</td>
                 <td>
                     <strong>{{ c.numero }}</strong><br>
                     <span class="admin-commande-contact">{{ c.date.replace('T', ' ') }}</span>

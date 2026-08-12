@@ -12,8 +12,14 @@
     var spanDateLivraison = document.getElementById("suivi-date-livraison");
 
     var intervalle = null;
+    var etapeMaxAffichee = 0;
 
     function appliquerEtapes(n) {
+        if (n < etapeMaxAffichee) {
+            n = etapeMaxAffichee;
+        } else {
+            etapeMaxAffichee = n;
+        }
         barre.querySelectorAll(".suivi-etape").forEach(function (el) {
             var num = parseInt(el.dataset.n, 10);
             el.classList.toggle("suivi-fait", num <= n);

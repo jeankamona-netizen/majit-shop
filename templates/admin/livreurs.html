@@ -13,7 +13,7 @@
     <table class="admin-table">
         <thead>
             <tr>
-                <th>N°</th>
+                <th class="admin-col-numero">N°</th>
                 <th>Numéro</th>
                 <th>Nom</th>
                 <th>Sexe</th>
@@ -26,7 +26,7 @@
         <tbody>
             {% for l in livreurs %}
             <tr>
-                <td>{{ loop.index }}</td>
+                <td class="admin-col-numero">{{ loop.index }}</td>
                 <td><strong>{{ l.numero }}</strong>{% if l.nb_en_mission %}<br><a href="{{ url_for('admin_commandes', statut='en_livraison', livreur=l.numero) }}" class="statut-badge statut-en_livraison">{{ l.nb_en_mission }} en mission</a>{% endif %}</td>
                 <td>{{ l.prenom }} {{ l.nom }}</td>
                 <td>{{ sexes.get(l.sexe, l.sexe) }}</td>

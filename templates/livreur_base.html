@@ -11,6 +11,9 @@
 <body class="admin-body">
     <header class="admin-entete">
         <div class="livreur-topbar">
+            {% if livreur_connecte %}
+            <button type="button" class="admin-menu-bouton" id="admin-menu-bouton" aria-label="Ouvrir le menu" aria-expanded="false">☰</button>
+            {% endif %}
             <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Majt Shop" class="admin-logo">
             <div class="admin-entete-actions">
                 {% if admin_connecte %}
@@ -25,7 +28,7 @@
             </div>
         </div>
         {% if livreur_connecte %}
-        <nav class="admin-nav">
+        <nav class="admin-nav" id="admin-nav">
             <a href="{{ url_for('livreur') }}" class="{{ 'admin-nav-actif' if request.endpoint == 'livreur' else '' }}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>Mes livraisons</a>
             <a href="{{ url_for('livreur_profil') }}" class="{{ 'admin-nav-actif' if request.endpoint == 'livreur_profil' else '' }}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>Mon profil</a>
         </nav>
@@ -36,6 +39,9 @@
         {% block contenu %}{% endblock %}
     </main>
 
+    {% if livreur_connecte %}
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    {% endif %}
     <script src="{{ url_for('static', filename='js/mot-de-passe.js') }}"></script>
 </body>
 </html>

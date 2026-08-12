@@ -22,7 +22,7 @@
     <table class="admin-table">
         <thead>
             <tr>
-                <th>N°</th>
+                <th class="admin-col-numero">N°</th>
                 <th>Photo</th>
                 <th>Nom</th>
                 <th>Prix</th>
@@ -35,7 +35,7 @@
         <tbody>
             {% for p in produits %}
             <tr>
-                <td>N°{{ loop.index }}</td>
+                <td class="admin-col-numero">{{ loop.index }}</td>
                 <td><img src="{{ url_for('static', filename='images/' + p.image) }}" class="admin-miniature" alt="{{ p.nom }}"></td>
                 <td>
                     {{ p.nom }}<br>

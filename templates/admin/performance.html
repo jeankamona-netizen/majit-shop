@@ -18,7 +18,7 @@
     <table class="admin-table">
         <thead>
             <tr>
-                <th>N°</th>
+                <th class="admin-col-numero">N°</th>
                 <th>Livreur</th>
                 <th>Commandes livrées</th>
                 <th>Part des livraisons</th>
@@ -29,7 +29,7 @@
         <tbody>
             {% for s in stats %}
             <tr>
-                <td>{{ loop.index }}</td>
+                <td class="admin-col-numero">{{ loop.index }}</td>
                 <td><strong>{{ s.nom }} ({{ s.numero }})</strong></td>
                 <td>{{ s.nb_livrees }}</td>
                 <td>{{ s.part }}%</td>

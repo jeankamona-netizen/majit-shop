@@ -93,8 +93,8 @@
     <table class="admin-table">
         <thead>
             <tr>
-                <th>N°</th>
-                <th>N° Facture</th>
+                <th class="admin-col-numero">N°</th>
+                <th>Facture N°</th>
                 <th>Client</th>
                 <th>Total</th>
                 <th></th>
@@ -103,7 +103,7 @@
         <tbody>
             {% for f in factures %}
             <tr>
-                <td>{{ loop.index }}</td>
+                <td class="admin-col-numero">{{ loop.index }}</td>
                 <td><strong>{{ f.numero }}</strong><br><span class="admin-commande-contact">{{ f.date.replace('T', ' ') }}</span></td>
                 <td>{{ f.nom }}</td>
                 <td>{{ f.total|cdf }}</td>

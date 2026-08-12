@@ -53,6 +53,7 @@ ORDRE_PUBLICS = ["homme", "femme", "enfant", "unisexe"]
 FILTRES_REVENUS = {
     "date": "Date de livraison",
     "semaine": "Semaine",
+    "mois": "Mois",
     "article": "Article",
     "categorie": "Catégorie",
 }
@@ -265,6 +266,7 @@ def construire_lignes_ventes(canal=None):
             lignes_ventes.append({
                 "date": jour,
                 "semaine": f"{annee} - semaine {semaine:02d}",
+                "mois": jour[:7],
                 "article": ligne["nom"],
                 "categorie": categorie_nom,
                 "commande": c["numero"],
@@ -1433,7 +1435,7 @@ def admin_revenus():
     sous_total = 0
 
     if type_filtre in FILTRES_REVENUS:
-        valeurs_disponibles = sorted({l[type_filtre] for l in lignes}, reverse=(type_filtre in ("date", "semaine")))
+        valeurs_disponibles = sorted({l[type_filtre] for l in lignes}, reverse=(type_filtre in ("date", "semaine", "mois")))
         if valeur_filtre:
             resultats = [l for l in lignes if l[type_filtre] == valeur_filtre]
             sous_total = sum(l["montant"] for l in resultats)
