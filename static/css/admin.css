@@ -1463,6 +1463,17 @@ img.admin-logo {
     font-family: inherit;
 }
 
+.facture-actions-droite {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.facture-actions-droite .admin-lien-annuler {
+    margin-top: 0;
+    white-space: nowrap;
+}
+
 .facture-papier {
     max-width: 640px;
     margin: 0 auto;

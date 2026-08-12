@@ -1220,6 +1220,26 @@ def admin_facture_voir(numero):
     return render_template("admin/facture.html", facture=facture, categories=CATEGORIES)
 
 
+@app.route("/admin/facturation/<numero>/supprimer", methods=["POST"])
+@admin_requis
+def admin_facture_supprimer(numero):
+    commandes = charger_commandes()
+    facture = next((c for c in commandes if c["numero"] == numero and c["numero"].startswith("FAC")), None)
+    if not facture:
+        abort(404)
+
+    produits = charger_produits()
+    for ligne in facture["lignes"]:
+        p = next((x for x in produits if x["id"] == ligne.get("produit_id")), None)
+        if p:
+            ajuster_stock_variante(p, ligne.get("couleur"), ligne.get("taille"), ligne["quantite"])
+    sauvegarder_produits(produits)
+
+    commandes = [c for c in commandes if c["numero"] != numero]
+    sauvegarder_commandes(commandes)
+    return redirect(url_for("admin_facturation"))
+
+
 @app.route("/admin/produits")
 @admin_requis
 def admin_produits():

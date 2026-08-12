@@ -104,7 +104,12 @@
                 <td><strong>{{ f.numero }}</strong><br><span class="admin-commande-contact">{{ f.date.replace('T', ' ') }}</span></td>
                 <td>{{ f.nom }}</td>
                 <td>{{ f.total|cdf }}</td>
-                <td><a href="{{ url_for('admin_facture_voir', numero=f.numero) }}" class="admin-lien-carte">Voir / Imprimer</a></td>
+                <td>
+                    <a href="{{ url_for('admin_facture_voir', numero=f.numero) }}" class="admin-lien-carte">Voir / Imprimer</a>
+                    <form method="post" action="{{ url_for('admin_facture_supprimer', numero=f.numero) }}" onsubmit="return confirm('Supprimer cette facture ? Les articles seront remis en stock.');">
+                        <button type="submit" class="admin-lien-annuler">Supprimer</button>
+                    </form>
+                </td>
             </tr>
             {% else %}
             <tr><td colspan="4">Aucune facture émise pour le moment.</td></tr>

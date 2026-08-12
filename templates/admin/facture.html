@@ -5,7 +5,12 @@
 {% block contenu %}
 <div class="facture-actions">
     <a href="{{ url_for('admin_facturation') }}" class="admin-lien-carte">← Retour à la facturation</a>
-    <button type="button" onclick="window.print()" class="admin-lien-ajout">Imprimer la facture</button>
+    <div class="facture-actions-droite">
+        <button type="button" onclick="window.print()" class="admin-lien-ajout">Imprimer la facture</button>
+        <form method="post" action="{{ url_for('admin_facture_supprimer', numero=facture.numero) }}" onsubmit="return confirm('Supprimer cette facture ? Les articles seront remis en stock.');">
+            <button type="submit" class="admin-lien-annuler">Supprimer la facture</button>
+        </form>
+    </div>
 </div>
 
 <div class="facture-papier">
