@@ -30,11 +30,11 @@
         <span class="admin-stat-valeur">{{ nb_rupture }}</span>
         <span class="admin-stat-label">Articles en rupture de stock</span>
     </a>
-    <a href="{{ url_for('admin_revenus') }}" class="admin-stat-carte admin-stat-accent">
+    <a href="{{ url_for('admin_revenus', canal='en_ligne') }}" class="admin-stat-carte admin-stat-accent">
         <span class="admin-stat-valeur">{{ chiffre_affaires_en_ligne|cdf }}</span>
         <span class="admin-stat-label">Chiffre d'affaires généré en ligne (après livraison)</span>
     </a>
-    <a href="{{ url_for('admin_facturation') }}" class="admin-stat-carte admin-stat-accent">
+    <a href="{{ url_for('admin_revenus', canal='boutique') }}" class="admin-stat-carte admin-stat-accent">
         <span class="admin-stat-valeur">{{ chiffre_affaires_boutique|cdf }}</span>
         <span class="admin-stat-label">Chiffre d'affaires généré en boutique (après facturation)</span>
     </a>

@@ -246,11 +246,16 @@ def generer_numero_livreur():
     return f"{prefixe}{len(livreurs_du_mois) + 1:02d}"
 
 
-def construire_lignes_ventes():
+def construire_lignes_ventes(canal=None):
     produits_par_id = {p["id"]: p for p in charger_produits()}
     lignes_ventes = []
     for c in charger_commandes():
         if c["statut"] != "livree":
+            continue
+        est_boutique = c["numero"].startswith("FAC")
+        if canal == "en_ligne" and est_boutique:
+            continue
+        if canal == "boutique" and not est_boutique:
             continue
         jour = (c.get("date_livraison") or c["date"])[:10]
         annee, semaine, _ = date.fromisoformat(jour).isocalendar()
@@ -1414,7 +1419,10 @@ def livreur_modifier_ligne_commande(numero, index):
 @app.route("/admin/revenus")
 @admin_requis
 def admin_revenus():
-    lignes = construire_lignes_ventes()
+    canal = request.args.get("canal", "")
+    if canal not in ("en_ligne", "boutique"):
+        canal = "en_ligne"
+    lignes = construire_lignes_ventes(canal=canal)
     total = sum(l["montant"] for l in lignes)
 
     type_filtre = request.args.get("type", "")
@@ -1433,6 +1441,7 @@ def admin_revenus():
     return render_template(
         "admin/revenus.html",
         categories=CATEGORIES,
+        canal=canal,
         total=total,
         filtres=FILTRES_REVENUS,
         type_filtre=type_filtre,

@@ -1,16 +1,22 @@
 {% extends "admin/admin_base.html" %}
 
-{% block titre %}Revenus — Administration Majt Shop{% endblock %}
+{% block titre %}{{ 'Chiffre d\'affaires en boutique' if canal == 'boutique' else 'Chiffre d\'affaires en ligne' }} — Administration Majt Shop{% endblock %}
 
 {% block contenu %}
-<h1>Chiffre d'affaires généré (commandes livrées)</h1>
+<h1>{{ 'Chiffre d\'affaires généré en boutique (factures établies)' if canal == 'boutique' else 'Chiffre d\'affaires généré en ligne (commandes livrées)' }}</h1>
+
+<div class="admin-filtres">
+    <a href="{{ url_for('admin_revenus', canal='en_ligne') }}" class="admin-filtre {{ 'admin-filtre-actif' if canal == 'en_ligne' else '' }}">Ventes en ligne</a>
+    <a href="{{ url_for('admin_revenus', canal='boutique') }}" class="admin-filtre {{ 'admin-filtre-actif' if canal == 'boutique' else '' }}">Ventes en boutique</a>
+</div>
 
 <div class="admin-revenu-total">
     <span class="admin-stat-valeur">{{ total|cdf }}</span>
-    <span class="admin-stat-label">Total encaissé après livraison</span>
+    <span class="admin-stat-label">{{ 'Total facturé en boutique' if canal == 'boutique' else 'Total encaissé après livraison' }}</span>
 </div>
 
 <form method="get" class="admin-filtre-revenus">
+    <input type="hidden" name="canal" value="{{ canal }}">
     <label for="type">Filtrer par</label>
     <select id="type" name="type" onchange="this.form.submit()">
         <option value="">— Choisir —</option>
