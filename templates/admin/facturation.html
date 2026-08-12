@@ -87,7 +87,8 @@
     </div>
 </div>
 
-<h2 class="admin-section-titre">Historique des factures sur place</h2>
+<h2 class="admin-section-titre">Historique des factures du jour</h2>
+<p class="admin-facturation-total-jour">Total facturé aujourd'hui : <strong>{{ total_jour|cdf }}</strong></p>
 <div class="admin-table-wrap">
     <table class="admin-table">
         <thead>
@@ -112,7 +113,7 @@
                 </td>
             </tr>
             {% else %}
-            <tr><td colspan="4">Aucune facture émise pour le moment.</td></tr>
+            <tr><td colspan="4">Aucune facture émise aujourd'hui.</td></tr>
             {% endfor %}
         </tbody>
     </table>

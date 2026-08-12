@@ -1436,6 +1436,12 @@ img.admin-logo {
     box-shadow: none;
 }
 
+.admin-facturation-total-jour {
+    font-size: 0.95rem;
+    color: var(--violet-800);
+    margin-bottom: 0.8rem;
+}
+
 .admin-facturation-total {
     text-align: right;
     font-size: 1.05rem;

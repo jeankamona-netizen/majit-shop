@@ -1091,13 +1091,15 @@ def obtenir_lignes_facture_brouillon():
 @admin_requis
 def admin_facturation():
     lignes, total = obtenir_lignes_facture_brouillon()
+    aujourd_hui = date.today().isoformat()
     factures = sorted(
-        (c for c in charger_commandes() if c["numero"].startswith("FAC")),
+        (c for c in charger_commandes() if c["numero"].startswith("FAC") and c["date"][:10] == aujourd_hui),
         key=lambda c: c["date"], reverse=True,
     )
+    total_jour = sum(f["total"] for f in factures)
     return render_template(
         "admin/facturation.html", categories=CATEGORIES, produits=charger_produits(),
-        lignes=lignes, total=total, factures=factures,
+        lignes=lignes, total=total, factures=factures, total_jour=total_jour,
     )
 
 
