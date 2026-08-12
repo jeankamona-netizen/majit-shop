@@ -24,6 +24,22 @@ CREATE TABLE IF NOT EXISTS livreurs (
     date_creation VARCHAR(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS gestionnaires (
+    numero VARCHAR(20) PRIMARY KEY,
+    nom VARCHAR(255) NOT NULL,
+    prenom VARCHAR(255) NOT NULL,
+    telephone VARCHAR(50),
+    mot_de_passe_hash VARCHAR(255) NOT NULL,
+    date_creation VARCHAR(30) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS journal_activite (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    date VARCHAR(30) NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    message TEXT NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS produits (
     id INT PRIMARY KEY,
     nom VARCHAR(255) NOT NULL,

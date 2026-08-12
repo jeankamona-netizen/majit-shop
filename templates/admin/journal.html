@@ -1,0 +1,31 @@
+{% extends "admin/admin_base.html" %}
+
+{% block titre %}Journal d'activité — Administration Majt Shop{% endblock %}
+
+{% block contenu %}
+<h1>Journal d'activité du système</h1>
+<p class="admin-note">Les 300 dernières actions sensibles : connexions, migrations, gestion des comptes gestionnaires et livreurs, livraisons, ajustements de stock.</p>
+
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for e in entrees %}
+            <tr>
+                <td>{{ e.date.replace('T', ' ') }}</td>
+                <td><span class="admin-journal-type">{{ e.type }}</span></td>
+                <td>{{ e.message }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3">Aucune activité enregistrée pour le moment.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

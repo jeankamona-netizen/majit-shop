@@ -41,9 +41,9 @@ limiter = Limiter(key_func=get_remote_address, app=app, default_limits=[])
 @app.before_request
 def _journaliser_requetes_sensibles():
     if request.method == "POST" and request.path.startswith("/admin/migrations/"):
-        logger.warning(
-            "Migration déclenchée: %s (admin=%s, ip=%s)",
-            request.path, session.get("admin_connecte", False), get_remote_address(),
+        journaliser(
+            "migration",
+            f"Migration déclenchée: {request.path} (admin={session.get('admin_connecte', False)}, ip={get_remote_address()})",
         )
 
 IMAGES_DIR = Path(__file__).parent / "static" / "images"
@@ -294,6 +294,58 @@ def generer_numero_livreur():
     prefixe = f"LV{date.today().strftime('%y%m')}"
     livreurs_du_mois = [l for l in charger_livreurs() if l["numero"].startswith(prefixe)]
     return f"{prefixe}{len(livreurs_du_mois) + 1:02d}"
+
+
+def charger_gestionnaires():
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SELECT * FROM gestionnaires ORDER BY numero")
+            return list(cur.fetchall())
+    finally:
+        connexion.close()
+
+
+def sauvegarder_gestionnaires(gestionnaires):
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("DELETE FROM gestionnaires")
+            for g in gestionnaires:
+                cur.execute(
+                    """
+                    INSERT INTO gestionnaires (numero, nom, prenom, telephone, mot_de_passe_hash, date_creation)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    """,
+                    (
+                        g["numero"], g["nom"], g["prenom"], g.get("telephone", ""),
+                        g["mot_de_passe_hash"], g["date_creation"],
+                    ),
+                )
+    finally:
+        connexion.close()
+
+
+def generer_numero_gestionnaire():
+    prefixe = f"GS{date.today().strftime('%y%m')}"
+    gestionnaires_du_mois = [g for g in charger_gestionnaires() if g["numero"].startswith(prefixe)]
+    return f"{prefixe}{len(gestionnaires_du_mois) + 1:02d}"
+
+
+def journaliser(type_evenement, message):
+    logger.info("%s: %s", type_evenement, message)
+    try:
+        connexion = obtenir_connexion()
+        try:
+            with connexion.cursor() as cur:
+                cur.execute(
+                    "INSERT INTO journal_activite (date, type, message) VALUES (%s, %s, %s)",
+                    (datetime.now().isoformat(timespec="seconds"), type_evenement, message),
+                )
+        finally:
+            connexion.close()
+    except pymysql.err.ProgrammingError:
+        pass
 
 
 def construire_lignes_ventes(canal=None):
@@ -590,9 +642,24 @@ def enregistrer_photos_produit(fichiers, produit_id):
 
 
 def admin_requis(f):
+    # Autorise l'ADMIN et le GESTIONNAIRE : accès complet au back-office,
+    # sauf les routes protégées séparément par super_admin_requis.
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if not (session.get("admin_connecte") or session.get("gestionnaire_numero")):
+            return redirect(url_for("connexion", suivant=request.path))
+        return f(*args, **kwargs)
+    return wrapper
+
+
+def super_admin_requis(f):
+    # Réservé au véritable ADMIN : gestion des gestionnaires, journal
+    # d'activité, migrations de schéma.
     @wraps(f)
     def wrapper(*args, **kwargs):
         if not session.get("admin_connecte"):
+            if session.get("gestionnaire_numero"):
+                abort(403)
             return redirect(url_for("connexion", suivant=request.path))
         return f(*args, **kwargs)
     return wrapper
@@ -601,7 +668,7 @@ def admin_requis(f):
 def livreur_requis(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        if not (session.get("admin_connecte") or session.get("livreur_numero")):
+        if not (session.get("admin_connecte") or session.get("gestionnaire_numero") or session.get("livreur_numero")):
             return redirect(url_for("connexion", suivant=request.path))
         return f(*args, **kwargs)
     return wrapper
@@ -706,7 +773,12 @@ def formater_usd(valeur_cdf):
 @app.context_processor
 def injecter_globals():
     panier = session.get("panier", {})
-    admin_connecte = session.get("admin_connecte", False)
+    # admin_connecte couvre tout membre du back-office (ADMIN + GESTIONNAIRE).
+    # est_super_admin distingue le véritable ADMIN (seul à gérer les
+    # gestionnaires et à voir le journal d'activité).
+    est_super_admin = bool(session.get("admin_connecte", False))
+    gestionnaire_connecte = bool(session.get("gestionnaire_numero"))
+    admin_connecte = est_super_admin or gestionnaire_connecte
     nouvelles_commandes = []
     if admin_connecte:
         nouvelles_commandes = [c for c in charger_commandes() if not c.get("vue", True)]
@@ -714,6 +786,8 @@ def injecter_globals():
     return {
         "nombre_panier": sum(panier.values()),
         "admin_connecte": admin_connecte,
+        "est_super_admin": est_super_admin,
+        "gestionnaire_connecte": gestionnaire_connecte,
         "livreur_connecte": bool(session.get("livreur_numero")),
         "nouvelles_commandes": nouvelles_commandes,
     }
@@ -1135,8 +1209,20 @@ def connexion():
 
         if identifiant == ADMIN_UTILISATEUR and check_password_hash(ADMIN_MOT_DE_PASSE_HASH, mot_de_passe):
             session.pop("livreur_numero", None)
+            session.pop("gestionnaire_numero", None)
             session["admin_connecte"] = True
-            logger.info("Connexion admin réussie (ip=%s)", get_remote_address())
+            journaliser("connexion", f"Connexion admin réussie (ip={get_remote_address()})")
+            suivant = request.args.get("suivant") or ""
+            if not suivant.startswith("/admin"):
+                suivant = ""
+            return redirect(suivant or url_for("admin_tableau_de_bord"))
+
+        gestionnaire_trouve = next((g for g in charger_gestionnaires() if g["numero"] == identifiant.upper()), None)
+        if gestionnaire_trouve and check_password_hash(gestionnaire_trouve["mot_de_passe_hash"], mot_de_passe):
+            session.pop("admin_connecte", None)
+            session.pop("livreur_numero", None)
+            session["gestionnaire_numero"] = gestionnaire_trouve["numero"]
+            journaliser("connexion", f"Connexion gestionnaire réussie: {gestionnaire_trouve['numero']} (ip={get_remote_address()})")
             suivant = request.args.get("suivant") or ""
             if not suivant.startswith("/admin"):
                 suivant = ""
@@ -1145,14 +1231,15 @@ def connexion():
         livreur_trouve = next((l for l in charger_livreurs() if l["numero"] == identifiant.upper()), None)
         if livreur_trouve and livreur_trouve.get("actif", True) and check_password_hash(livreur_trouve["mot_de_passe_hash"], mot_de_passe):
             session.pop("admin_connecte", None)
+            session.pop("gestionnaire_numero", None)
             session["livreur_numero"] = livreur_trouve["numero"]
-            logger.info("Connexion livreur réussie: %s (ip=%s)", livreur_trouve["numero"], get_remote_address())
+            journaliser("connexion", f"Connexion livreur réussie: {livreur_trouve['numero']} (ip={get_remote_address()})")
             suivant = request.args.get("suivant") or ""
             if not suivant.startswith("/livreur"):
                 suivant = ""
             return redirect(suivant or url_for("livreur"))
 
-        logger.warning("Échec de connexion pour identifiant=%r (ip=%s)", identifiant, get_remote_address())
+        journaliser("connexion_echec", f"Échec de connexion pour identifiant={identifiant!r} (ip={get_remote_address()})")
         erreur = "Identifiant ou mot de passe incorrect."
     return render_template("connexion.html", erreur=erreur)
 
@@ -1165,6 +1252,7 @@ def admin_connexion():
 @app.route("/admin/deconnexion")
 def admin_deconnexion():
     session.pop("admin_connecte", None)
+    session.pop("gestionnaire_numero", None)
     return redirect(url_for("connexion"))
 
 
@@ -1539,14 +1627,14 @@ def livreur_livrer_commande(numero):
     code_attendu = commande.get("code_livraison")
     code_saisi = request.form.get("code_livraison", "").strip()
     if code_attendu and code_saisi != code_attendu:
-        logger.warning(
-            "Code de livraison incorrect pour %s (livreur=%s, ip=%s)",
-            numero, session.get("livreur_numero"), get_remote_address(),
+        journaliser(
+            "code_livraison_incorrect",
+            f"Code de livraison incorrect pour {numero} (livreur={session.get('livreur_numero')}, ip={get_remote_address()})",
         )
         return redirect(url_for("livreur", erreur_code=numero))
 
     if marquer_commande_livree(commande, request.form.get("montant_verse_cdf"), request.form.get("montant_verse_usd")):
-        logger.info("Commande %s livrée par %s", numero, session.get("livreur_numero") or "admin")
+        journaliser("livraison", f"Commande {numero} livrée par {session.get('livreur_numero') or 'admin'}")
         sauvegarder_commandes(commandes)
     return redirect(url_for("livreur"))
 
@@ -1700,6 +1788,7 @@ def admin_ajouter_livreur():
         }
         livreurs.append(nouveau_livreur)
         sauvegarder_livreurs(livreurs)
+        journaliser("livreur", f"Livreur créé : {nouveau_livreur['numero']}")
         return redirect(url_for("admin_livreurs"))
 
     return render_template("admin/formulaire_livreur.html", livreur=None, categories=CATEGORIES, sexes=SEXES)
@@ -1737,7 +1826,87 @@ def admin_basculer_actif_livreur(numero):
         abort(404)
     livreur_cible["actif"] = not livreur_cible.get("actif", True)
     sauvegarder_livreurs(livreurs)
+    journaliser("livreur", f"Livreur {'réactivé' if livreur_cible['actif'] else 'désactivé'} : {numero}")
     return redirect(url_for("admin_livreurs"))
+
+
+@app.route("/admin/gestionnaires")
+@super_admin_requis
+def admin_gestionnaires():
+    gestionnaires = sorted(charger_gestionnaires(), key=lambda g: g["numero"], reverse=True)
+    return render_template("admin/gestionnaires.html", categories=CATEGORIES, gestionnaires=gestionnaires)
+
+
+@app.route("/admin/gestionnaires/ajouter", methods=["GET", "POST"])
+@super_admin_requis
+def admin_ajouter_gestionnaire():
+    if request.method == "POST":
+        gestionnaires = charger_gestionnaires()
+        nouveau_gestionnaire = {
+            "numero": generer_numero_gestionnaire(),
+            "nom": request.form.get("nom", "").strip(),
+            "prenom": request.form.get("prenom", "").strip(),
+            "telephone": request.form.get("telephone", "").strip(),
+            "mot_de_passe_hash": generate_password_hash(request.form.get("mot_de_passe") or "MajtGestion2026!"),
+            "date_creation": datetime.now().isoformat(timespec="seconds"),
+        }
+        gestionnaires.append(nouveau_gestionnaire)
+        sauvegarder_gestionnaires(gestionnaires)
+        journaliser("gestionnaire", f"Gestionnaire créé : {nouveau_gestionnaire['numero']}")
+        return redirect(url_for("admin_gestionnaires"))
+
+    return render_template("admin/formulaire_gestionnaire.html", gestionnaire=None, categories=CATEGORIES)
+
+
+@app.route("/admin/gestionnaires/<numero>/modifier", methods=["GET", "POST"])
+@super_admin_requis
+def admin_modifier_gestionnaire(numero):
+    gestionnaires = charger_gestionnaires()
+    gestionnaire_cible = next((g for g in gestionnaires if g["numero"] == numero), None)
+    if not gestionnaire_cible:
+        abort(404)
+
+    if request.method == "POST":
+        gestionnaire_cible["nom"] = request.form.get("nom", "").strip()
+        gestionnaire_cible["prenom"] = request.form.get("prenom", "").strip()
+        gestionnaire_cible["telephone"] = request.form.get("telephone", "").strip()
+        nouveau_mot_de_passe = request.form.get("mot_de_passe")
+        if nouveau_mot_de_passe:
+            gestionnaire_cible["mot_de_passe_hash"] = generate_password_hash(nouveau_mot_de_passe)
+        sauvegarder_gestionnaires(gestionnaires)
+        journaliser("gestionnaire", f"Gestionnaire modifié : {numero}")
+        return redirect(url_for("admin_gestionnaires"))
+
+    return render_template("admin/formulaire_gestionnaire.html", gestionnaire=gestionnaire_cible, categories=CATEGORIES)
+
+
+@app.route("/admin/gestionnaires/<numero>/supprimer", methods=["POST"])
+@super_admin_requis
+def admin_supprimer_gestionnaire(numero):
+    gestionnaires = charger_gestionnaires()
+    if not any(g["numero"] == numero for g in gestionnaires):
+        abort(404)
+    gestionnaires_restants = [g for g in gestionnaires if g["numero"] != numero]
+    sauvegarder_gestionnaires(gestionnaires_restants)
+    journaliser("gestionnaire", f"Gestionnaire supprimé : {numero}")
+    if session.get("gestionnaire_numero") == numero:
+        session.pop("gestionnaire_numero", None)
+    return redirect(url_for("admin_gestionnaires"))
+
+
+@app.route("/admin/journal")
+@super_admin_requis
+def admin_journal():
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SELECT date, type, message FROM journal_activite ORDER BY id DESC LIMIT 300")
+            entrees = list(cur.fetchall())
+    except pymysql.err.ProgrammingError:
+        entrees = []
+    finally:
+        connexion.close()
+    return render_template("admin/journal.html", categories=CATEGORIES, entrees=entrees)
 
 
 @app.route("/admin/performance")
@@ -1809,6 +1978,7 @@ def admin_livrer_commande(numero):
     if not commande:
         abort(404)
     if marquer_commande_livree(commande, request.form.get("montant_verse_cdf"), request.form.get("montant_verse_usd")):
+        journaliser("livraison", f"Commande {numero} livrée par admin/gestionnaire")
         sauvegarder_commandes(commandes)
     return redirect(url_for("admin_commandes"))
 
@@ -1882,7 +2052,7 @@ def admin_modifier_ligne_commande(numero, index):
 
 
 @app.route("/admin/migrations/ajouter-colonne-vues", methods=["POST"])
-@admin_requis
+@super_admin_requis
 def admin_migration_ajouter_vues():
     connexion = obtenir_connexion()
     try:
@@ -1897,7 +2067,7 @@ def admin_migration_ajouter_vues():
 
 
 @app.route("/admin/migrations/fusionner-sacs-accessoires", methods=["POST"])
-@admin_requis
+@super_admin_requis
 def admin_migration_sacs_accessoires():
     produits = charger_produits()
     migres = []
@@ -1912,7 +2082,7 @@ def admin_migration_sacs_accessoires():
 
 
 @app.route("/admin/migrations/vider-cache-geoloc", methods=["POST"])
-@admin_requis
+@super_admin_requis
 def admin_migration_vider_cache_geoloc():
     connexion = obtenir_connexion()
     try:
@@ -1924,7 +2094,7 @@ def admin_migration_vider_cache_geoloc():
 
 
 @app.route("/admin/migrations/ajouter-table-parametres", methods=["POST"])
-@admin_requis
+@super_admin_requis
 def admin_migration_ajouter_table_parametres():
     connexion = obtenir_connexion()
     try:
@@ -1944,7 +2114,7 @@ def admin_migration_ajouter_table_parametres():
 
 
 @app.route("/admin/migrations/ajouter-colonnes-devises", methods=["POST"])
-@admin_requis
+@super_admin_requis
 def admin_migration_ajouter_colonnes_devises():
     connexion = obtenir_connexion()
     try:
@@ -1964,7 +2134,7 @@ def admin_migration_ajouter_colonnes_devises():
 
 
 @app.route("/admin/migrations/ajouter-colonne-code-livraison", methods=["POST"])
-@admin_requis
+@super_admin_requis
 def admin_migration_ajouter_colonne_code_livraison():
     connexion = obtenir_connexion()
     try:
@@ -1975,6 +2145,50 @@ def admin_migration_ajouter_colonne_code_livraison():
                 cur.execute("ALTER TABLE commandes ADD COLUMN code_livraison VARCHAR(10)")
                 return {"statut": "colonne ajoutee"}
         return {"statut": "colonne deja presente"}
+    finally:
+        connexion.close()
+
+
+@app.route("/admin/migrations/ajouter-table-gestionnaires", methods=["POST"])
+@super_admin_requis
+def admin_migration_ajouter_table_gestionnaires():
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS gestionnaires (
+                    numero VARCHAR(20) PRIMARY KEY,
+                    nom VARCHAR(255) NOT NULL,
+                    prenom VARCHAR(255) NOT NULL,
+                    telephone VARCHAR(50),
+                    mot_de_passe_hash VARCHAR(255) NOT NULL,
+                    date_creation VARCHAR(30) NOT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                """
+            )
+        return {"statut": "table prete"}
+    finally:
+        connexion.close()
+
+
+@app.route("/admin/migrations/ajouter-table-journal", methods=["POST"])
+@super_admin_requis
+def admin_migration_ajouter_table_journal():
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS journal_activite (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    date VARCHAR(30) NOT NULL,
+                    type VARCHAR(50) NOT NULL,
+                    message TEXT NOT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                """
+            )
+        return {"statut": "table prete"}
     finally:
         connexion.close()
 
@@ -2151,6 +2365,7 @@ def admin_reapprovisionner_produit(produit_id):
         quantite_ajoutee = 0
     produit_cible["stock"] = produit_cible.get("stock", 0) + quantite_ajoutee
     sauvegarder_produits(produits)
+    journaliser("stock", f"Réapprovisionnement produit {produit_id} (+{quantite_ajoutee})")
 
     destination = request.referrer
     if destination and destination.startswith(request.host_url):
