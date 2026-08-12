@@ -4,6 +4,7 @@
 
 {% block contenu %}
 <h1>Performance des livreurs</h1>
+<a href="{{ url_for('admin_livreurs') }}" class="admin-lien-ajout admin-lien-secondaire">← Gestion des livreurs</a>
 
 <div class="admin-filtres">
     {% for cle, label in periodes.items() %}
@@ -17,6 +18,7 @@
     <table class="admin-table">
         <thead>
             <tr>
+                <th>N°</th>
                 <th>Livreur</th>
                 <th>Commandes livrées</th>
                 <th>Part des livraisons</th>
@@ -27,6 +29,7 @@
         <tbody>
             {% for s in stats %}
             <tr>
+                <td>{{ loop.index }}</td>
                 <td><strong>{{ s.nom }} ({{ s.numero }})</strong></td>
                 <td>{{ s.nb_livrees }}</td>
                 <td>{{ s.part }}%</td>
@@ -34,7 +37,7 @@
                 <td>{{ s.montant|cdf }}</td>
             </tr>
             {% else %}
-            <tr><td colspan="5">Aucun livreur enregistré pour le moment.</td></tr>
+            <tr><td colspan="6">Aucun livreur enregistré pour le moment.</td></tr>
             {% endfor %}
         </tbody>
     </table>

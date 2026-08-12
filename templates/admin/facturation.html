@@ -93,6 +93,7 @@
     <table class="admin-table">
         <thead>
             <tr>
+                <th>N°</th>
                 <th>N° Facture</th>
                 <th>Client</th>
                 <th>Total</th>
@@ -102,6 +103,7 @@
         <tbody>
             {% for f in factures %}
             <tr>
+                <td>{{ loop.index }}</td>
                 <td><strong>{{ f.numero }}</strong><br><span class="admin-commande-contact">{{ f.date.replace('T', ' ') }}</span></td>
                 <td>{{ f.nom }}</td>
                 <td>{{ f.total|cdf }}</td>
@@ -113,7 +115,7 @@
                 </td>
             </tr>
             {% else %}
-            <tr><td colspan="4">Aucune facture émise aujourd'hui.</td></tr>
+            <tr><td colspan="5">Aucune facture émise aujourd'hui.</td></tr>
             {% endfor %}
         </tbody>
     </table>

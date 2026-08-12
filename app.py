@@ -364,7 +364,10 @@ def localiser_ip(ip, cache):
         ) as reponse:
             resultat = json.loads(reponse.read().decode())
         if resultat.get("status") == "success":
-            parties = [v for v in (resultat.get("city"), resultat.get("country")) if v]
+            ville = resultat.get("city")
+            region = resultat.get("regionName")
+            pays = resultat.get("country")
+            parties = [v for v in (ville, region if region != ville else None, pays) if v]
             if parties:
                 localisation = ", ".join(parties)
     except Exception:
@@ -1005,13 +1008,19 @@ def connexion():
         if identifiant == ADMIN_UTILISATEUR and check_password_hash(ADMIN_MOT_DE_PASSE_HASH, mot_de_passe):
             session.pop("livreur_numero", None)
             session["admin_connecte"] = True
-            return redirect(request.args.get("suivant") or url_for("admin_tableau_de_bord"))
+            suivant = request.args.get("suivant") or ""
+            if not suivant.startswith("/admin"):
+                suivant = ""
+            return redirect(suivant or url_for("admin_tableau_de_bord"))
 
         livreur_trouve = next((l for l in charger_livreurs() if l["numero"] == identifiant.upper()), None)
         if livreur_trouve and livreur_trouve.get("actif", True) and check_password_hash(livreur_trouve["mot_de_passe_hash"], mot_de_passe):
             session.pop("admin_connecte", None)
             session["livreur_numero"] = livreur_trouve["numero"]
-            return redirect(request.args.get("suivant") or url_for("livreur"))
+            suivant = request.args.get("suivant") or ""
+            if not suivant.startswith("/livreur"):
+                suivant = ""
+            return redirect(suivant or url_for("livreur"))
 
         erreur = "Identifiant ou mot de passe incorrect."
     return render_template("connexion.html", erreur=erreur)
@@ -1039,9 +1048,8 @@ def admin_tableau_de_bord():
     commandes_en_attente = [c for c in commandes if c["statut"] == "en_attente"]
     commandes_en_livraison = [c for c in commandes if c["statut"] == "en_livraison"]
     commandes_livrees = [c for c in commandes if c["statut"] == "livree"]
-    chiffre_affaires_en_ligne = sum(
-        c.get("montant_verse") or 0 for c in commandes_livrees if not c["numero"].startswith("FAC")
-    )
+    commandes_livrees_en_ligne = [c for c in commandes_livrees if not c["numero"].startswith("FAC")]
+    chiffre_affaires_en_ligne = sum(c.get("montant_verse") or 0 for c in commandes_livrees_en_ligne)
     chiffre_affaires_boutique = sum(
         c.get("montant_verse") or 0 for c in commandes_livrees if c["numero"].startswith("FAC")
     )
@@ -1071,7 +1079,7 @@ def admin_tableau_de_bord():
         visiteurs_jour=sum(1 for v in visites if v.get("date") == aujourd_hui),
         nb_commandes_attente=len(commandes_en_attente),
         nb_commandes_en_livraison=len(commandes_en_livraison),
-        nb_commandes_livrees=len(commandes_livrees),
+        nb_commandes_livrees=len(commandes_livrees_en_ligne),
         chiffre_affaires_en_ligne=chiffre_affaires_en_ligne,
         chiffre_affaires_boutique=chiffre_affaires_boutique,
         nb_produits=len(produits),
@@ -1289,7 +1297,9 @@ def admin_commandes():
     statut_filtre = request.args.get("statut", "")
     if statut_filtre == "sur_place":
         commandes = [c for c in commandes if c["numero"].startswith("FAC")]
-    elif statut_filtre in ("en_attente", "en_livraison", "livree", "annulee"):
+    elif statut_filtre == "livree":
+        commandes = [c for c in commandes if c["statut"] == "livree" and not c["numero"].startswith("FAC")]
+    elif statut_filtre in ("en_attente", "en_livraison", "annulee"):
         commandes = [c for c in commandes if c["statut"] == statut_filtre]
 
     livreur_filtre = request.args.get("livreur", "")
@@ -1436,7 +1446,11 @@ def admin_revenus():
 @app.route("/admin/visites")
 @admin_requis
 def admin_visites():
-    visites = sorted(charger_visites(), key=lambda v: (v.get("date", ""), v.get("heure", "")), reverse=True)
+    aujourd_hui = date.today().isoformat()
+    visites = sorted(
+        (v for v in charger_visites() if v.get("date") == aujourd_hui),
+        key=lambda v: (v.get("date", ""), v.get("heure", "")), reverse=True,
+    )
     cache = charger_cache_geoloc()
     cache_modifie = False
     for v in visites:
@@ -1710,6 +1724,18 @@ def admin_migration_sacs_accessoires():
     if migres:
         sauvegarder_produits(produits)
     return {"migres": migres}
+
+
+@app.route("/admin/migrations/vider-cache-geoloc", methods=["POST"])
+@admin_requis
+def admin_migration_vider_cache_geoloc():
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("DELETE FROM geoloc_cache")
+    finally:
+        connexion.close()
+    return {"statut": "cache vide"}
 
 
 @app.route("/admin/produits/importer-lot", methods=["POST"])

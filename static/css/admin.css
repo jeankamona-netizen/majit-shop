@@ -277,8 +277,20 @@ img.admin-logo {
 }
 
 .admin-actions a {
+    display: inline-block;
+    background: none;
+    border: 1px solid var(--violet-700);
     color: var(--violet-700);
+    border-radius: 16px;
+    padding: 0.25rem 0.7rem;
+    font-size: 0.8rem;
     font-weight: 600;
+    text-decoration: none;
+}
+
+.admin-actions a:hover {
+    background: var(--violet-700);
+    color: white;
 }
 
 .admin-actions button {

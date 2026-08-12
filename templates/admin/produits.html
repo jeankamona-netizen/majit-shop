@@ -22,6 +22,7 @@
     <table class="admin-table">
         <thead>
             <tr>
+                <th>N°</th>
                 <th>Photo</th>
                 <th>Nom</th>
                 <th>Prix</th>
@@ -34,9 +35,10 @@
         <tbody>
             {% for p in produits %}
             <tr>
+                <td>N°{{ loop.index }}</td>
                 <td><img src="{{ url_for('static', filename='images/' + p.image) }}" class="admin-miniature" alt="{{ p.nom }}"></td>
                 <td>
-                    {{ loop.index }}. {{ p.nom }}<br>
+                    {{ p.nom }}<br>
                     <span class="admin-commande-contact">{{ categories.get(p.categorie, p.categorie) }}</span>
                 </td>
                 <td>{{ p.prix|cdf }}</td>
@@ -57,7 +59,7 @@
                 </td>
             </tr>
             {% else %}
-            <tr><td colspan="7">Aucun produit pour le moment.</td></tr>
+            <tr><td colspan="8">Aucun produit pour le moment.</td></tr>
             {% endfor %}
         </tbody>
     </table>

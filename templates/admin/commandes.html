@@ -25,6 +25,7 @@
     <table class="admin-table">
         <thead>
             <tr>
+                <th>N°</th>
                 <th>N° Facture</th>
                 <th>Client</th>
                 <th>Articles</th>
@@ -35,6 +36,7 @@
         <tbody>
             {% for c in commandes %}
             <tr id="commande-{{ c.numero }}">
+                <td>{{ loop.index }}</td>
                 <td>
                     <strong>{{ c.numero }}</strong><br>
                     <span class="admin-commande-contact">{{ c.date.replace('T', ' ') }}</span>
@@ -109,7 +111,7 @@
                 </td>
             </tr>
             {% else %}
-            <tr><td colspan="5">Aucune commande pour le moment.</td></tr>
+            <tr><td colspan="6">Aucune commande pour le moment.</td></tr>
             {% endfor %}
         </tbody>
     </table>
