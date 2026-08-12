@@ -314,6 +314,12 @@ img.admin-logo {
     margin-top: 0.9rem;
 }
 
+.admin-formulaire input[readonly] {
+    background: #eee;
+    color: #888;
+    cursor: not-allowed;
+}
+
 .admin-formulaire input,
 .admin-formulaire select,
 .admin-formulaire textarea {

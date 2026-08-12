@@ -461,15 +461,24 @@ def extension_autorisee(nom_fichier):
     return "." in nom_fichier and nom_fichier.rsplit(".", 1)[1].lower() in EXTENSIONS_AUTORISEES
 
 
-def enregistrer_photos_supplementaires(fichiers, produit_id):
-    noms = []
-    for i, fichier in enumerate(fichiers[:3], start=2):
-        if fichier and fichier.filename and extension_autorisee(fichier.filename):
-            extension = fichier.filename.rsplit(".", 1)[1].lower()
-            nom_fichier = f"produit-{produit_id}-{i}.{extension}"
-            fichier.save(IMAGES_DIR / nom_fichier)
-            noms.append(nom_fichier)
-    return noms
+def enregistrer_photos_produit(fichiers, produit_id):
+    valides = [f for f in fichiers if f and f.filename and extension_autorisee(f.filename)]
+    if not valides:
+        return None, None
+
+    principal = valides[0]
+    extension = principal.filename.rsplit(".", 1)[1].lower()
+    nom_image = f"produit-{produit_id}.{extension}"
+    principal.save(IMAGES_DIR / nom_image)
+
+    images = []
+    for i, fichier in enumerate(valides[1:4], start=2):
+        extension = fichier.filename.rsplit(".", 1)[1].lower()
+        nom_fichier = f"produit-{produit_id}-{i}.{extension}"
+        fichier.save(IMAGES_DIR / nom_fichier)
+        images.append(nom_fichier)
+
+    return nom_image, images
 
 
 def admin_requis(f):
@@ -1720,12 +1729,6 @@ def admin_ajouter_produit():
     if request.method == "POST":
         produits = charger_produits()
         nouvel_id = max((p["id"] for p in produits), default=0) + 1
-        nom_image = "placeholder.jpg"
-        fichier = request.files.get("photo")
-        if fichier and fichier.filename and extension_autorisee(fichier.filename):
-            extension = fichier.filename.rsplit(".", 1)[1].lower()
-            nom_image = f"produit-{nouvel_id}.{extension}"
-            fichier.save(IMAGES_DIR / nom_image)
 
         try:
             reduction = max(0, min(90, int(request.form.get("reduction", 0) or 0)))
@@ -1737,9 +1740,12 @@ def admin_ajouter_produit():
         except ValueError:
             stock = 0
 
-        photos_supplementaires = enregistrer_photos_supplementaires(
-            request.files.getlist("photos_supplementaires"), nouvel_id
+        nom_image, photos_supplementaires = enregistrer_photos_produit(
+            request.files.getlist("photos"), nouvel_id
         )
+        if nom_image is None:
+            nom_image = "placeholder.jpg"
+            photos_supplementaires = []
 
         categorie_choisie = request.form.get("categorie")
         sous_categorie_choisie = request.form.get("sous_categorie") or None
@@ -1812,17 +1818,11 @@ def admin_modifier_produit(produit_id):
         if variantes:
             produit_cible["stock"] = sum(variantes.values())
 
-        fichier = request.files.get("photo")
-        if fichier and fichier.filename and extension_autorisee(fichier.filename):
-            extension = fichier.filename.rsplit(".", 1)[1].lower()
-            nom_image = f"produit-{produit_id}.{extension}"
-            fichier.save(IMAGES_DIR / nom_image)
-            produit_cible["image"] = nom_image
-
-        photos_supplementaires = enregistrer_photos_supplementaires(
-            request.files.getlist("photos_supplementaires"), produit_id
+        nom_image, photos_supplementaires = enregistrer_photos_produit(
+            request.files.getlist("photos"), produit_id
         )
-        if photos_supplementaires:
+        if nom_image is not None:
+            produit_cible["image"] = nom_image
             produit_cible["images"] = photos_supplementaires
 
         sauvegarder_produits(produits)

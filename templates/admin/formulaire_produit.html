@@ -41,10 +41,6 @@
         {% endfor %}
     </select>
 
-    <label for="stock">Stock disponible (quantité)</label>
-    <input type="number" id="stock" step="1" min="0" name="stock" value="{{ produit.stock if produit else 0 }}" required>
-    <p class="admin-note" id="stock-note-variantes" hidden>Calculé automatiquement à partir du stock par couleur/taille ci-dessous.</p>
-
     <label for="couleurs">Couleurs disponibles (séparées par des virgules)</label>
     <input type="text" id="couleurs" name="couleurs" placeholder="Noir, Blanc, Bleu" value="{{ produit.couleurs|join(', ') if produit else '' }}">
 
@@ -53,29 +49,30 @@
 
     <div id="champ-variantes" hidden>
         <label>Stock par couleur / taille</label>
-        <p class="admin-note">Précisez la quantité disponible pour chaque combinaison. Le stock total ci-dessus se met à jour automatiquement.</p>
+        <p class="admin-note">Précisez la quantité disponible pour chaque combinaison. Le stock total ci-dessous se met à jour automatiquement.</p>
         <div id="grille-variantes" class="admin-grille-variantes"></div>
     </div>
+
+    <label for="stock">Stock disponible (quantité)</label>
+    <input type="number" id="stock" step="1" min="0" name="stock" value="{{ produit.stock if produit else 0 }}" required>
+    <p class="admin-note" id="stock-note-variantes" hidden>Calculé automatiquement à partir du stock par couleur/taille ci-dessus.</p>
 
     <label for="description">Description</label>
     <textarea id="description" name="description" rows="3">{{ produit.description if produit else '' }}</textarea>
 
-    <label for="photo">Photo principale</label>
+    <label for="photos">Photos</label>
     {% if produit and produit.image %}
     <img src="{{ url_for('static', filename='images/' + produit.image) }}" class="admin-apercu" alt="{{ produit.nom }}">
-    {% endif %}
-    <input type="file" id="photo" name="photo" accept="image/*">
-
-    <label for="photos_supplementaires">Photos supplémentaires (jusqu'à 3, pour la galerie de la fiche produit)</label>
-    {% if produit and produit.images %}
+    {% if produit.images %}
     <div class="admin-apercu-galerie">
         {% for img in produit.images %}
         <img src="{{ url_for('static', filename='images/' + img) }}" class="admin-apercu-mini" alt="{{ produit.nom }}">
         {% endfor %}
     </div>
     {% endif %}
-    <input type="file" id="photos_supplementaires" name="photos_supplementaires" accept="image/*" multiple>
-    <p class="admin-note">Choisir jusqu'à 3 fichiers en même temps remplace les photos supplémentaires actuelles.</p>
+    {% endif %}
+    <input type="file" id="photos" name="photos" accept="image/*" multiple>
+    <p class="admin-note">Sélectionnez une ou plusieurs photos (jusqu'à 4) : la première sera la photo principale, les suivantes serviront d'illustrations. Laissez vide pour conserver les photos actuelles.</p>
 
     <button type="submit">{{ 'Enregistrer' if produit else 'Ajouter' }}</button>
 </form>
