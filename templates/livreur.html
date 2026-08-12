@@ -5,6 +5,10 @@
 {% block contenu %}
 <h1>{{ 'Bonjour ' + moi.prenom if moi else 'Espace livreur' }}</h1>
 
+{% if request.args.get('erreur_code') %}
+<p class="livreur-erreur-code">Code de confirmation incorrect pour la commande {{ request.args.get('erreur_code') }}. Demandez au client de vous redonner le code affiché sur sa page de suivi.</p>
+{% endif %}
+
 <section class="livreur-section">
     <h2>Commandes disponibles ({{ disponibles|length }})</h2>
     <div class="livreur-liste">
@@ -40,9 +44,11 @@
             {% if moi %}
             <div class="livreur-actions">
                 <form method="post" action="{{ url_for('livreur_prendre_commande', numero=c.numero) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="livreur-bouton-prendre"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> Prendre en charge</button>
                 </form>
                 <form method="post" action="{{ url_for('livreur_annuler_commande', numero=c.numero) }}" onsubmit="return confirm('Annuler la commande {{ c.numero }} ? Les articles seront remis en stock.');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="livreur-bouton-annuler">Annuler</button>
                 </form>
             </div>
@@ -86,6 +92,7 @@
                     <span>{{ loop.index }}. {{ ligne.nom }}{% if ligne.couleur %} ({{ ligne.couleur }}{% if ligne.taille %}, {{ ligne.taille }}{% endif %}){% elif ligne.taille %} ({{ ligne.taille }}){% endif %} × {{ ligne.quantite }}</span>
                     {% if moi %}
                     <form method="post" action="{{ url_for('livreur_modifier_ligne_commande', numero=c.numero, index=loop.index0) }}" class="livreur-ligne-qte" onsubmit="return confirm('Ajuster la quantité de cet article selon la demande du client ?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="number" name="quantite" min="0" max="{{ ligne.quantite }}" value="{{ ligne.quantite }}">
                         <button type="submit" title="Mettre à jour la quantité">✓</button>
                     </form>
@@ -101,6 +108,10 @@
             {% if moi %}
             <div class="livreur-carte-actions-bas">
                 <form method="post" action="{{ url_for('livreur_livrer_commande', numero=c.numero) }}" class="livreur-form" onsubmit="return confirm('Confirmer la livraison et le paiement cash de {{ c.numero }} ?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    {% if c.code_livraison %}
+                    <input type="text" name="code_livraison" placeholder="Code client (4 chiffres)" maxlength="4" inputmode="numeric" class="livreur-code-input" required>
+                    {% endif %}
                     <div class="paiement-mixte-inline">
                         <input type="number" name="montant_verse_cdf" step="1" min="0" placeholder="CDF" value="{{ c.total|round|int }}">
                         <input type="number" name="montant_verse_usd" step="0.01" min="0" placeholder="$">
@@ -108,6 +119,7 @@
                     <button type="submit">✓ Livrée + payée</button>
                 </form>
                 <form method="post" action="{{ url_for('livreur_annuler_commande', numero=c.numero) }}" onsubmit="return confirm('Annuler la commande {{ c.numero }} ? Les articles seront remis en stock.');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="livreur-bouton-annuler">Annuler la commande</button>
                 </form>
             </div>

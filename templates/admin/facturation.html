@@ -10,6 +10,7 @@
     <div class="admin-facturation-ajout">
         <h2 class="admin-section-titre">Ajouter un article</h2>
         <form method="post" action="{{ url_for('admin_facturation_ajouter') }}" class="admin-formulaire admin-formulaire-facturation" id="form-ajout-article">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <label for="produit_recherche">Article</label>
             <div class="admin-autocomplete">
                 <input type="text" id="produit_recherche" placeholder="Tapez une lettre ou un nom d'article..." autocomplete="off">
@@ -58,6 +59,7 @@
                         <td>{{ ligne.sous_total|cdf }}</td>
                         <td>
                             <form method="post" action="{{ url_for('admin_facturation_supprimer') }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <input type="hidden" name="cle" value="{{ ligne.cle }}">
                                 <button type="submit" class="admin-lien-annuler" title="Retirer cet article">✕</button>
                             </form>
@@ -78,6 +80,7 @@
         </div>
 
         <form method="post" action="{{ url_for('admin_facturation_valider') }}" class="admin-formulaire admin-formulaire-facturation">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <label for="nom">Nom du client (optionnel)</label>
             <input type="text" id="nom" name="nom" placeholder="Client de passage">
 
@@ -100,6 +103,7 @@
             <button type="submit">Générer la facture</button>
         </form>
         <form method="post" action="{{ url_for('admin_facturation_vider') }}" onsubmit="return confirm('Vider la facture en cours ?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="admin-lien-annuler">Vider la facture en cours</button>
         </form>
         {% else %}
@@ -131,6 +135,7 @@
                 <td>
                     <a href="{{ url_for('admin_facture_voir', numero=f.numero) }}" class="admin-lien-carte">Voir / Imprimer</a>
                     <form method="post" action="{{ url_for('admin_facture_supprimer', numero=f.numero) }}" onsubmit="return confirm('Supprimer cette facture ? Les articles seront remis en stock.');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="admin-lien-annuler">Supprimer</button>
                     </form>
                 </td>

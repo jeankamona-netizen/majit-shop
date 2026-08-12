@@ -40,6 +40,7 @@
         <p>Aidez-nous à nous améliorer en notant votre expérience.</p>
 
         <form id="sondage-formulaire">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="numero" value="{{ commande.numero }}">
 
             <div class="sondage-groupe">

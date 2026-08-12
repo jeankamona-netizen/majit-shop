@@ -54,6 +54,7 @@
                 {% endif %}
 
                 <form method="post" action="{{ url_for('ajouter_au_panier', produit_id=produit.id) }}" class="form-panier {{ 'form-panier-desactive' if not produit.stock else '' }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     {% if produit.couleurs %}
                     <div class="variante-groupe">
                         <span class="variante-titre">Couleur :</span>

@@ -1257,6 +1257,26 @@ a {
     color: #1e8449;
 }
 
+.suivi-code {
+    background: var(--orange-500);
+    color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.suivi-code p {
+    font-size: 0.85rem;
+    margin-bottom: 0.4rem;
+}
+
+.suivi-code-valeur {
+    font-size: 2rem !important;
+    font-weight: 800;
+    letter-spacing: 0.3rem;
+}
+
 .suivi-annulee {
     background: #fbdada;
     color: #c0392b;

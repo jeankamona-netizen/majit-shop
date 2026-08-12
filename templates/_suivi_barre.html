@@ -1,4 +1,4 @@
-<div class="suivi-conteneur" id="suivi-conteneur" data-numero="{{ commande.numero }}" data-statut="{{ commande.statut }}" data-etape="{{ initial_etape }}" data-livreur-nom="{{ commande.livreur_nom or '' }}" data-date-livraison="{{ commande.date_livraison or '' }}">
+<div class="suivi-conteneur" id="suivi-conteneur" data-numero="{{ commande.numero }}" data-statut="{{ commande.statut }}" data-etape="{{ initial_etape }}" data-livreur-nom="{{ commande.livreur_nom or '' }}" data-date-livraison="{{ commande.date_livraison or '' }}" data-code-livraison="{{ commande.code_livraison or '' }}">
     <div class="suivi-barre" id="suivi-barre">
         <div class="suivi-etape" data-n="1">
             <span class="suivi-cercle">
@@ -39,6 +39,10 @@
     </div>
 
     <p class="suivi-message" id="suivi-message-livraison" hidden>🚚 Votre colis est en route<span id="suivi-livreur-nom"></span>.</p>
+    <div class="suivi-code" id="suivi-code" hidden>
+        <p>Remettez ce code au livreur à la réception de votre colis, c'est votre preuve de livraison :</p>
+        <p class="suivi-code-valeur" id="suivi-code-valeur"></p>
+    </div>
     <p class="suivi-message suivi-message-succes" id="suivi-message-livree" hidden>Commande livrée avec succès<span id="suivi-date-livraison"></span>.</p>
 
     <div class="suivi-annulee" id="suivi-annulee" hidden>

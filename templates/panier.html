@@ -41,6 +41,7 @@
                         <td>{{ ligne.sous_total|cdf }}</td>
                         <td>
                             <form method="post" action="{{ url_for('supprimer_du_panier') }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <input type="hidden" name="cle" value="{{ ligne.cle }}">
                                 <button type="submit" class="bouton-supprimer">Retirer</button>
                             </form>

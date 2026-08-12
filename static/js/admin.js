@@ -1,6 +1,8 @@
 (function () {
     var cloche = document.getElementById("admin-cloche");
     var panneau = document.getElementById("admin-notif-panneau");
+    var metaCsrf = document.querySelector('meta[name="csrf-token"]');
+    var jetonCsrf = metaCsrf ? metaCsrf.content : "";
 
     if (cloche && panneau) {
         cloche.addEventListener("click", function (e) {
@@ -9,7 +11,10 @@
             if (ouvert) {
                 var badge = document.getElementById("admin-cloche-badge");
                 if (badge) badge.remove();
-                fetch("/admin/notifications/marquer-vues", { method: "POST" });
+                fetch("/admin/notifications/marquer-vues", {
+                    method: "POST",
+                    headers: { "X-CSRFToken": jetonCsrf },
+                });
             }
         });
     }

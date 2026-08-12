@@ -29,6 +29,7 @@
             {% if erreur %}<p class="admin-erreur">{{ erreur }}</p>{% endif %}
 
             <form method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <label for="identifiant">Identifiant</label>
                 <input type="text" id="identifiant" name="identifiant" placeholder="Utilisateur admin ou numéro livreur (LV...)" required autofocus>
 

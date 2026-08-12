@@ -1351,6 +1351,27 @@ img.admin-logo {
     font-size: 0.95rem;
 }
 
+.livreur-code-input {
+    flex: 0 0 100%;
+    order: -1;
+    text-align: center;
+    letter-spacing: 0.3rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border: 2px solid var(--orange-500, #e67e22) !important;
+    background: #fff8f0;
+}
+
+.livreur-erreur-code {
+    background: #fbdada;
+    color: #c0392b;
+    border: 1px solid #e0a4a4;
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
 .livreur-form button {
     background: var(--orange-500);
     color: white;

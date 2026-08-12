@@ -58,6 +58,7 @@
                         </div>
                         {% if c.statut == 'en_attente' %}
                         <form method="post" action="{{ url_for('admin_modifier_ligne_commande', numero=c.numero, index=loop.index0) }}" class="admin-ligne-qte" onsubmit="return confirm('Réduire la quantité de cet article ?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <input type="number" name="quantite" min="0" max="{{ ligne.quantite }}" value="{{ ligne.quantite }}">
                             <button type="submit" title="Mettre à jour la quantité">✓</button>
                         </form>
@@ -77,10 +78,12 @@
                     {% endif %}
                     {% if c.statut in ('en_attente', 'en_livraison') %}
                     <form method="post" action="{{ url_for('admin_annuler_commande', numero=c.numero) }}" onsubmit="return confirm('Annuler cette commande ? Les articles seront remis en stock.');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="admin-lien-annuler">Annuler la commande</button>
                     </form>
                     {% elif c.statut == 'annulee' %}
                     <form method="post" action="{{ url_for('admin_restaurer_commande', numero=c.numero) }}" onsubmit="return confirm('Restaurer cette commande ? Elle repassera en attente et le stock sera à nouveau déduit.');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="admin-lien-restaurer">Restaurer la commande</button>
                     </form>
                     {% endif %}
@@ -103,6 +106,7 @@
                         <span class="admin-livree-date">le {{ c.date_livraison.replace('T', ' ') if c.date_livraison else '' }}</span>
                     {% else %}
                     <form method="post" action="{{ url_for('admin_livrer_commande', numero=c.numero) }}" class="admin-form-livraison">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <div class="paiement-mixte-inline">
                             <input type="number" name="montant_verse_cdf" step="1" min="0" placeholder="CDF" value="{{ (c.montant_verse_cdf if c.montant_verse_cdf is not none else c.total)|round|int }}">
                             <input type="number" name="montant_verse_usd" step="0.01" min="0" placeholder="$" value="{{ c.montant_verse_usd or '' }}">

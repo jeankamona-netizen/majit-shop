@@ -48,6 +48,7 @@
 
 <h2 class="admin-section-titre">Taux de change</h2>
 <form method="post" action="{{ url_for('admin_definir_taux_usd') }}" class="admin-taux-usd">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label for="taux_usd">1 USD ($) =</label>
     <input type="number" id="taux_usd" name="taux_usd" step="0.01" min="0" value="{{ taux_usd }}">
     <span>CDF</span>

@@ -11,6 +11,7 @@
 
         <div class="commande-grille">
             <form method="post" class="commande-formulaire">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <label for="nom">Nom complet</label>
                 <input type="text" id="nom" name="nom" value="{{ valeurs.get('nom', '') }}" required>
                 {% if erreurs.nom %}<p class="commande-erreur">{{ erreurs.nom }}</p>{% endif %}

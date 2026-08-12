@@ -10,6 +10,9 @@
     var blocAnnulee = document.getElementById("suivi-annulee");
     var spanLivreurNom = document.getElementById("suivi-livreur-nom");
     var spanDateLivraison = document.getElementById("suivi-date-livraison");
+    var blocCode = document.getElementById("suivi-code");
+    var spanCodeValeur = document.getElementById("suivi-code-valeur");
+    var codeLivraison = conteneur.dataset.codeLivraison || "";
 
     var intervalle = null;
     var etapeMaxAffichee = 0;
@@ -29,12 +32,15 @@
         });
     }
 
-    function appliquerEtat(statut, etape, livreurNom, dateLivraison) {
+    function appliquerEtat(statut, etape, livreurNom, dateLivraison, codeLivraisonMaj) {
+        if (codeLivraisonMaj) codeLivraison = codeLivraisonMaj;
+
         if (statut === "annulee") {
             barre.hidden = true;
             illustration.hidden = true;
             msgLivraison.hidden = true;
             msgLivree.hidden = true;
+            if (blocCode) blocCode.hidden = true;
             blocAnnulee.hidden = false;
             arreterSondage();
             return;
@@ -49,9 +55,16 @@
             spanLivreurNom.textContent = livreurNom ? " avec " + livreurNom : "";
         }
 
+        if (blocCode && spanCodeValeur) {
+            var afficherCode = statut === "en_livraison" && codeLivraison;
+            blocCode.hidden = !afficherCode;
+            if (afficherCode) spanCodeValeur.textContent = codeLivraison;
+        }
+
         msgLivree.hidden = statut !== "livree";
         if (statut === "livree") {
             spanDateLivraison.textContent = dateLivraison ? " le " + dateLivraison.replace("T", " ") : "";
+            if (blocCode) blocCode.hidden = true;
             arreterSondage();
         }
     }
@@ -61,7 +74,7 @@
             .then(function (reponse) { return reponse.ok ? reponse.json() : null; })
             .then(function (donnees) {
                 if (donnees) {
-                    appliquerEtat(donnees.statut, donnees.etape, donnees.livreur_nom, donnees.date_livraison);
+                    appliquerEtat(donnees.statut, donnees.etape, donnees.livreur_nom, donnees.date_livraison, donnees.code_livraison);
                 }
             })
             .catch(function () {});
@@ -76,7 +89,7 @@
 
     var statutInitial = conteneur.dataset.statut;
     var etapeInitiale = parseInt(conteneur.dataset.etape, 10);
-    appliquerEtat(statutInitial, etapeInitiale, conteneur.dataset.livreurNom || null, conteneur.dataset.dateLivraison || null);
+    appliquerEtat(statutInitial, etapeInitiale, conteneur.dataset.livreurNom || null, conteneur.dataset.dateLivraison || null, codeLivraison);
 
     if (etapeInitiale === 1 && statutInitial !== "annulee") {
         illustration.classList.add("suivi-illustration-visible");

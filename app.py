@@ -1,5 +1,7 @@
+import logging
 import os
 import json
+import random
 import unicodedata
 import urllib.request
 from datetime import date, datetime, timedelta
@@ -8,14 +10,41 @@ from pathlib import Path
 
 import pymysql
 from flask import Flask, render_template, abort, request, redirect, url_for, session
+from flask_wtf import CSRFProtect
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from markupsafe import Markup, escape
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from db import obtenir_connexion
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(message)s",
+)
+logger = logging.getLogger("majt_shop")
+
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "dev-majt-shop-secret-key")
+_cle_secrete_env = os.environ.get("SECRET_KEY")
+if not _cle_secrete_env:
+    logger.warning(
+        "SECRET_KEY n'est pas définie dans les variables d'environnement : "
+        "une clé de secours non sécurisée est utilisée. À corriger avant mise en production."
+    )
+app.secret_key = _cle_secrete_env or "dev-majt-shop-secret-key"
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5 Mo max par photo
+
+csrf = CSRFProtect(app)
+limiter = Limiter(key_func=get_remote_address, app=app, default_limits=[])
+
+
+@app.before_request
+def _journaliser_requetes_sensibles():
+    if request.method == "POST" and request.path.startswith("/admin/migrations/"):
+        logger.warning(
+            "Migration déclenchée: %s (admin=%s, ip=%s)",
+            request.path, session.get("admin_connecte", False), get_remote_address(),
+        )
 
 IMAGES_DIR = Path(__file__).parent / "static" / "images"
 EXTENSIONS_AUTORISEES = {"png", "jpg", "jpeg", "webp", "gif"}
@@ -159,6 +188,7 @@ def _commande_depuis_ligne(ligne):
     ligne["montant_verse"] = float(ligne["montant_verse"]) if ligne["montant_verse"] is not None else None
     ligne["montant_verse_cdf"] = float(ligne["montant_verse_cdf"]) if ligne.get("montant_verse_cdf") is not None else None
     ligne["montant_verse_usd"] = float(ligne["montant_verse_usd"]) if ligne.get("montant_verse_usd") is not None else None
+    ligne["code_livraison"] = ligne.get("code_livraison")
     ligne["vue"] = bool(ligne["vue"])
     ligne["lignes"] = json.loads(ligne["lignes"]) if ligne["lignes"] else []
     return ligne
@@ -174,48 +204,41 @@ def charger_commandes():
         connexion.close()
 
 
+COLONNES_COMMANDES_BASE = [
+    "numero", "date", "nom", "telephone", "adresse", "latitude", "longitude", "lignes",
+    "total", "statut", "montant_verse", "date_livraison", "vue", "livreur_numero", "livreur_nom",
+]
+COLONNES_COMMANDES_OPTIONNELLES = ["montant_verse_cdf", "montant_verse_usd", "code_livraison"]
+
+
+def _valeur_colonne_commande(c, colonne):
+    if colonne == "lignes":
+        return json.dumps(c.get("lignes", []), ensure_ascii=False)
+    if colonne == "vue":
+        return int(bool(c.get("vue", True)))
+    if colonne == "total":
+        return c.get("total", 0)
+    if colonne == "statut":
+        return c.get("statut", "en_attente")
+    return c.get(colonne)
+
+
 def sauvegarder_commandes(commandes):
     connexion = obtenir_connexion()
     try:
         with connexion.cursor() as cur:
             cur.execute("SHOW COLUMNS FROM commandes")
             colonnes_existantes = {ligne["Field"] for ligne in cur.fetchall()}
-            colonnes_devises_ok = "montant_verse_cdf" in colonnes_existantes and "montant_verse_usd" in colonnes_existantes
+            colonnes = COLONNES_COMMANDES_BASE + [
+                c for c in COLONNES_COMMANDES_OPTIONNELLES if c in colonnes_existantes
+            ]
+            requete = "INSERT INTO commandes ({}) VALUES ({})".format(
+                ", ".join(colonnes), ", ".join(["%s"] * len(colonnes))
+            )
 
             cur.execute("DELETE FROM commandes")
             for c in commandes:
-                if colonnes_devises_ok:
-                    cur.execute(
-                        """
-                        INSERT INTO commandes (numero, date, nom, telephone, adresse, latitude, longitude, lignes,
-                            total, statut, montant_verse, montant_verse_cdf, montant_verse_usd, date_livraison, vue,
-                            livreur_numero, livreur_nom)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                        """,
-                        (
-                            c["numero"], c["date"], c["nom"], c["telephone"], c["adresse"],
-                            c.get("latitude"), c.get("longitude"), json.dumps(c.get("lignes", []), ensure_ascii=False),
-                            c.get("total", 0), c.get("statut", "en_attente"), c.get("montant_verse"),
-                            c.get("montant_verse_cdf"), c.get("montant_verse_usd"),
-                            c.get("date_livraison"), int(bool(c.get("vue", True))), c.get("livreur_numero"),
-                            c.get("livreur_nom"),
-                        ),
-                    )
-                else:
-                    cur.execute(
-                        """
-                        INSERT INTO commandes (numero, date, nom, telephone, adresse, latitude, longitude, lignes,
-                            total, statut, montant_verse, date_livraison, vue, livreur_numero, livreur_nom)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                        """,
-                        (
-                            c["numero"], c["date"], c["nom"], c["telephone"], c["adresse"],
-                            c.get("latitude"), c.get("longitude"), json.dumps(c.get("lignes", []), ensure_ascii=False),
-                            c.get("total", 0), c.get("statut", "en_attente"), c.get("montant_verse"),
-                            c.get("date_livraison"), int(bool(c.get("vue", True))), c.get("livreur_numero"),
-                            c.get("livreur_nom"),
-                        ),
-                    )
+                cur.execute(requete, tuple(_valeur_colonne_commande(c, col) for col in colonnes))
     finally:
         connexion.close()
 
@@ -527,8 +550,27 @@ def extension_autorisee(nom_fichier):
     return "." in nom_fichier and nom_fichier.rsplit(".", 1)[1].lower() in EXTENSIONS_AUTORISEES
 
 
+SIGNATURES_IMAGES = (
+    (b"\x89PNG\r\n\x1a\n", 0),
+    (b"\xff\xd8\xff", 0),
+    (b"GIF87a", 0),
+    (b"GIF89a", 0),
+)
+
+
+def contenu_image_valide(fichier):
+    entete = fichier.stream.read(16)
+    fichier.stream.seek(0)
+    if entete[:4] == b"RIFF" and entete[8:12] == b"WEBP":
+        return True
+    return any(entete[decalage:decalage + len(signature)] == signature for signature, decalage in SIGNATURES_IMAGES)
+
+
 def enregistrer_photos_produit(fichiers, produit_id):
-    valides = [f for f in fichiers if f and f.filename and extension_autorisee(f.filename)]
+    valides = [
+        f for f in fichiers
+        if f and f.filename and extension_autorisee(f.filename) and contenu_image_valide(f)
+    ]
     if not valides:
         return None, None
 
@@ -1035,6 +1077,7 @@ def suivi_commande_etat(numero):
         "etape": etape_suivi(commande["statut"]),
         "livreur_nom": commande.get("livreur_nom"),
         "date_livraison": commande.get("date_livraison"),
+        "code_livraison": commande.get("code_livraison"),
     }
 
 
@@ -1083,6 +1126,7 @@ def deposer_avis(numero):
 # --- Administration ---
 
 @app.route("/connexion", methods=["GET", "POST"])
+@limiter.limit("10 per minute", methods=["POST"])
 def connexion():
     erreur = None
     if request.method == "POST":
@@ -1092,6 +1136,7 @@ def connexion():
         if identifiant == ADMIN_UTILISATEUR and check_password_hash(ADMIN_MOT_DE_PASSE_HASH, mot_de_passe):
             session.pop("livreur_numero", None)
             session["admin_connecte"] = True
+            logger.info("Connexion admin réussie (ip=%s)", get_remote_address())
             suivant = request.args.get("suivant") or ""
             if not suivant.startswith("/admin"):
                 suivant = ""
@@ -1101,11 +1146,13 @@ def connexion():
         if livreur_trouve and livreur_trouve.get("actif", True) and check_password_hash(livreur_trouve["mot_de_passe_hash"], mot_de_passe):
             session.pop("admin_connecte", None)
             session["livreur_numero"] = livreur_trouve["numero"]
+            logger.info("Connexion livreur réussie: %s (ip=%s)", livreur_trouve["numero"], get_remote_address())
             suivant = request.args.get("suivant") or ""
             if not suivant.startswith("/livreur"):
                 suivant = ""
             return redirect(suivant or url_for("livreur"))
 
+        logger.warning("Échec de connexion pour identifiant=%r (ip=%s)", identifiant, get_remote_address())
         erreur = "Identifiant ou mot de passe incorrect."
     return render_template("connexion.html", erreur=erreur)
 
@@ -1475,18 +1522,31 @@ def livreur_prendre_commande(numero):
         commande["statut"] = "en_livraison"
         commande["livreur_numero"] = moi["numero"]
         commande["livreur_nom"] = f"{moi['prenom']} {moi['nom']}"
+        commande["code_livraison"] = f"{random.randint(0, 9999):04d}"
         sauvegarder_commandes(commandes)
     return redirect(url_for("livreur"))
 
 
 @app.route("/livreur/commandes/<numero>/livrer", methods=["POST"])
 @livreur_seul_requis
+@limiter.limit("15 per minute")
 def livreur_livrer_commande(numero):
     commandes = charger_commandes()
     commande = next((c for c in commandes if c["numero"] == numero), None)
     if not commande:
         abort(404)
+
+    code_attendu = commande.get("code_livraison")
+    code_saisi = request.form.get("code_livraison", "").strip()
+    if code_attendu and code_saisi != code_attendu:
+        logger.warning(
+            "Code de livraison incorrect pour %s (livreur=%s, ip=%s)",
+            numero, session.get("livreur_numero"), get_remote_address(),
+        )
+        return redirect(url_for("livreur", erreur_code=numero))
+
     if marquer_commande_livree(commande, request.form.get("montant_verse_cdf"), request.form.get("montant_verse_usd")):
+        logger.info("Commande %s livrée par %s", numero, session.get("livreur_numero") or "admin")
         sauvegarder_commandes(commandes)
     return redirect(url_for("livreur"))
 
@@ -1899,6 +1959,22 @@ def admin_migration_ajouter_colonnes_devises():
                 cur.execute("ALTER TABLE commandes ADD COLUMN montant_verse_usd DECIMAL(12,2)")
                 ajoutees.append("montant_verse_usd")
         return {"colonnes_ajoutees": ajoutees}
+    finally:
+        connexion.close()
+
+
+@app.route("/admin/migrations/ajouter-colonne-code-livraison", methods=["POST"])
+@admin_requis
+def admin_migration_ajouter_colonne_code_livraison():
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SHOW COLUMNS FROM commandes")
+            colonnes_existantes = {ligne["Field"] for ligne in cur.fetchall()}
+            if "code_livraison" not in colonnes_existantes:
+                cur.execute("ALTER TABLE commandes ADD COLUMN code_livraison VARCHAR(10)")
+                return {"statut": "colonne ajoutee"}
+        return {"statut": "colonne deja presente"}
     finally:
         connexion.close()
 
