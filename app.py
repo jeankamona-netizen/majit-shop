@@ -21,7 +21,6 @@ EXTENSIONS_AUTORISEES = {"png", "jpg", "jpeg", "webp", "gif"}
 CATEGORIES = {
     "vetements": "Vêtements",
     "chaussures": "Chaussures",
-    "sacs": "Sacs",
     "telephones": "Électroniques",
     "accessoires": "Accessoires",
     "automobiles": "Automobiles",
@@ -37,6 +36,9 @@ SOUS_CATEGORIES = {
         "manettes": "Manettes",
         "tv_audio": "TV et audio",
         "accessoires_electroniques": "Accessoires électroniques",
+    },
+    "accessoires": {
+        "sacs": "Sacs",
     },
 }
 
@@ -1693,6 +1695,21 @@ def admin_migration_ajouter_vues():
         return {"statut": "colonne ajoutee"}
     finally:
         connexion.close()
+
+
+@app.route("/admin/migrations/fusionner-sacs-accessoires", methods=["POST"])
+@admin_requis
+def admin_migration_sacs_accessoires():
+    produits = charger_produits()
+    migres = []
+    for p in produits:
+        if p["categorie"] == "sacs":
+            p["categorie"] = "accessoires"
+            p["sous_categorie"] = "sacs"
+            migres.append(p["id"])
+    if migres:
+        sauvegarder_produits(produits)
+    return {"migres": migres}
 
 
 @app.route("/admin/produits/importer-lot", methods=["POST"])

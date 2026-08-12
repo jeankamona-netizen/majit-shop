@@ -53,7 +53,7 @@
                 <tbody>
                     {% for ligne in lignes %}
                     <tr>
-                        <td>{{ ligne.produit.nom }}{% if ligne.couleur %} ({{ ligne.couleur }}{% if ligne.taille %}, {{ ligne.taille }}{% endif %}){% elif ligne.taille %} ({{ ligne.taille }}){% endif %}</td>
+                        <td>{{ loop.index }}. {{ ligne.produit.nom }}{% if ligne.couleur %} ({{ ligne.couleur }}{% if ligne.taille %}, {{ ligne.taille }}{% endif %}){% elif ligne.taille %} ({{ ligne.taille }}){% endif %}</td>
                         <td>{{ ligne.quantite }}</td>
                         <td>{{ ligne.sous_total|cdf }}</td>
                         <td>

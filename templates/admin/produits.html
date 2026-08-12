@@ -36,7 +36,7 @@
             <tr>
                 <td><img src="{{ url_for('static', filename='images/' + p.image) }}" class="admin-miniature" alt="{{ p.nom }}"></td>
                 <td>
-                    {{ p.nom }}<br>
+                    {{ loop.index }}. {{ p.nom }}<br>
                     <span class="admin-commande-contact">{{ categories.get(p.categorie, p.categorie) }}</span>
                 </td>
                 <td>{{ p.prix|cdf }}</td>
