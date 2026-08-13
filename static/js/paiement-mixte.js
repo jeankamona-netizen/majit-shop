@@ -13,7 +13,14 @@ document.addEventListener("DOMContentLoaded", function () {
         var rendu = document.createElement("p");
         rendu.className = "paiement-rendu";
         rendu.hidden = true;
-        conteneur.insertAdjacentElement("afterend", rendu);
+        // Pour les formulaires compacts en ligne (livreur, commandes), on sort le
+        // message du formulaire pour qu'il s'affiche en pleine largeur, avant les
+        // boutons suivants (ex: "Annuler la commande"), au lieu d'être coincé dans
+        // la même rangée que les champs.
+        var cible = conteneur.classList.contains("paiement-mixte-inline")
+            ? (conteneur.closest("form") || conteneur)
+            : conteneur;
+        cible.insertAdjacentElement("afterend", rendu);
 
         function afficherRendu(texte) {
             rendu.textContent = "À rendre au client : " + texte;
