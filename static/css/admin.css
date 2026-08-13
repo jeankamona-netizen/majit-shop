@@ -1708,6 +1708,16 @@ img.admin-logo {
     color: var(--violet-700);
 }
 
+.paiement-rendu {
+    margin: 0.5rem 0 0;
+    padding: 0.5rem 0.8rem;
+    background: #e6f7ec;
+    color: #1e7e42;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
 .paiement-mixte-champ input {
     padding: 0.6rem;
     border: 1px solid #ccc;
