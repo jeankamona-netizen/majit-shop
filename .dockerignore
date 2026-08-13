@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+.env
+.claude/
+.git/
+data/commandes.json
+data/visites.json
+data/geoloc_cache.json
+data/avis.json
+data/livreurs.json
