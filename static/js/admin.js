@@ -107,8 +107,6 @@
 
     function afficherBanniereActualisation() {
         if (document.getElementById("activite-banniere")) return;
-        var contenu = document.querySelector(".admin-contenu");
-        if (!contenu) return;
         var banniere = document.createElement("div");
         banniere.id = "activite-banniere";
         banniere.className = "activite-banniere";
@@ -131,7 +129,7 @@
         banniere.appendChild(texte);
         banniere.appendChild(bouton);
         banniere.appendChild(fermer);
-        contenu.prepend(banniere);
+        document.body.appendChild(banniere);
     }
 
     var compteursPrecedents = null;
