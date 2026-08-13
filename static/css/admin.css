@@ -1436,6 +1436,12 @@ img.admin-logo {
     background: var(--orange-600);
 }
 
+.livreur-form button:disabled {
+    background: #ccc;
+    color: #888;
+    cursor: not-allowed;
+}
+
 .livreur-vide {
     background: white;
     padding: 2rem;

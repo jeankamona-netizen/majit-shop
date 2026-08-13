@@ -1767,7 +1767,15 @@ def admin_livreurs():
             en_mission[c["livreur_numero"]] = en_mission.get(c["livreur_numero"], 0) + 1
     for l in livreurs:
         l["nb_en_mission"] = en_mission.get(l["numero"], 0)
-    return render_template("admin/livreurs.html", categories=CATEGORIES, livreurs=livreurs, sexes=SEXES)
+    gestionnaires = []
+    if session.get("admin_connecte"):
+        try:
+            gestionnaires = sorted(charger_gestionnaires(), key=lambda g: g["numero"], reverse=True)
+        except pymysql.err.ProgrammingError:
+            gestionnaires = []
+    return render_template(
+        "admin/livreurs.html", categories=CATEGORIES, livreurs=livreurs, sexes=SEXES, gestionnaires=gestionnaires,
+    )
 
 
 @app.route("/admin/livreurs/ajouter", methods=["GET", "POST"])
@@ -1830,13 +1838,6 @@ def admin_basculer_actif_livreur(numero):
     return redirect(url_for("admin_livreurs"))
 
 
-@app.route("/admin/gestionnaires")
-@super_admin_requis
-def admin_gestionnaires():
-    gestionnaires = sorted(charger_gestionnaires(), key=lambda g: g["numero"], reverse=True)
-    return render_template("admin/gestionnaires.html", categories=CATEGORIES, gestionnaires=gestionnaires)
-
-
 @app.route("/admin/gestionnaires/ajouter", methods=["GET", "POST"])
 @super_admin_requis
 def admin_ajouter_gestionnaire():
@@ -1853,7 +1854,7 @@ def admin_ajouter_gestionnaire():
         gestionnaires.append(nouveau_gestionnaire)
         sauvegarder_gestionnaires(gestionnaires)
         journaliser("gestionnaire", f"Gestionnaire créé : {nouveau_gestionnaire['numero']}")
-        return redirect(url_for("admin_gestionnaires"))
+        return redirect(url_for("admin_livreurs"))
 
     return render_template("admin/formulaire_gestionnaire.html", gestionnaire=None, categories=CATEGORIES)
 
@@ -1875,7 +1876,7 @@ def admin_modifier_gestionnaire(numero):
             gestionnaire_cible["mot_de_passe_hash"] = generate_password_hash(nouveau_mot_de_passe)
         sauvegarder_gestionnaires(gestionnaires)
         journaliser("gestionnaire", f"Gestionnaire modifié : {numero}")
-        return redirect(url_for("admin_gestionnaires"))
+        return redirect(url_for("admin_livreurs"))
 
     return render_template("admin/formulaire_gestionnaire.html", gestionnaire=gestionnaire_cible, categories=CATEGORIES)
 
@@ -1891,7 +1892,7 @@ def admin_supprimer_gestionnaire(numero):
     journaliser("gestionnaire", f"Gestionnaire supprimé : {numero}")
     if session.get("gestionnaire_numero") == numero:
         session.pop("gestionnaire_numero", None)
-    return redirect(url_for("admin_gestionnaires"))
+    return redirect(url_for("admin_livreurs"))
 
 
 @app.route("/admin/journal")

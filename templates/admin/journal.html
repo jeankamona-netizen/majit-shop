@@ -4,6 +4,7 @@
 
 {% block contenu %}
 <h1>Journal d'activité du système</h1>
+<a href="{{ url_for('admin_tableau_de_bord') }}" class="admin-lien-ajout admin-lien-secondaire">← Tableau de bord</a>
 <p class="admin-note">Les 300 dernières actions sensibles : connexions, migrations, gestion des comptes gestionnaires et livreurs, livraisons, ajustements de stock.</p>
 
 <div class="admin-table-wrap">
