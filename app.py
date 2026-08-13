@@ -1986,8 +1986,16 @@ def admin_activite_etat():
         (c for c in commandes if not c.get("vue", True)),
         key=lambda c: c["date"], reverse=True,
     )
+    recentes = sorted(commandes, key=lambda c: c["date"], reverse=True)[:30]
     return {
         "compteurs": compteurs,
+        "recentes": [
+            {
+                "numero": c["numero"], "nom": c["nom"], "statut": c["statut"],
+                "livreur_nom": c.get("livreur_nom"),
+            }
+            for c in recentes
+        ],
         "nouvelles_commandes": [
             {
                 "numero": c["numero"], "date": c["date"], "nom": c["nom"],

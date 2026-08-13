@@ -105,19 +105,66 @@
         }
     }
 
-    function afficherBanniereActualisation() {
-        if (document.getElementById("activite-banniere")) return;
+    var STATUT_LABELS = {
+        en_attente: "en attente",
+        en_livraison: "en livraison",
+        livree: "livrée",
+        annulee: "annulée",
+    };
+
+    function detecterEvenements(actuelles, precedentes) {
+        var precedentesParNumero = {};
+        precedentes.forEach(function (c) { precedentesParNumero[c.numero] = c; });
+        var evenements = [];
+        actuelles.forEach(function (c) {
+            var avant = precedentesParNumero[c.numero];
+            if (!avant) {
+                evenements.push({ type: "nouvelle", commande: c });
+            } else if (avant.statut !== c.statut) {
+                evenements.push({ type: "statut", commande: c });
+            }
+        });
+        return evenements;
+    }
+
+    function texteEvenement(evt) {
+        var c = evt.commande;
+        if (evt.type === "nouvelle") {
+            return "Nouvelle commande émise : " + c.nom + " — " + c.numero;
+        }
+        if (c.statut === "en_livraison") {
+            return "Commande " + c.numero + " (" + c.nom + ") prise en charge" + (c.livreur_nom ? " par " + c.livreur_nom : "");
+        }
+        if (c.statut === "livree") {
+            return "Commande " + c.numero + " (" + c.nom + ") livrée";
+        }
+        if (c.statut === "annulee") {
+            return "Commande " + c.numero + " (" + c.nom + ") annulée";
+        }
+        return "Commande " + c.numero + " : " + (STATUT_LABELS[c.statut] || c.statut);
+    }
+
+    function afficherBanniereActualisation(evenements) {
+        var ancienne = document.getElementById("activite-banniere");
+        if (ancienne) ancienne.remove();
+
+        var commandesUrl = document.body.dataset.commandesUrl || "";
+        var premier = evenements[0];
+        var texte = texteEvenement(premier);
+        if (evenements.length > 1) {
+            texte += " (+" + (evenements.length - 1) + " autre" + (evenements.length > 2 ? "s" : "") + ")";
+        }
+
         var banniere = document.createElement("div");
         banniere.id = "activite-banniere";
         banniere.className = "activite-banniere";
 
-        var texte = document.createElement("span");
-        texte.textContent = "De nouvelles informations sont disponibles.";
+        var texteEl = document.createElement("span");
+        texteEl.textContent = texte;
 
-        var bouton = document.createElement("button");
-        bouton.type = "button";
-        bouton.textContent = "Actualiser";
-        bouton.addEventListener("click", function () { location.reload(); });
+        var lien = document.createElement("a");
+        lien.textContent = "Voir";
+        lien.href = commandesUrl + "#commande-" + encodeURIComponent(premier.commande.numero);
 
         var fermer = document.createElement("button");
         fermer.type = "button";
@@ -126,13 +173,13 @@
         fermer.textContent = "✕";
         fermer.addEventListener("click", function () { banniere.remove(); });
 
-        banniere.appendChild(texte);
-        banniere.appendChild(bouton);
+        banniere.appendChild(texteEl);
+        banniere.appendChild(lien);
         banniere.appendChild(fermer);
         document.body.appendChild(banniere);
     }
 
-    var compteursPrecedents = null;
+    var recentesPrecedentes = null;
 
     function verifierActivite() {
         fetch("/admin/activite/etat")
@@ -141,13 +188,11 @@
                 if (!donnees) return;
                 reconstruireNotifications(donnees.nouvelles_commandes);
                 majBadge(donnees.nouvelles_commandes.length);
-                if (compteursPrecedents) {
-                    var change = Object.keys(donnees.compteurs).some(function (cle) {
-                        return donnees.compteurs[cle] !== compteursPrecedents[cle];
-                    });
-                    if (change) afficherBanniereActualisation();
+                if (recentesPrecedentes) {
+                    var evenements = detecterEvenements(donnees.recentes, recentesPrecedentes);
+                    if (evenements.length) afficherBanniereActualisation(evenements);
                 }
-                compteursPrecedents = donnees.compteurs;
+                recentesPrecedentes = donnees.recentes;
             })
             .catch(function () {});
     }
