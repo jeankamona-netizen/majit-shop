@@ -88,7 +88,7 @@
             <input type="text" id="telephone" name="telephone">
 
             <label>Paiement reçu</label>
-            <div class="paiement-mixte">
+            <div class="paiement-mixte" data-total="{{ total|round|int }}" data-taux="{{ taux_usd }}">
                 <div class="paiement-mixte-champ">
                     <span>CDF</span>
                     <input type="number" name="montant_verse_cdf" step="1" min="0" placeholder="{{ total|round|int }}">
@@ -98,7 +98,7 @@
                     <input type="number" name="montant_verse_usd" step="0.01" min="0" placeholder="0">
                 </div>
             </div>
-            <p class="admin-note">Laissez "CDF" vide pour facturer le total en francs. Remplissez les deux pour un paiement mixte (une partie en francs, le reste en dollars).</p>
+            <p class="admin-note">Remplissez un des deux champs : l'autre se calcule automatiquement pour compléter le total. Laissez les deux vides pour facturer le total en francs.</p>
 
             <button type="submit">Générer la facture</button>
         </form>

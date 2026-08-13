@@ -112,7 +112,7 @@
                     {% if c.code_livraison %}
                     <input type="text" name="code_livraison" placeholder="Code client (4 chiffres)" maxlength="4" inputmode="numeric" class="livreur-code-input" required>
                     {% endif %}
-                    <div class="paiement-mixte-inline">
+                    <div class="paiement-mixte-inline" data-total="{{ c.total|round|int }}" data-taux="{{ taux_usd }}">
                         <input type="number" name="montant_verse_cdf" step="1" min="0" placeholder="CDF" value="{{ c.total|round|int }}">
                         <input type="number" name="montant_verse_usd" step="0.01" min="0" placeholder="$">
                     </div>

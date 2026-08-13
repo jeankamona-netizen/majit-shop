@@ -107,7 +107,7 @@
                     {% else %}
                     <form method="post" action="{{ url_for('admin_livrer_commande', numero=c.numero) }}" class="admin-form-livraison">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <div class="paiement-mixte-inline">
+                        <div class="paiement-mixte-inline" data-total="{{ c.total|round|int }}" data-taux="{{ taux_usd }}">
                             <input type="number" name="montant_verse_cdf" step="1" min="0" placeholder="CDF" value="{{ (c.montant_verse_cdf if c.montant_verse_cdf is not none else c.total)|round|int }}">
                             <input type="number" name="montant_verse_usd" step="0.01" min="0" placeholder="$" value="{{ c.montant_verse_usd or '' }}">
                         </div>
