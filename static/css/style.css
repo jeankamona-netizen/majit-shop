@@ -951,6 +951,20 @@ a {
     font-size: 0.82rem;
 }
 
+.mes-commandes-droite {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.35rem;
+}
+
+.mes-commandes-bouton {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--orange-500);
+    white-space: nowrap;
+}
+
 .panier-commander {
     text-align: right;
     margin-top: 1rem;
@@ -1275,6 +1289,29 @@ a {
     font-size: 2rem !important;
     font-weight: 800;
     letter-spacing: 0.3rem;
+}
+
+.suivi-toast {
+    position: fixed;
+    top: -120px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--orange-500);
+    color: white;
+    padding: 1rem 1.4rem;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    z-index: 999;
+    max-width: 90vw;
+    text-align: center;
+    cursor: pointer;
+    transition: top 0.4s ease;
+}
+
+.suivi-toast-visible {
+    top: 16px;
 }
 
 .suivi-annulee {

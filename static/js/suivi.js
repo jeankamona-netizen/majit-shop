@@ -16,6 +16,27 @@
 
     var intervalle = null;
     var etapeMaxAffichee = 0;
+    var statutPrecedent = conteneur.dataset.statut;
+
+    function afficherNotificationFlottante(texte) {
+        var toast = document.getElementById("suivi-toast");
+        if (!toast) {
+            toast = document.createElement("div");
+            toast.id = "suivi-toast";
+            toast.className = "suivi-toast";
+            toast.addEventListener("click", function () {
+                toast.classList.remove("suivi-toast-visible");
+            });
+            document.body.appendChild(toast);
+        }
+        toast.textContent = texte;
+        toast.classList.add("suivi-toast-visible");
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        clearTimeout(toast._minuteur);
+        toast._minuteur = setTimeout(function () {
+            toast.classList.remove("suivi-toast-visible");
+        }, 9000);
+    }
 
     function appliquerEtapes(n) {
         if (n < etapeMaxAffichee) {
@@ -74,6 +95,10 @@
             .then(function (reponse) { return reponse.ok ? reponse.json() : null; })
             .then(function (donnees) {
                 if (donnees) {
+                    if (donnees.statut === "en_livraison" && statutPrecedent !== "en_livraison" && donnees.code_livraison) {
+                        afficherNotificationFlottante("🚚 Votre livreur est en route ! Code à lui remettre à l'arrivée : " + donnees.code_livraison);
+                    }
+                    statutPrecedent = donnees.statut;
                     appliquerEtat(donnees.statut, donnees.etape, donnees.livreur_nom, donnees.date_livraison, donnees.code_livraison);
                 }
             })

@@ -73,11 +73,14 @@
                         <strong>{{ c.numero }}</strong>
                         <span class="mes-commandes-date">{{ c.date.replace('T', ' ') }}</span>
                     </div>
-                    {% if c.statut == 'en_livraison' %}
-                        <span class="statut-badge statut-en_livraison">En livraison</span>
-                    {% else %}
-                        <span class="statut-badge statut-attente">En attente</span>
-                    {% endif %}
+                    <div class="mes-commandes-droite">
+                        {% if c.statut == 'en_livraison' %}
+                            <span class="statut-badge statut-en_livraison">En livraison</span>
+                        {% else %}
+                            <span class="statut-badge statut-attente">En attente</span>
+                        {% endif %}
+                        <span class="mes-commandes-bouton">Voir le suivi →</span>
+                    </div>
                 </a>
                 {% endfor %}
             </div>
