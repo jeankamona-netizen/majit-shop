@@ -1614,6 +1614,10 @@ img.admin-logo {
     align-items: start;
 }
 
+.admin-facturation-grille > * {
+    min-width: 0;
+}
+
 .admin-formulaire-facturation {
     max-width: none;
     margin: 0;
@@ -1686,6 +1690,7 @@ img.admin-logo {
 
 .paiement-mixte-champ {
     flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
