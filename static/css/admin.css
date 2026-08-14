@@ -375,6 +375,41 @@ img.admin-logo {
     color: white;
 }
 
+.admin-icone-bouton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1px solid var(--violet-700);
+    color: var(--violet-700);
+    background: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.admin-icone-bouton svg {
+    width: 1.05rem;
+    height: 1.05rem;
+}
+
+.admin-icone-bouton:hover {
+    background: var(--violet-700);
+    color: white;
+}
+
+.admin-icone-bouton-danger {
+    border-color: #d33;
+    color: #d33;
+}
+
+.admin-icone-bouton-danger:hover {
+    background: #d33;
+    color: white;
+}
+
 /* Formulaire produit */
 .admin-formulaire {
     display: flex;
@@ -1141,6 +1176,18 @@ img.admin-logo {
         flex-direction: column;
         align-items: stretch;
         gap: 0.35rem;
+    }
+
+    .admin-actions-icones {
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 0.4rem;
+    }
+
+    .admin-actions-icones .admin-icone-bouton {
+        width: 1.9rem;
+        height: 1.9rem;
     }
 
     .admin-actions a,

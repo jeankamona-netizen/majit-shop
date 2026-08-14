@@ -5,6 +5,12 @@
 {% block contenu %}
 <h1>{{ 'Bonjour ' + moi.prenom if moi else 'Espace livreur' }}</h1>
 
+{% if admin_connecte %}
+<div class="admin-liens-rapides">
+    <a href="{{ url_for('admin_zones_livraison') }}" class="admin-lien-ajout admin-lien-secondaire">Zones de livraison</a>
+</div>
+{% endif %}
+
 {% if request.args.get('erreur_code') %}
 <p class="livreur-erreur-code">Code de confirmation incorrect pour la commande {{ request.args.get('erreur_code') }}. Demandez au client de vous redonner le code affiché sur sa page de suivi.</p>
 {% endif %}

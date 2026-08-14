@@ -7,7 +7,7 @@
     <div class="conteneur">
         <div class="confirmation-carte">
             <h1>Suivi de la commande {{ commande.numero }}</h1>
-            <p class="confirmation-note">Commandée le {{ commande.date.replace('T', ' ') }} — livraison à : {{ commande.adresse }}{% if commande.ville %}, {{ commande.ville }}{% endif %}{% if commande.commune %} ({{ commande.commune }}){% endif %}{% if commande.province %}, {{ commande.province }}{% endif %}.</p>
+            <p class="confirmation-note">Commandée le {{ commande.date.replace('T', ' ') }}{% if commande.ville %} — livraison à : {{ commande.ville }}{% if commande.commune %}, {{ commande.commune }}{% endif %}{% if commande.province %} ({{ commande.province }}){% endif %}{% endif %}.</p>
 
             {% include "_suivi_barre.html" %}
 
@@ -20,10 +20,7 @@
                 {% endfor %}
             </ul>
             {% if commande.frais_livraison %}
-            <div class="commande-frais-livraison">Frais de livraison ({{ commande.zone_livraison }}) : <strong>{{ commande.frais_livraison|cdf }}</strong></div>
-            {% endif %}
-            {% if commande.reduction_coupon %}
-            <div class="commande-frais-livraison">Code promo ({{ commande.coupon_code }}) : <strong>-{{ commande.reduction_coupon|cdf }}</strong></div>
+            <div class="commande-frais-livraison">Frais de livraison : <strong>{{ commande.frais_livraison|cdf }}</strong></div>
             {% endif %}
             <div class="commande-total">Total : <strong>{{ commande.total|cdf }}</strong></div>
 

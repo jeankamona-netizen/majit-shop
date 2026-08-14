@@ -16,7 +16,7 @@
                     <tr>
                         <th>Produit</th>
                         <th>Prix</th>
-                        <th>Quantité</th>
+                        <th>Qté</th>
                         <th>Sous-total</th>
                         <th></th>
                     </tr>
@@ -67,8 +67,8 @@
         <div class="mes-commandes-section">
             <h3>Mes commandes en cours</h3>
             <div class="mes-commandes-liste">
-                {% for c in commandes_en_cours %}
-                <a href="{{ url_for('suivi_commande', numero=c.numero) }}" class="mes-commandes-carte">
+                {% for c in commandes_en_cours if c.tracking_token %}
+                <a href="{{ url_for('suivi_commande', token=c.tracking_token) }}" class="mes-commandes-carte">
                     <div>
                         <strong>{{ c.numero }}</strong>
                         <span class="mes-commandes-date">{{ c.date.replace('T', ' ') }}</span>

@@ -64,6 +64,7 @@ CREATE TABLE IF NOT EXISTS produits (
 
 CREATE TABLE IF NOT EXISTS commandes (
     numero VARCHAR(20) PRIMARY KEY,
+    tracking_token VARCHAR(40) UNIQUE,
     date VARCHAR(30) NOT NULL,
     nom VARCHAR(255) NOT NULL,
     telephone VARCHAR(50) NOT NULL,

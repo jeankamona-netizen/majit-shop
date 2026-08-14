@@ -55,25 +55,21 @@
         <thead>
             <tr>
                 <th>Article</th>
-                <th>Catégorie</th>
-                <th>Date de livraison</th>
                 <th>Commande</th>
-                <th>Quantité</th>
+                <th>Qté</th>
                 <th>Montant</th>
             </tr>
         </thead>
         <tbody>
             {% for l in resultats %}
             <tr>
-                <td>{{ l.article }}</td>
-                <td>{{ l.categorie }}</td>
-                <td>{{ l.date }}</td>
-                <td>{{ l.commande }}</td>
+                <td>{{ l.article }}<br><span class="admin-commande-contact">{{ l.categorie }}</span></td>
+                <td>{{ l.commande }}<br><span class="admin-commande-contact">{{ l.date }}</span></td>
                 <td>{{ l.quantite }}</td>
                 <td>{{ l.montant|cdf }}</td>
             </tr>
             {% else %}
-            <tr><td colspan="6">Aucune vente pour cette sélection.</td></tr>
+            <tr><td colspan="4">Aucune vente pour cette sélection.</td></tr>
             {% endfor %}
         </tbody>
     </table>

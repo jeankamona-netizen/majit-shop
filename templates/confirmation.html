@@ -32,7 +32,7 @@
             <div class="commande-total">Total : <strong>{{ commande.total|cdf }}</strong></div>
 
             <div class="confirmation-boutons">
-                <a href="{{ url_for('suivi_commande', numero=commande.numero) }}" class="bouton-hero bouton-hero-secondaire">Suivre ma commande</a>
+                <a href="{{ url_for('suivi_commande', token=commande.tracking_token) }}" class="bouton-hero bouton-hero-secondaire">Suivre ma commande</a>
                 <a href="{{ url_for('accueil') }}" class="bouton-hero">Continuer mes achats</a>
             </div>
         </div>

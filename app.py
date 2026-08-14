@@ -2,6 +2,7 @@ import logging
 import os
 import json
 import random
+import secrets
 import unicodedata
 import urllib.request
 from datetime import date, datetime, timedelta
@@ -9,7 +10,7 @@ from functools import wraps
 from pathlib import Path
 
 import pymysql
-from flask import Flask, render_template, abort, request, redirect, url_for, session, Response, send_from_directory
+from flask import Flask, render_template, abort, request, redirect, url_for, session, Response, send_from_directory, g
 from flask_wtf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -252,7 +253,7 @@ COLONNES_COMMANDES_BASE = [
 ]
 COLONNES_COMMANDES_OPTIONNELLES = [
     "montant_verse_cdf", "montant_verse_usd", "code_livraison", "province", "ville", "commune",
-    "zone_livraison", "frais_livraison", "coupon_code", "reduction_coupon",
+    "zone_livraison", "frais_livraison", "coupon_code", "reduction_coupon", "tracking_token",
 ]
 
 
@@ -298,6 +299,13 @@ def generer_numero_facture():
     prefixe = f"FAC{date.today().strftime('%y%m%d')}"
     factures_du_jour = [c for c in charger_commandes() if c["numero"].startswith(prefixe)]
     return f"{prefixe}{len(factures_du_jour) + 1}"
+
+
+def generer_tracking_token():
+    # Jeton long et non prédictible : contrairement au numéro de commande
+    # (séquentiel, devinable), c'est ce jeton qui donne accès au suivi
+    # public — il ne doit jamais pouvoir être reconstitué par énumération.
+    return secrets.token_urlsafe(24)
 
 
 def charger_livreurs():
@@ -477,16 +485,24 @@ def obtenir_ip_client():
 
 
 def obtenir_taux_usd():
+    # Mis en cache dans g : le taux est le même pour tous les produits d'une
+    # même requête, inutile d'ouvrir une connexion DB par article affiché.
+    if "taux_usd" in g:
+        return g.taux_usd
+
     connexion = obtenir_connexion()
     try:
         with connexion.cursor() as cur:
             cur.execute("SELECT taux_usd FROM parametres WHERE id = 1")
             ligne = cur.fetchone()
-            return float(ligne["taux_usd"]) if ligne else 2800.0
+            taux = float(ligne["taux_usd"]) if ligne else 2800.0
     except pymysql.err.ProgrammingError:
-        return 2800.0
+        taux = 2800.0
     finally:
         connexion.close()
+
+    g.taux_usd = taux
+    return taux
 
 
 def definir_taux_usd(valeur):
@@ -942,6 +958,20 @@ def personne_livraison_courante():
     if session.get("admin_connecte"):
         return {"numero": "ADMIN", "nom": "", "prenom": "Admin"}
     return None
+
+
+def peut_agir_sur_livraison(commande):
+    # Admin et gestionnaire gardent leurs pouvoirs actuels. Un livreur ne
+    # peut agir (livrer/annuler) que sur une commande non assignée (pool
+    # partagé, comportement existant) ou assignée à lui-même — jamais sur
+    # une commande assignée à un autre livreur.
+    if session.get("admin_connecte") or session.get("gestionnaire_numero"):
+        return True
+    livreur_session = session.get("livreur_numero")
+    if not livreur_session:
+        return False
+    assigne = commande.get("livreur_numero")
+    return not assigne or assigne == livreur_session
 
 
 def marquer_commande_livree(commande, montant_cdf_form, montant_usd_form=None):
@@ -1423,6 +1453,7 @@ def commander():
             numero = generer_numero_commande()
             commande = {
                 "numero": numero,
+                "tracking_token": generer_tracking_token(),
                 "date": datetime.now().isoformat(timespec="seconds"),
                 "nom": nom,
                 "telephone": telephone,
@@ -1509,9 +1540,9 @@ def confirmation_commande():
     )
 
 
-@app.route("/suivi/<numero>")
-def suivi_commande(numero):
-    commande = next((c for c in charger_commandes() if c["numero"] == numero), None)
+@app.route("/suivi/<token>")
+def suivi_commande(token):
+    commande = next((c for c in charger_commandes() if c.get("tracking_token") == token), None)
     if not commande:
         abort(404)
     return render_template(
@@ -1519,22 +1550,21 @@ def suivi_commande(numero):
         commande=commande,
         categories=CATEGORIES,
         initial_etape=etape_suivi(commande["statut"]),
-        avis_donne=avis_deja_donne(numero),
+        avis_donne=avis_deja_donne(commande["numero"]),
     )
 
 
-@app.route("/suivi/<numero>/etat")
-def suivi_commande_etat(numero):
-    commande = next((c for c in charger_commandes() if c["numero"] == numero), None)
+@app.route("/suivi/<token>/etat")
+def suivi_commande_etat(token):
+    commande = next((c for c in charger_commandes() if c.get("tracking_token") == token), None)
     if not commande:
         abort(404)
     return {
         "statut": commande["statut"],
         "etape": etape_suivi(commande["statut"]),
-        "livreur_nom": commande.get("livreur_nom"),
         "date_livraison": commande.get("date_livraison"),
         "code_livraison": commande.get("code_livraison"),
-        "avis_donne": avis_deja_donne(numero),
+        "avis_donne": avis_deja_donne(commande["numero"]),
     }
 
 
@@ -1828,6 +1858,7 @@ def admin_facturation_valider():
 
     facture = {
         "numero": numero,
+        "tracking_token": generer_tracking_token(),
         "date": maintenant,
         "nom": nom,
         "telephone": telephone or "—",
@@ -2024,6 +2055,13 @@ def livreur_livrer_commande(numero):
     commande = next((c for c in commandes if c["numero"] == numero), None)
     if not commande:
         abort(404)
+    if not peut_agir_sur_livraison(commande):
+        journaliser(
+            "acces_livraison_refuse",
+            f"Tentative de livraison de {numero} par un livreur non assigné "
+            f"(livreur_session={session.get('livreur_numero')}, ip={get_remote_address()})",
+        )
+        abort(403)
 
     code_attendu = commande.get("code_livraison")
     code_saisi = request.form.get("code_livraison", "").strip()
@@ -2048,6 +2086,13 @@ def livreur_annuler_commande(numero):
     commande = next((c for c in commandes if c["numero"] == numero), None)
     if not commande:
         abort(404)
+    if not peut_agir_sur_livraison(commande):
+        journaliser(
+            "acces_annulation_refuse",
+            f"Tentative d'annulation de {numero} par un livreur non assigné "
+            f"(livreur_session={session.get('livreur_numero')}, ip={get_remote_address()})",
+        )
+        abort(403)
     if annuler_commande(commande):
         sauvegarder_commandes(commandes)
     return redirect(url_for("livreur"))
@@ -2821,6 +2866,54 @@ def admin_migration_ajouter_colonnes_coupon():
         return {"colonnes_ajoutees": ajoutees}
     finally:
         connexion.close()
+
+
+@app.route("/admin/migrations/ajouter-colonne-tracking-token", methods=["POST"])
+@super_admin_requis
+def admin_migration_ajouter_colonne_tracking_token():
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SHOW COLUMNS FROM commandes")
+            colonnes_existantes = {ligne["Field"] for ligne in cur.fetchall()}
+            colonne_ajoutee = False
+            if "tracking_token" not in colonnes_existantes:
+                cur.execute("ALTER TABLE commandes ADD COLUMN tracking_token VARCHAR(40)")
+                colonne_ajoutee = True
+    finally:
+        connexion.close()
+
+    # Backfill : générer un jeton pour les commandes existantes qui n'en ont pas
+    # encore (aucune commande n'est modifiée si elle a déjà un jeton).
+    commandes = charger_commandes()
+    a_completer = [c for c in commandes if not c.get("tracking_token")]
+    for c in a_completer:
+        c["tracking_token"] = generer_tracking_token()
+    if a_completer:
+        sauvegarder_commandes(commandes)
+
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SELECT COUNT(*) AS n FROM commandes WHERE tracking_token IS NULL")
+            restantes = cur.fetchone()["n"]
+            index_ajoute = False
+            if restantes == 0:
+                cur.execute("SHOW INDEX FROM commandes WHERE Key_name = 'idx_tracking_token_unique'")
+                if not cur.fetchone():
+                    cur.execute(
+                        "ALTER TABLE commandes ADD UNIQUE INDEX idx_tracking_token_unique (tracking_token)"
+                    )
+                    index_ajoute = True
+    finally:
+        connexion.close()
+
+    return {
+        "colonne_ajoutee": colonne_ajoutee,
+        "commandes_completees": len(a_completer),
+        "index_unique_ajoute": index_ajoute,
+        "restantes_sans_token": restantes,
+    }
 
 
 @app.route("/admin/coupons", methods=["GET", "POST"])

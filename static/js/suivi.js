@@ -2,13 +2,12 @@
     var conteneur = document.getElementById("suivi-conteneur");
     if (!conteneur) return;
 
-    var numero = conteneur.dataset.numero;
+    var token = conteneur.dataset.token;
     var barre = document.getElementById("suivi-barre");
     var illustration = document.getElementById("suivi-illustration");
     var msgLivraison = document.getElementById("suivi-message-livraison");
     var msgLivree = document.getElementById("suivi-message-livree");
     var blocAnnulee = document.getElementById("suivi-annulee");
-    var spanLivreurNom = document.getElementById("suivi-livreur-nom");
     var spanDateLivraison = document.getElementById("suivi-date-livraison");
     var blocCode = document.getElementById("suivi-code");
     var spanCodeValeur = document.getElementById("suivi-code-valeur");
@@ -53,7 +52,7 @@
         });
     }
 
-    function appliquerEtat(statut, etape, livreurNom, dateLivraison, codeLivraisonMaj) {
+    function appliquerEtat(statut, etape, dateLivraison, codeLivraisonMaj) {
         if (codeLivraisonMaj) codeLivraison = codeLivraisonMaj;
 
         if (statut === "annulee") {
@@ -73,9 +72,6 @@
         illustration.classList.toggle("suivi-illustration-visible", etape === 1);
 
         msgLivraison.hidden = statut !== "en_livraison";
-        if (statut === "en_livraison") {
-            spanLivreurNom.textContent = livreurNom ? " avec " + livreurNom : "";
-        }
 
         if (blocCode && spanCodeValeur) {
             var afficherCode = statut === "en_livraison" && codeLivraison;
@@ -92,7 +88,7 @@
     }
 
     function sonder() {
-        fetch("/suivi/" + encodeURIComponent(numero) + "/etat")
+        fetch("/suivi/" + encodeURIComponent(token) + "/etat")
             .then(function (reponse) { return reponse.ok ? reponse.json() : null; })
             .then(function (donnees) {
                 if (donnees) {
@@ -102,7 +98,7 @@
                     statutPrecedent = donnees.statut;
                     conteneur.dataset.statut = donnees.statut;
                     conteneur.dataset.avisDonne = donnees.avis_donne ? "true" : "false";
-                    appliquerEtat(donnees.statut, donnees.etape, donnees.livreur_nom, donnees.date_livraison, donnees.code_livraison);
+                    appliquerEtat(donnees.statut, donnees.etape, donnees.date_livraison, donnees.code_livraison);
                     if (window.ouvrirSondageSiEligible) window.ouvrirSondageSiEligible();
                 }
             })
@@ -118,7 +114,7 @@
 
     var statutInitial = conteneur.dataset.statut;
     var etapeInitiale = parseInt(conteneur.dataset.etape, 10);
-    appliquerEtat(statutInitial, etapeInitiale, conteneur.dataset.livreurNom || null, conteneur.dataset.dateLivraison || null, codeLivraison);
+    appliquerEtat(statutInitial, etapeInitiale, conteneur.dataset.dateLivraison || null, codeLivraison);
 
     if (statutInitial !== "livree" && statutInitial !== "annulee") {
         intervalle = setInterval(sonder, 8000);
