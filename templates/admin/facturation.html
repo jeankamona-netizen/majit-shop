@@ -6,6 +6,10 @@
 <h1>Facturation sur place</h1>
 <p class="admin-note">Un client se présente à la boutique sans avoir commandé en ligne ? Ajoutez ses articles ci-dessous puis générez sa facture. Le stock est déduit immédiatement.</p>
 
+{% if request.args.get('erreur_stock') %}
+<p class="livreur-erreur-code">{{ request.args.get('erreur_stock') }}</p>
+{% endif %}
+
 <div class="admin-facturation-grille">
     <div class="admin-facturation-ajout">
         <h2 class="admin-section-titre">Ajouter un article</h2>

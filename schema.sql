@@ -95,7 +95,7 @@ CREATE TABLE IF NOT EXISTS avis (
     note_articles INT NOT NULL,
     note_procedure INT NOT NULL,
     commentaire TEXT,
-    INDEX idx_numero (numero)
+    UNIQUE INDEX idx_avis_numero_unique (numero)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS visites (

@@ -2,9 +2,11 @@
     var fond = document.getElementById("sondage-fond");
     var carte = fond ? fond.querySelector(".sondage-carte") : null;
     var formulaire = document.getElementById("sondage-formulaire");
-    if (!fond || !formulaire) return;
+    var conteneur = document.getElementById("suivi-conteneur");
+    if (!fond || !formulaire || !conteneur) return;
 
     var valeurs = { note_articles: 0, note_procedure: 0 };
+    var dejaOuvert = false;
 
     document.querySelectorAll(".etoiles").forEach(function (groupe) {
         var champ = groupe.dataset.champ;
@@ -49,7 +51,17 @@
         });
     });
 
-    setTimeout(function () {
-        fond.classList.add("sondage-ouvert");
-    }, 600);
+    window.ouvrirSondageSiEligible = function () {
+        if (dejaOuvert) return;
+        var eligible = conteneur.dataset.statut === "livree"
+            && conteneur.dataset.avisAutorise === "true"
+            && conteneur.dataset.avisDonne !== "true";
+        if (!eligible) return;
+        dejaOuvert = true;
+        setTimeout(function () {
+            fond.classList.add("sondage-ouvert");
+        }, 600);
+    };
+
+    window.ouvrirSondageSiEligible();
 })();

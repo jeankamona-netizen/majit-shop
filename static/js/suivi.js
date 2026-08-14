@@ -99,7 +99,10 @@
                         afficherNotificationFlottante("🚚 Votre livreur est en route ! Code à lui remettre à l'arrivée : " + donnees.code_livraison);
                     }
                     statutPrecedent = donnees.statut;
+                    conteneur.dataset.statut = donnees.statut;
+                    conteneur.dataset.avisDonne = donnees.avis_donne ? "true" : "false";
                     appliquerEtat(donnees.statut, donnees.etape, donnees.livreur_nom, donnees.date_livraison, donnees.code_livraison);
+                    if (window.ouvrirSondageSiEligible) window.ouvrirSondageSiEligible();
                 }
             })
             .catch(function () {});

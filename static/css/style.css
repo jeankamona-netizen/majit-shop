@@ -1083,6 +1083,13 @@ a {
     font-size: 0.8rem;
 }
 
+.commande-erreur-stock {
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 0.8rem 1rem;
+    margin: 0 0 1.2rem;
+}
+
 .commande-recap {
     background: white;
     padding: 1.8rem;

@@ -9,6 +9,8 @@
             <h2>Passer la commande</h2>
         </div>
 
+        {% if erreurs.stock %}<p class="commande-erreur commande-erreur-stock">{{ erreurs.stock }}</p>{% endif %}
+
         <div class="commande-grille">
             <form method="post" class="commande-formulaire">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

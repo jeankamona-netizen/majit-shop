@@ -1,4 +1,4 @@
-<div class="suivi-conteneur" id="suivi-conteneur" data-numero="{{ commande.numero }}" data-statut="{{ commande.statut }}" data-etape="{{ initial_etape }}" data-livreur-nom="{{ commande.livreur_nom or '' }}" data-date-livraison="{{ commande.date_livraison or '' }}" data-code-livraison="{{ commande.code_livraison or '' }}">
+<div class="suivi-conteneur" id="suivi-conteneur" data-numero="{{ commande.numero }}" data-statut="{{ commande.statut }}" data-etape="{{ initial_etape }}" data-livreur-nom="{{ commande.livreur_nom or '' }}" data-date-livraison="{{ commande.date_livraison or '' }}" data-code-livraison="{{ commande.code_livraison or '' }}" data-avis-autorise="{{ 'true' if commande.numero in session.get('mes_commandes', []) else 'false' }}" data-avis-donne="{{ 'true' if avis_donne else 'false' }}">
     <div class="suivi-barre" id="suivi-barre">
         <div class="suivi-etape" data-n="1">
             <span class="suivi-cercle">
@@ -51,4 +51,50 @@
     </div>
 </div>
 
+<div class="sondage-fond" id="sondage-fond">
+    <div class="sondage-carte">
+        <button type="button" class="sondage-fermer" id="sondage-fermer" aria-label="Fermer">✕</button>
+        <h2>Votre avis compte pour nous !</h2>
+        <p>Aidez-nous à nous améliorer en notant votre expérience.</p>
+
+        <form id="sondage-formulaire">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="numero" value="{{ commande.numero }}">
+
+            <div class="sondage-groupe">
+                <span class="sondage-question">Qualité des articles</span>
+                <div class="etoiles" data-champ="note_articles">
+                    <button type="button" class="etoile" data-valeur="1">★</button>
+                    <button type="button" class="etoile" data-valeur="2">★</button>
+                    <button type="button" class="etoile" data-valeur="3">★</button>
+                    <button type="button" class="etoile" data-valeur="4">★</button>
+                    <button type="button" class="etoile" data-valeur="5">★</button>
+                </div>
+            </div>
+
+            <div class="sondage-groupe">
+                <span class="sondage-question">Procédure d'achat</span>
+                <div class="etoiles" data-champ="note_procedure">
+                    <button type="button" class="etoile" data-valeur="1">★</button>
+                    <button type="button" class="etoile" data-valeur="2">★</button>
+                    <button type="button" class="etoile" data-valeur="3">★</button>
+                    <button type="button" class="etoile" data-valeur="4">★</button>
+                    <button type="button" class="etoile" data-valeur="5">★</button>
+                </div>
+            </div>
+
+            <label for="commentaire" class="sondage-question">Un commentaire ? (optionnel)</label>
+            <textarea id="commentaire" name="commentaire" rows="3" placeholder="Votre avis..."></textarea>
+
+            <div class="sondage-boutons">
+                <button type="button" class="sondage-passer" id="sondage-passer">Passer</button>
+                <button type="submit" class="bouton-acheter">Envoyer mon avis</button>
+            </div>
+        </form>
+
+        <p class="sondage-merci" id="sondage-merci">Merci pour votre avis !</p>
+    </div>
+</div>
+
 <script src="{{ url_for('static', filename='js/suivi.js') }}"></script>
+<script src="{{ url_for('static', filename='js/sondage.js') }}"></script>

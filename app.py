@@ -24,18 +24,43 @@ logging.basicConfig(
 )
 logger = logging.getLogger("majt_shop")
 
-app = Flask(__name__)
-_cle_secrete_env = os.environ.get("SECRET_KEY")
-if not _cle_secrete_env:
-    logger.warning(
-        "SECRET_KEY n'est pas définie dans les variables d'environnement : "
-        "une clé de secours non sécurisée est utilisée. À corriger avant mise en production."
+# FLASK_ENV=development est le SEUL moyen d'autoriser des valeurs de secours
+# pour les secrets (SECRET_KEY, mots de passe). Par défaut (variable absente),
+# l'application se comporte comme en production et refuse de démarrer si un
+# secret requis n'est pas défini — voir exiger_secret() ci-dessous.
+EST_DEV = os.environ.get("FLASK_ENV", "").strip().lower() == "development"
+
+
+def exiger_secret(nom_variable, valeur_dev):
+    valeur = os.environ.get(nom_variable)
+    if valeur:
+        return valeur
+    if EST_DEV:
+        logger.warning(
+            "%s n'est pas définie : valeur de secours utilisée (développement local uniquement, "
+            "FLASK_ENV=development détecté).",
+            nom_variable,
+        )
+        return valeur_dev
+    raise RuntimeError(
+        f"{nom_variable} doit être définie via une variable d'environnement pour démarrer "
+        "l'application. En local, définissez FLASK_ENV=development pour utiliser une valeur "
+        "de secours de développement."
     )
-app.secret_key = _cle_secrete_env or "dev-majt-shop-secret-key"
+
+
+app = Flask(__name__)
+app.secret_key = exiger_secret("SECRET_KEY", "dev-majt-shop-secret-key")
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5 Mo max par photo
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=30)
 
 csrf = CSRFProtect(app)
 limiter = Limiter(key_func=get_remote_address, app=app, default_limits=[])
+
+
+@app.before_request
+def _rendre_session_permanente():
+    session.permanent = True
 
 
 @app.before_request
@@ -99,9 +124,10 @@ PERIODES_PERFORMANCE = {
 MOTS_VIDES = {"le", "la", "les", "l", "un", "une", "des", "de", "du", "d", "et", "ou", "pour", "avec", "en", "au", "aux"}
 
 # Identifiants administrateur : configurables via variables d'environnement
-# (ADMIN_UTILISATEUR, ADMIN_MOT_DE_PASSE). Valeurs par défaut pour le développement local uniquement.
+# (ADMIN_UTILISATEUR, ADMIN_MOT_DE_PASSE). Valeur de secours pour ADMIN_MOT_DE_PASSE
+# réservée au développement local (voir exiger_secret ci-dessus).
 ADMIN_UTILISATEUR = os.environ.get("ADMIN_UTILISATEUR", "admin")
-ADMIN_MOT_DE_PASSE_HASH = generate_password_hash(os.environ.get("ADMIN_MOT_DE_PASSE", "MajtAdmin2026!"))
+ADMIN_MOT_DE_PASSE_HASH = generate_password_hash(exiger_secret("ADMIN_MOT_DE_PASSE", "MajtAdmin2026!"))
 
 SEXES = {"homme": "Homme", "femme": "Femme"}
 
@@ -591,6 +617,63 @@ def ajuster_stock_variante(produit, couleur, taille, delta):
         produit["stock"] = max(0, produit.get("stock", 0) + delta)
 
 
+def reserver_stock_commande(lignes_panier):
+    """
+    Vérifie puis décrémente le stock de façon atomique pour toutes les
+    lignes d'un panier, en verrouillant les lignes produits concernées
+    (SELECT ... FOR UPDATE) le temps d'une même transaction MySQL. Empêche
+    la survente lorsque deux commandes concurrentes visent le même produit.
+
+    Retourne (True, None) si la réservation a réussi (le stock est déjà
+    décrémenté en base au retour), ou (False, message_erreur) si le stock
+    est insuffisant pour au moins une ligne (aucune modification n'est
+    alors appliquée).
+    """
+    # Verrouille toujours les produits dans le même ordre (par id croissant)
+    # pour éviter les interblocages (deadlocks) entre commandes concurrentes
+    # portant sur les mêmes produits dans un ordre différent.
+    lignes_triees = sorted(lignes_panier, key=lambda l: l["produit"]["id"])
+
+    connexion = obtenir_connexion()
+    try:
+        connexion.autocommit(False)
+        with connexion.cursor() as cur:
+            for ligne in lignes_triees:
+                produit_id = ligne["produit"]["id"]
+                cur.execute("SELECT * FROM produits WHERE id = %s FOR UPDATE", (produit_id,))
+                ligne_db = cur.fetchone()
+                if not ligne_db:
+                    connexion.rollback()
+                    return False, f"{ligne['produit']['nom']} n'est plus disponible."
+
+                p = _produit_depuis_ligne(ligne_db)
+                disponible = stock_variante(p, ligne["couleur"], ligne["taille"])
+                if ligne["quantite"] > disponible:
+                    connexion.rollback()
+                    variante = (
+                        " (" + ", ".join(v for v in (ligne["couleur"], ligne["taille"]) if v) + ")"
+                        if (ligne["couleur"] or ligne["taille"]) else ""
+                    )
+                    return False, (
+                        f"Stock insuffisant pour {ligne['produit']['nom']}{variante} — il ne reste que "
+                        f"{disponible} en stock. Merci d'ajuster votre panier."
+                    )
+
+                ajuster_stock_variante(p, ligne["couleur"], ligne["taille"], -ligne["quantite"])
+                cur.execute(
+                    "UPDATE produits SET stock = %s, variantes = %s WHERE id = %s",
+                    (p["stock"], json.dumps(p.get("variantes") or {}, ensure_ascii=False), produit_id),
+                )
+            connexion.commit()
+        return True, None
+    except Exception:
+        connexion.rollback()
+        raise
+    finally:
+        connexion.autocommit(True)
+        connexion.close()
+
+
 def prix_final(produit):
     reduction = produit.get("reduction", 0) or 0
     if reduction:
@@ -1065,6 +1148,14 @@ def commander():
                 break
 
         if not erreurs:
+            # Réservation atomique du stock : c'est cette vérification, pas
+            # celle plus haut, qui fait foi en cas de commandes concurrentes
+            # sur le même produit (verrouillage MySQL au niveau ligne).
+            stock_ok, message_stock = reserver_stock_commande(lignes)
+            if not stock_ok:
+                erreurs["stock"] = message_stock
+
+        if not erreurs:
             try:
                 latitude = float(request.form.get("latitude") or "")
                 longitude = float(request.form.get("longitude") or "")
@@ -1103,13 +1194,6 @@ def commander():
             commandes.append(commande)
             sauvegarder_commandes(commandes)
 
-            produits = charger_produits()
-            for ligne in lignes:
-                p = next((x for x in produits if x["id"] == ligne["produit"]["id"]), None)
-                if p:
-                    ajuster_stock_variante(p, ligne["couleur"], ligne["taille"], -ligne["quantite"])
-            sauvegarder_produits(produits)
-
             session["derniere_commande"] = commande
             mes_commandes = session.get("mes_commandes", [])
             if numero not in mes_commandes:
@@ -1136,13 +1220,21 @@ def etape_suivi(statut):
     return 1
 
 
+def avis_deja_donne(numero):
+    return any(a["numero"] == numero for a in charger_avis())
+
+
 @app.route("/commande/confirmation")
 def confirmation_commande():
     commande = session.pop("derniere_commande", None)
     if not commande:
         return redirect(url_for("accueil"))
     return render_template(
-        "confirmation.html", commande=commande, categories=CATEGORIES, initial_etape=etape_suivi(commande["statut"])
+        "confirmation.html",
+        commande=commande,
+        categories=CATEGORIES,
+        initial_etape=etape_suivi(commande["statut"]),
+        avis_donne=avis_deja_donne(commande["numero"]),
     )
 
 
@@ -1152,7 +1244,11 @@ def suivi_commande(numero):
     if not commande:
         abort(404)
     return render_template(
-        "suivi.html", commande=commande, categories=CATEGORIES, initial_etape=etape_suivi(commande["statut"])
+        "suivi.html",
+        commande=commande,
+        categories=CATEGORIES,
+        initial_etape=etape_suivi(commande["statut"]),
+        avis_donne=avis_deja_donne(numero),
     )
 
 
@@ -1167,6 +1263,7 @@ def suivi_commande_etat(numero):
         "livreur_nom": commande.get("livreur_nom"),
         "date_livraison": commande.get("date_livraison"),
         "code_livraison": commande.get("code_livraison"),
+        "avis_donne": avis_deja_donne(numero),
     }
 
 
@@ -1196,19 +1293,35 @@ def deposer_avis(numero):
     if not commande:
         abort(404)
 
+    if numero not in session.get("mes_commandes", []):
+        journaliser("avis", f"Avis refusé (commande hors de la session du client) : {numero}")
+        abort(403)
+
+    if commande["statut"] != "livree":
+        journaliser("avis", f"Avis refusé (commande non livrée, statut={commande['statut']}) : {numero}")
+        abort(403)
+
+    if any(a["numero"] == numero for a in charger_avis()):
+        # Avis déjà enregistré pour cette commande : on n'affiche pas d'erreur au client.
+        return ("", 204)
+
     try:
         note_articles = max(1, min(5, int(request.form.get("note_articles", 0))))
         note_procedure = max(1, min(5, int(request.form.get("note_procedure", 0))))
     except ValueError:
         abort(400)
 
-    ajouter_avis({
-        "numero": numero,
-        "date": datetime.now().isoformat(timespec="seconds"),
-        "note_articles": note_articles,
-        "note_procedure": note_procedure,
-        "commentaire": request.form.get("commentaire", "").strip(),
-    })
+    try:
+        ajouter_avis({
+            "numero": numero,
+            "date": datetime.now().isoformat(timespec="seconds"),
+            "note_articles": note_articles,
+            "note_procedure": note_procedure,
+            "commentaire": request.form.get("commentaire", "").strip(),
+        })
+    except pymysql.err.IntegrityError:
+        # Requête concurrente ayant déjà inséré l'avis entre-temps : rien à faire.
+        pass
     return ("", 204)
 
 
@@ -1469,16 +1582,14 @@ def admin_facturation_valider():
         "vue": True,
     }
 
+    stock_ok, message_stock = reserver_stock_commande(lignes)
+    if not stock_ok:
+        journaliser("stock", f"Facturation annulée (stock insuffisant) : {message_stock}")
+        return redirect(url_for("admin_facturation", erreur_stock=message_stock))
+
     commandes = charger_commandes()
     commandes.append(facture)
     sauvegarder_commandes(commandes)
-
-    produits = charger_produits()
-    for ligne in lignes:
-        p = next((x for x in produits if x["id"] == ligne["produit"]["id"]), None)
-        if p:
-            ajuster_stock_variante(p, ligne["couleur"], ligne["taille"], -ligne["quantite"])
-    sauvegarder_produits(produits)
 
     session["facture_brouillon"] = {}
     return redirect(url_for("admin_facture_voir", numero=numero))
@@ -2248,6 +2359,35 @@ def admin_migration_ajouter_table_journal():
                 """
             )
         return {"statut": "table prete"}
+    finally:
+        connexion.close()
+
+
+@app.route("/admin/migrations/uniciser-avis", methods=["POST"])
+@super_admin_requis
+def admin_migration_uniciser_avis():
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute(
+                "SELECT numero, COUNT(*) AS total FROM avis GROUP BY numero HAVING COUNT(*) > 1"
+            )
+            doublons = list(cur.fetchall())
+            if doublons:
+                return {
+                    "statut": "doublons_presents",
+                    "message": "Des commandes ont déjà plusieurs avis enregistrés. "
+                    "La contrainte d'unicité n'a pas été appliquée pour ne rien supprimer "
+                    "automatiquement. Merci de décider quoi faire de ces doublons.",
+                    "doublons": doublons,
+                }
+
+            cur.execute("SHOW INDEX FROM avis WHERE Key_name = 'idx_avis_numero_unique'")
+            if cur.fetchone():
+                return {"statut": "deja_appliquee"}
+
+            cur.execute("ALTER TABLE avis ADD UNIQUE INDEX idx_avis_numero_unique (numero)")
+        return {"statut": "contrainte_ajoutee"}
     finally:
         connexion.close()
 
