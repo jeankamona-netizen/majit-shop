@@ -9,7 +9,7 @@ from functools import wraps
 from pathlib import Path
 
 import pymysql
-from flask import Flask, render_template, abort, request, redirect, url_for, session, Response
+from flask import Flask, render_template, abort, request, redirect, url_for, session, Response, send_from_directory
 from flask_wtf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -815,6 +815,46 @@ def contenu_image_valide(fichier):
     return any(entete[decalage:decalage + len(signature)] == signature for signature, decalage in SIGNATURES_IMAGES)
 
 
+EXTENSIONS_MIME = {
+    "jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png",
+    "gif": "image/gif", "webp": "image/webp",
+}
+
+
+def sauvegarder_image_db(nom, chemin):
+    # Le disque local des serveurs (Render, machines Fly.io) n'est pas
+    # partagé et est réinitialisé à chaque déploiement : sans copie en base,
+    # une photo ajoutée depuis l'admin peut disparaître ou n'être visible
+    # que sur l'hébergeur/la machine qui a traité l'upload.
+    extension = nom.rsplit(".", 1)[1].lower()
+    type_mime = EXTENSIONS_MIME.get(extension, "application/octet-stream")
+    contenu = chemin.read_bytes()
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute(
+                "INSERT INTO fichiers_images (nom, contenu, type_mime) VALUES (%s, %s, %s) "
+                "ON DUPLICATE KEY UPDATE contenu = VALUES(contenu), type_mime = VALUES(type_mime)",
+                (nom, contenu, type_mime),
+            )
+    except pymysql.err.ProgrammingError:
+        pass
+    finally:
+        connexion.close()
+
+
+def charger_image_db(nom):
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SELECT contenu, type_mime FROM fichiers_images WHERE nom = %s", (nom,))
+            return cur.fetchone()
+    except pymysql.err.ProgrammingError:
+        return None
+    finally:
+        connexion.close()
+
+
 def enregistrer_photos_produit(fichiers, produit_id):
     valides = [
         f for f in fichiers
@@ -827,12 +867,14 @@ def enregistrer_photos_produit(fichiers, produit_id):
     extension = principal.filename.rsplit(".", 1)[1].lower()
     nom_image = f"produit-{produit_id}.{extension}"
     principal.save(IMAGES_DIR / nom_image)
+    sauvegarder_image_db(nom_image, IMAGES_DIR / nom_image)
 
     images = []
     for i, fichier in enumerate(valides[1:4], start=2):
         extension = fichier.filename.rsplit(".", 1)[1].lower()
         nom_fichier = f"produit-{produit_id}-{i}.{extension}"
         fichier.save(IMAGES_DIR / nom_fichier)
+        sauvegarder_image_db(nom_fichier, IMAGES_DIR / nom_fichier)
         images.append(nom_fichier)
 
     return nom_image, images
@@ -1034,6 +1076,27 @@ def compter_visite():
 
 
 # --- Boutique ---
+
+@app.route("/img/<path:nom>")
+def image_produit(nom):
+    chemin_local = IMAGES_DIR / nom
+    if chemin_local.is_file():
+        return send_from_directory(IMAGES_DIR, nom)
+
+    ligne = charger_image_db(nom)
+    if not ligne:
+        abort(404)
+    try:
+        chemin_local.write_bytes(ligne["contenu"])
+    except OSError:
+        pass
+    return Response(ligne["contenu"], mimetype=ligne["type_mime"])
+
+
+@app.template_filter("image_url")
+def image_url_filter(nom, external=False):
+    return url_for("image_produit", nom=nom, _external=external)
+
 
 @app.route("/robots.txt")
 def robots_txt():
@@ -2691,6 +2754,26 @@ def admin_migration_ajouter_colonnes_promotion():
                     cur.execute(f"ALTER TABLE produits ADD COLUMN {colonne} VARCHAR(10)")
                     ajoutees.append(colonne)
         return {"colonnes_ajoutees": ajoutees}
+    finally:
+        connexion.close()
+
+
+@app.route("/admin/migrations/ajouter-table-fichiers-images", methods=["POST"])
+@super_admin_requis
+def admin_migration_ajouter_table_fichiers_images():
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS fichiers_images (
+                    nom VARCHAR(255) PRIMARY KEY,
+                    contenu LONGBLOB NOT NULL,
+                    type_mime VARCHAR(50) NOT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                """
+            )
+        return {"statut": "table prete"}
     finally:
         connexion.close()
 

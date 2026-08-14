@@ -25,7 +25,7 @@
                     {% for ligne in lignes %}
                     <tr>
                         <td class="panier-produit">
-                            <img src="{{ url_for('static', filename='images/' + ligne.produit.image) }}" alt="{{ ligne.produit.nom }}">
+                            <img src="{{ ligne.produit.image|image_url }}" alt="{{ ligne.produit.nom }}">
                             <div>
                                 <a href="{{ url_for('produit', produit_id=ligne.produit.id) }}">{{ ligne.produit.nom }}</a>
                                 {% if ligne.taille or ligne.couleur %}

@@ -70,11 +70,11 @@
 
     <label for="photos">Photos</label>
     {% if produit and produit.image %}
-    <img src="{{ url_for('static', filename='images/' + produit.image) }}" class="admin-apercu" alt="{{ produit.nom }}">
+    <img src="{{ produit.image|image_url }}" class="admin-apercu" alt="{{ produit.nom }}">
     {% if produit.images %}
     <div class="admin-apercu-galerie">
         {% for img in produit.images %}
-        <img src="{{ url_for('static', filename='images/' + img) }}" class="admin-apercu-mini" alt="{{ produit.nom }}">
+        <img src="{{ img|image_url }}" class="admin-apercu-mini" alt="{{ produit.nom }}">
         {% endfor %}
     </div>
     {% endif %}

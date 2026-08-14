@@ -3,7 +3,7 @@
 {% block titre %}{{ produit.nom }} — Majt Shop{% endblock %}
 {% block meta_description %}{{ (produit.description or produit.nom) ~ " — " ~ ((produit|prix_final)|cdf|striptags) ~ " sur Majt Shop." }}{% endblock %}
 {% block og_type %}product{% endblock %}
-{% block og_image %}{{ url_for('static', filename='images/' + produit.image, _external=True) }}{% endblock %}
+{% block og_image %}{{ produit.image|image_url(external=True) }}{% endblock %}
 
 {% block contenu %}
 <section class="detail-produit">
@@ -15,8 +15,8 @@
                 {% if galerie|length > 1 %}
                 <div class="detail-vignettes" id="detail-vignettes">
                     {% for img in galerie %}
-                    <button type="button" class="detail-vignette {{ 'detail-vignette-actif' if loop.first else '' }}" data-image="{{ url_for('static', filename='images/' + img) }}">
-                        <img src="{{ url_for('static', filename='images/' + img) }}" alt="{{ produit.nom }}">
+                    <button type="button" class="detail-vignette {{ 'detail-vignette-actif' if loop.first else '' }}" data-image="{{ img|image_url }}">
+                        <img src="{{ img|image_url }}" alt="{{ produit.nom }}">
                     </button>
                     {% endfor %}
                 </div>
@@ -24,7 +24,7 @@
 
                 <div class="detail-image">
                     {% if produit|reduction_active %}<span class="badge-reduction badge-reduction-detail">-{{ produit.reduction }}%</span>{% endif %}
-                    <img id="image-principale" src="{{ url_for('static', filename='images/' + produit.image) }}" alt="{{ produit.nom }}">
+                    <img id="image-principale" src="{{ produit.image|image_url }}" alt="{{ produit.nom }}">
                 </div>
             </div>
 

@@ -36,7 +36,7 @@
             {% for p in produits %}
             <tr>
                 <td class="admin-col-numero">{{ loop.index }}</td>
-                <td><img src="{{ url_for('static', filename='images/' + p.image) }}" class="admin-miniature" alt="{{ p.nom }}"></td>
+                <td><img src="{{ p.image|image_url }}" class="admin-miniature" alt="{{ p.nom }}"></td>
                 <td>
                     {{ p.nom }}<br>
                     <span class="admin-commande-contact">{{ categories.get(p.categorie, p.categorie) }}</span>

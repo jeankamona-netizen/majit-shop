@@ -26,7 +26,7 @@
             <div class="carrousel-categories" id="carrousel-categories">
                 {% for slug, nom in categories.items() %}
                 <a href="{{ url_for('categorie', slug=slug) }}" class="tuile-categorie">
-                    <img src="{{ url_for('static', filename='images/' + categories_apercu.get(slug, 'placeholder.jpg')) }}" alt="{{ nom }}">
+                    <img src="{{ categories_apercu.get(slug, 'placeholder.jpg')|image_url }}" alt="{{ nom }}">
                     <span class="tuile-categorie-nom">{{ nom }}</span>
                 </a>
                 {% endfor %}
@@ -64,7 +64,7 @@
             <a href="{{ url_for('produit', produit_id=produit.id) }}" class="carte-produit">
                 <div class="carte-image-wrap">
                     {% if produit|reduction_active %}<span class="badge-reduction">-{{ produit.reduction }}%</span>{% endif %}
-                    <img src="{{ url_for('static', filename='images/' + produit.image) }}" alt="{{ produit.nom }}">
+                    <img src="{{ produit.image|image_url }}" alt="{{ produit.nom }}">
                 </div>
                 <h3>{{ produit.nom }}</h3>
                 <p class="description">{{ produit.description }}</p>

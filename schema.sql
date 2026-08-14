@@ -142,3 +142,14 @@ CREATE TABLE IF NOT EXISTS coupons (
     usage_max INT,
     usage_compte INT NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Copie des photos uploadées depuis l'admin : le disque local des serveurs
+-- (Render, machines Fly.io) n'est ni partagé ni persistant d'un déploiement
+-- à l'autre. Les images d'origine (catalogue de départ) restent servies
+-- directement depuis static/images ; seuls les nouveaux uploads passent par
+-- cette table pour rester disponibles sur tous les hébergeurs/machines.
+CREATE TABLE IF NOT EXISTS fichiers_images (
+    nom VARCHAR(255) PRIMARY KEY,
+    contenu LONGBLOB NOT NULL,
+    type_mime VARCHAR(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
