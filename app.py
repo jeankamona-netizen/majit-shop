@@ -690,6 +690,21 @@ def livreur_courant():
     return next((l for l in charger_livreurs() if l["numero"] == numero), None)
 
 
+def personne_livraison_courante():
+    # Permet à un gestionnaire (ou à l'admin) de prendre en charge une
+    # livraison lui-même, en cas de manque de livreurs disponibles.
+    if session.get("livreur_numero"):
+        return livreur_courant()
+    if session.get("gestionnaire_numero"):
+        numero = session.get("gestionnaire_numero")
+        g = next((x for x in charger_gestionnaires() if x["numero"] == numero), None)
+        if g:
+            return {"numero": g["numero"], "nom": g["nom"], "prenom": g["prenom"]}
+    if session.get("admin_connecte"):
+        return {"numero": "ADMIN", "nom": "", "prenom": "Admin"}
+    return None
+
+
 def marquer_commande_livree(commande, montant_cdf_form, montant_usd_form=None):
     if commande["statut"] == "annulee":
         return False
@@ -1574,7 +1589,7 @@ def livreur_deconnexion():
 @app.route("/livreur")
 @livreur_requis
 def livreur():
-    moi = livreur_courant()
+    moi = personne_livraison_courante()
     commandes = charger_commandes()
     for c in commandes:
         for ligne in c["lignes"]:
@@ -1599,9 +1614,9 @@ def livreur_profil():
 
 
 @app.route("/livreur/commandes/<numero>/prendre", methods=["POST"])
-@livreur_seul_requis
+@livreur_requis
 def livreur_prendre_commande(numero):
-    moi = livreur_courant()
+    moi = personne_livraison_courante()
     commandes = charger_commandes()
     commande = next((c for c in commandes if c["numero"] == numero), None)
     if not commande:
@@ -1616,7 +1631,7 @@ def livreur_prendre_commande(numero):
 
 
 @app.route("/livreur/commandes/<numero>/livrer", methods=["POST"])
-@livreur_seul_requis
+@livreur_requis
 @limiter.limit("15 per minute")
 def livreur_livrer_commande(numero):
     commandes = charger_commandes()
@@ -1626,21 +1641,22 @@ def livreur_livrer_commande(numero):
 
     code_attendu = commande.get("code_livraison")
     code_saisi = request.form.get("code_livraison", "").strip()
+    agent = personne_livraison_courante()
     if code_attendu and code_saisi != code_attendu:
         journaliser(
             "code_livraison_incorrect",
-            f"Code de livraison incorrect pour {numero} (livreur={session.get('livreur_numero')}, ip={get_remote_address()})",
+            f"Code de livraison incorrect pour {numero} (agent={agent['numero'] if agent else '?'}, ip={get_remote_address()})",
         )
         return redirect(url_for("livreur", erreur_code=numero))
 
     if marquer_commande_livree(commande, request.form.get("montant_verse_cdf"), request.form.get("montant_verse_usd")):
-        journaliser("livraison", f"Commande {numero} livrée par {session.get('livreur_numero') or 'admin'}")
+        journaliser("livraison", f"Commande {numero} livrée par {agent['numero'] if agent else '?'}")
         sauvegarder_commandes(commandes)
     return redirect(url_for("livreur"))
 
 
 @app.route("/livreur/commandes/<numero>/annuler", methods=["POST"])
-@livreur_seul_requis
+@livreur_requis
 def livreur_annuler_commande(numero):
     commandes = charger_commandes()
     commande = next((c for c in commandes if c["numero"] == numero), None)
@@ -1652,9 +1668,9 @@ def livreur_annuler_commande(numero):
 
 
 @app.route("/livreur/commandes/<numero>/lignes/<int:index>/modifier", methods=["POST"])
-@livreur_seul_requis
+@livreur_requis
 def livreur_modifier_ligne_commande(numero, index):
-    moi = livreur_courant()
+    moi = personne_livraison_courante()
     commandes = charger_commandes()
     commande = next((c for c in commandes if c["numero"] == numero), None)
     if not commande:
