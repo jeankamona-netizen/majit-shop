@@ -11,7 +11,7 @@
             </div>
             <h1>Merci {{ commande.nom }} !</h1>
             <p>Votre achat a bien été confirmé — commande <strong>{{ commande.numero }}</strong>. Vous recevrez votre colis dans les plus brefs délais.</p>
-            <p class="confirmation-note">Nous vous contactons au {{ commande.telephone }} pour organiser la livraison à : {{ commande.adresse }}. Paiement à la livraison.</p>
+            <p class="confirmation-note">Nous vous contactons au {{ commande.telephone }} pour organiser la livraison à : {{ commande.adresse }}{% if commande.ville %}, {{ commande.ville }}{% endif %}{% if commande.commune %} ({{ commande.commune }}){% endif %}{% if commande.province %}, {{ commande.province }}{% endif %}. Paiement à la livraison.</p>
 
             {% include "_suivi_barre.html" %}
 
@@ -23,6 +23,9 @@
                 </li>
                 {% endfor %}
             </ul>
+            {% if commande.frais_livraison %}
+            <div class="commande-frais-livraison">Frais de livraison ({{ commande.zone_livraison }}) : <strong>{{ commande.frais_livraison|cdf }}</strong></div>
+            {% endif %}
             <div class="commande-total">Total : <strong>{{ commande.total|cdf }}</strong></div>
 
             <div class="confirmation-boutons">

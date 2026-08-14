@@ -70,6 +70,7 @@
         barre.hidden = false;
         blocAnnulee.hidden = true;
         appliquerEtapes(etape);
+        illustration.classList.toggle("suivi-illustration-visible", etape === 1);
 
         msgLivraison.hidden = statut !== "en_livraison";
         if (statut === "en_livraison") {
@@ -118,14 +119,6 @@
     var statutInitial = conteneur.dataset.statut;
     var etapeInitiale = parseInt(conteneur.dataset.etape, 10);
     appliquerEtat(statutInitial, etapeInitiale, conteneur.dataset.livreurNom || null, conteneur.dataset.dateLivraison || null, codeLivraison);
-
-    if (etapeInitiale === 1 && statutInitial !== "annulee") {
-        illustration.classList.add("suivi-illustration-visible");
-        setTimeout(function () {
-            appliquerEtapes(2);
-            illustration.classList.remove("suivi-illustration-visible");
-        }, 2000);
-    }
 
     if (statutInitial !== "livree" && statutInitial !== "annulee") {
         intervalle = setInterval(sonder, 8000);

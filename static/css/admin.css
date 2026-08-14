@@ -735,6 +735,11 @@ img.admin-logo {
     color: #b9770e;
 }
 
+.statut-en_preparation {
+    background: #f3e6fb;
+    color: #7b2ba8;
+}
+
 .statut-en_livraison {
     background: #dce8fb;
     color: #1a5fb4;

@@ -25,7 +25,7 @@
             </div>
 
             <div class="livreur-adresse">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> {{ c.adresse }}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> {{ c.adresse }}{% if c.ville %}, {{ c.ville }}{% endif %}{% if c.commune %} ({{ c.commune }}){% endif %}{% if c.province %}, {{ c.province }}{% endif %}
                 {% if c.latitude and c.longitude %}
                 <a href="https://www.google.com/maps/dir/?api=1&destination={{ c.latitude }},{{ c.longitude }}" target="_blank" rel="noopener" class="livreur-itineraire">Itinéraire →</a>
                 {% endif %}
@@ -80,7 +80,7 @@
             </div>
 
             <div class="livreur-adresse">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> {{ c.adresse }}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> {{ c.adresse }}{% if c.ville %}, {{ c.ville }}{% endif %}{% if c.commune %} ({{ c.commune }}){% endif %}{% if c.province %}, {{ c.province }}{% endif %}
                 {% if c.latitude and c.longitude %}
                 <a href="https://www.google.com/maps/dir/?api=1&destination={{ c.latitude }},{{ c.longitude }}" target="_blank" rel="noopener" class="livreur-itineraire">Itinéraire →</a>
                 {% endif %}

@@ -1,0 +1,71 @@
+{% extends "admin/admin_base.html" %}
+
+{% block titre %}Zones de livraison — Administration Majt Shop{% endblock %}
+
+{% block contenu %}
+<h1>Zones de livraison</h1>
+<p class="admin-note">Définissez les zones et leurs frais. Elles apparaissent au client lors de la commande ; laisser vide ou désactiver une zone la retire du formulaire de commande.</p>
+
+<div class="admin-facturation-grille">
+    <div class="admin-facturation-ajout">
+        <h2 class="admin-section-titre">Ajouter une zone</h2>
+        <form method="post" action="{{ url_for('admin_zones_livraison') }}" class="admin-formulaire">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label for="nom">Nom de la zone</label>
+            <input type="text" id="nom" name="nom" placeholder="Ex. Gombe, Kintambo..." required>
+
+            <label for="frais">Frais de livraison (CDF)</label>
+            <input type="number" id="frais" name="frais" min="0" step="1" value="0" required>
+
+            <button type="submit">Ajouter la zone</button>
+        </form>
+    </div>
+
+    <div class="admin-facturation-brouillon">
+        <h2 class="admin-section-titre">Zones existantes</h2>
+        {% if zones %}
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Frais</th>
+                        <th>Statut</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for z in zones %}
+                    <tr>
+                        <td>
+                            <form method="post" action="{{ url_for('admin_modifier_zone_livraison', zone_id=z.id) }}" class="admin-ligne-qte">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="text" name="nom" value="{{ z.nom }}" style="width: 10rem;">
+                        </td>
+                        <td>
+                                <input type="number" name="frais" min="0" step="1" value="{{ z.frais|round|int }}" style="width: 7rem;">
+                        </td>
+                        <td>
+                                <label style="display:flex; align-items:center; gap:0.3rem; font-size:0.85rem;">
+                                    <input type="checkbox" name="actif" {{ 'checked' if z.actif else '' }}> Active
+                                </label>
+                        </td>
+                        <td>
+                                <button type="submit" title="Enregistrer">✓</button>
+                            </form>
+                            <form method="post" action="{{ url_for('admin_supprimer_zone_livraison', zone_id=z.id) }}" onsubmit="return confirm('Supprimer cette zone ?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="admin-lien-annuler">Supprimer</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p>Aucune zone définie pour le moment. Tant qu'aucune zone n'est active, le client ne voit pas de champ de frais de livraison au moment de commander.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -14,6 +14,10 @@
         <span class="admin-stat-valeur">{{ nb_commandes_attente }}</span>
         <span class="admin-stat-label">Commandes en attente</span>
     </a>
+    <a href="{{ url_for('admin_commandes', statut='en_preparation') }}" class="admin-stat-carte">
+        <span class="admin-stat-valeur">{{ nb_commandes_en_preparation }}</span>
+        <span class="admin-stat-label">En préparation</span>
+    </a>
     <a href="{{ url_for('admin_commandes', statut='en_livraison') }}" class="admin-stat-carte">
         <span class="admin-stat-valeur">{{ nb_commandes_en_livraison }}</span>
         <span class="admin-stat-label">En cours de livraison</span>

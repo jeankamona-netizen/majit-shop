@@ -84,6 +84,14 @@ CATEGORIES = {
     "bebes": "Bébés et Enfants",
 }
 
+PROVINCES_RDC = [
+    "Kinshasa", "Kongo Central", "Kwango", "Kwilu", "Mai-Ndombe", "Kasaï",
+    "Kasaï Central", "Kasaï Oriental", "Lomami", "Sankuru", "Maniema",
+    "Sud-Kivu", "Nord-Kivu", "Ituri", "Haut-Uele", "Tshopo", "Bas-Uele",
+    "Nord-Ubangi", "Mongala", "Sud-Ubangi", "Équateur", "Tshuapa",
+    "Tanganyika", "Haut-Lomami", "Lualaba", "Haut-Katanga",
+]
+
 SOUS_CATEGORIES = {
     "telephones": {
         "telephones_tablettes": "Téléphones et tablettes",
@@ -234,7 +242,10 @@ COLONNES_COMMANDES_BASE = [
     "numero", "date", "nom", "telephone", "adresse", "latitude", "longitude", "lignes",
     "total", "statut", "montant_verse", "date_livraison", "vue", "livreur_numero", "livreur_nom",
 ]
-COLONNES_COMMANDES_OPTIONNELLES = ["montant_verse_cdf", "montant_verse_usd", "code_livraison"]
+COLONNES_COMMANDES_OPTIONNELLES = [
+    "montant_verse_cdf", "montant_verse_usd", "code_livraison", "province", "ville", "commune",
+    "zone_livraison", "frais_livraison",
+]
 
 
 def _valeur_colonne_commande(c, colonne):
@@ -481,6 +492,26 @@ def definir_taux_usd(valeur):
                 """,
                 (valeur,),
             )
+    finally:
+        connexion.close()
+
+
+def charger_zones_livraison(actives_seulement=False):
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            requete = "SELECT id, nom, frais, actif FROM zones_livraison"
+            if actives_seulement:
+                requete += " WHERE actif = 1"
+            requete += " ORDER BY nom"
+            cur.execute(requete)
+            zones = list(cur.fetchall())
+            for z in zones:
+                z["frais"] = float(z["frais"])
+                z["actif"] = bool(z["actif"])
+            return zones
+    except pymysql.err.ProgrammingError:
+        return []
     finally:
         connexion.close()
 
@@ -818,8 +849,15 @@ def marquer_commande_livree(commande, montant_cdf_form, montant_usd_form=None):
     return True
 
 
+def marquer_en_preparation(commande):
+    if commande["statut"] != "en_attente":
+        return False
+    commande["statut"] = "en_preparation"
+    return True
+
+
 def annuler_commande(commande):
-    if commande["statut"] not in ("en_attente", "en_livraison"):
+    if commande["statut"] not in ("en_attente", "en_preparation", "en_livraison"):
         return False
     produits = charger_produits()
     for ligne in commande["lignes"]:
@@ -1129,12 +1167,28 @@ def commander():
     if request.method == "POST":
         nom = request.form.get("nom", "").strip()
         telephone = request.form.get("telephone", "").strip()
+        province = request.form.get("province", "").strip()
+        ville = request.form.get("ville", "").strip()
+        commune = request.form.get("commune", "").strip()
         adresse = request.form.get("adresse", "").strip()
+
+        zones_actives = charger_zones_livraison(actives_seulement=True)
+        zone_choisie = None
+        zone_id_form = request.form.get("zone_livraison_id", "").strip()
+        if zone_id_form:
+            zone_choisie = next((z for z in zones_actives if str(z["id"]) == zone_id_form), None)
+            if not zone_choisie:
+                erreurs["zone_livraison"] = "Zone de livraison invalide, merci de réessayer."
+        frais_livraison = zone_choisie["frais"] if zone_choisie else 0
 
         if not nom:
             erreurs["nom"] = "Merci d'indiquer votre nom."
         if not telephone:
             erreurs["telephone"] = "Merci d'indiquer un numéro de téléphone."
+        if province not in PROVINCES_RDC:
+            erreurs["province"] = "Merci de choisir votre province."
+        if not ville:
+            erreurs["ville"] = "Merci d'indiquer votre ville."
         if not adresse:
             erreurs["adresse"] = "Merci d'indiquer une adresse de livraison."
 
@@ -1168,6 +1222,9 @@ def commander():
                 "date": datetime.now().isoformat(timespec="seconds"),
                 "nom": nom,
                 "telephone": telephone,
+                "province": province,
+                "ville": ville,
+                "commune": commune,
                 "adresse": adresse,
                 "latitude": latitude,
                 "longitude": longitude,
@@ -1183,7 +1240,9 @@ def commander():
                     }
                     for ligne in lignes
                 ],
-                "total": total,
+                "zone_livraison": zone_choisie["nom"] if zone_choisie else None,
+                "frais_livraison": frais_livraison,
+                "total": total + frais_livraison,
                 "statut": "en_attente",
                 "montant_verse": None,
                 "date_livraison": None,
@@ -1209,6 +1268,8 @@ def commander():
         categories=CATEGORIES,
         erreurs=erreurs,
         valeurs=request.form,
+        provinces=PROVINCES_RDC,
+        zones=charger_zones_livraison(actives_seulement=True),
     )
 
 
@@ -1217,6 +1278,8 @@ def etape_suivi(statut):
         return 4
     if statut == "en_livraison":
         return 3
+    if statut == "en_preparation":
+        return 2
     return 1
 
 
@@ -1393,6 +1456,7 @@ def admin_tableau_de_bord():
 
     aujourd_hui = date.today().isoformat()
     commandes_en_attente = [c for c in commandes if c["statut"] == "en_attente"]
+    commandes_en_preparation = [c for c in commandes if c["statut"] == "en_preparation"]
     commandes_en_livraison = [c for c in commandes if c["statut"] == "en_livraison"]
     commandes_livrees = [c for c in commandes if c["statut"] == "livree"]
     commandes_livrees_en_ligne = [c for c in commandes_livrees if not c["numero"].startswith("FAC")]
@@ -1425,6 +1489,7 @@ def admin_tableau_de_bord():
         categories=CATEGORIES,
         visiteurs_jour=sum(1 for v in visites if v.get("date") == aujourd_hui),
         nb_commandes_attente=len(commandes_en_attente),
+        nb_commandes_en_preparation=len(commandes_en_preparation),
         nb_commandes_en_livraison=len(commandes_en_livraison),
         nb_commandes_livrees=len(commandes_livrees_en_ligne),
         chiffre_affaires_en_ligne=chiffre_affaires_en_ligne,
@@ -1662,7 +1727,7 @@ def admin_commandes():
         commandes = [c for c in commandes if c["numero"].startswith("FAC")]
     elif statut_filtre == "livree":
         commandes = [c for c in commandes if c["statut"] == "livree" and not c["numero"].startswith("FAC")]
-    elif statut_filtre in ("en_attente", "en_livraison", "annulee"):
+    elif statut_filtre in ("en_attente", "en_preparation", "en_livraison", "annulee"):
         commandes = [c for c in commandes if c["statut"] == statut_filtre]
 
     livreur_filtre = request.args.get("livreur", "")
@@ -1706,7 +1771,9 @@ def livreur():
         for ligne in c["lignes"]:
             if ligne.get("prix_unitaire") is None and ligne.get("quantite"):
                 ligne["prix_unitaire"] = round(ligne["sous_total"] / ligne["quantite"])
-    disponibles = sorted((c for c in commandes if c["statut"] == "en_attente"), key=lambda c: c["date"])
+    disponibles = sorted(
+        (c for c in commandes if c["statut"] in ("en_attente", "en_preparation")), key=lambda c: c["date"]
+    )
     if moi:
         en_cours = [c for c in commandes if c["statut"] == "en_livraison" and c.get("livreur_numero") == moi["numero"]]
     else:
@@ -1732,7 +1799,7 @@ def livreur_prendre_commande(numero):
     commande = next((c for c in commandes if c["numero"] == numero), None)
     if not commande:
         abort(404)
-    if commande["statut"] == "en_attente":
+    if commande["statut"] in ("en_attente", "en_preparation"):
         commande["statut"] = "en_livraison"
         commande["livreur_numero"] = moi["numero"]
         commande["livreur_nom"] = f"{moi['prenom']} {moi['nom']}"
@@ -2105,6 +2172,7 @@ def admin_activite_etat():
     compteurs = {
         "total": len(commandes),
         "en_attente": sum(1 for c in commandes if c["statut"] == "en_attente"),
+        "en_preparation": sum(1 for c in commandes if c["statut"] == "en_preparation"),
         "en_livraison": sum(1 for c in commandes if c["statut"] == "en_livraison"),
         "livree": sum(1 for c in commandes if c["statut"] == "livree"),
         "annulee": sum(1 for c in commandes if c["statut"] == "annulee"),
@@ -2150,6 +2218,19 @@ def admin_livrer_commande(numero):
     if marquer_commande_livree(commande, request.form.get("montant_verse_cdf"), request.form.get("montant_verse_usd")):
         journaliser("livraison", f"Commande {numero} livrée par admin/gestionnaire")
         sauvegarder_commandes(commandes)
+    return redirect(url_for("admin_commandes"))
+
+
+@app.route("/admin/commandes/<numero>/preparer", methods=["POST"])
+@admin_requis
+def admin_preparer_commande(numero):
+    commandes = charger_commandes()
+    commande = next((c for c in commandes if c["numero"] == numero), None)
+    if not commande:
+        abort(404)
+    if marquer_en_preparation(commande):
+        sauvegarder_commandes(commandes)
+        journaliser("preparation", f"Commande {numero} marquée en préparation")
     return redirect(url_for("admin_commandes"))
 
 
@@ -2215,7 +2296,7 @@ def admin_modifier_ligne_commande(numero, index):
     commande = next((c for c in commandes if c["numero"] == numero), None)
     if not commande:
         abort(404)
-    if commande["statut"] in ("en_attente", "en_livraison"):
+    if commande["statut"] in ("en_attente", "en_preparation", "en_livraison"):
         if modifier_quantite_ligne(commande, index, request.form.get("quantite")):
             sauvegarder_commandes(commandes)
     return redirect(url_for("admin_commandes"))
@@ -2390,6 +2471,119 @@ def admin_migration_uniciser_avis():
         return {"statut": "contrainte_ajoutee"}
     finally:
         connexion.close()
+
+
+@app.route("/admin/migrations/ajouter-colonnes-adresse", methods=["POST"])
+@super_admin_requis
+def admin_migration_ajouter_colonnes_adresse():
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SHOW COLUMNS FROM commandes")
+            colonnes_existantes = {ligne["Field"] for ligne in cur.fetchall()}
+            ajoutees = []
+            for colonne in ("province", "ville", "commune"):
+                if colonne not in colonnes_existantes:
+                    cur.execute(f"ALTER TABLE commandes ADD COLUMN {colonne} VARCHAR(100)")
+                    ajoutees.append(colonne)
+        return {"colonnes_ajoutees": ajoutees}
+    finally:
+        connexion.close()
+
+
+@app.route("/admin/migrations/ajouter-table-zones-livraison", methods=["POST"])
+@super_admin_requis
+def admin_migration_ajouter_table_zones_livraison():
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS zones_livraison (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    nom VARCHAR(150) NOT NULL,
+                    frais DECIMAL(12,2) NOT NULL DEFAULT 0,
+                    actif TINYINT(1) NOT NULL DEFAULT 1
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                """
+            )
+        return {"statut": "table prete"}
+    finally:
+        connexion.close()
+
+
+@app.route("/admin/migrations/ajouter-colonnes-frais-livraison", methods=["POST"])
+@super_admin_requis
+def admin_migration_ajouter_colonnes_frais_livraison():
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SHOW COLUMNS FROM commandes")
+            colonnes_existantes = {ligne["Field"] for ligne in cur.fetchall()}
+            ajoutees = []
+            if "zone_livraison" not in colonnes_existantes:
+                cur.execute("ALTER TABLE commandes ADD COLUMN zone_livraison VARCHAR(150)")
+                ajoutees.append("zone_livraison")
+            if "frais_livraison" not in colonnes_existantes:
+                cur.execute("ALTER TABLE commandes ADD COLUMN frais_livraison DECIMAL(12,2)")
+                ajoutees.append("frais_livraison")
+        return {"colonnes_ajoutees": ajoutees}
+    finally:
+        connexion.close()
+
+
+@app.route("/admin/zones-livraison", methods=["GET", "POST"])
+@admin_requis
+def admin_zones_livraison():
+    if request.method == "POST":
+        nom = request.form.get("nom", "").strip()
+        try:
+            frais = max(0, float(request.form.get("frais", 0) or 0))
+        except ValueError:
+            frais = 0
+        if nom:
+            connexion = obtenir_connexion()
+            try:
+                with connexion.cursor() as cur:
+                    cur.execute(
+                        "INSERT INTO zones_livraison (nom, frais, actif) VALUES (%s, %s, 1)", (nom, frais)
+                    )
+            finally:
+                connexion.close()
+        return redirect(url_for("admin_zones_livraison"))
+    return render_template("admin/zones_livraison.html", zones=charger_zones_livraison(), categories=CATEGORIES)
+
+
+@app.route("/admin/zones-livraison/<int:zone_id>/modifier", methods=["POST"])
+@admin_requis
+def admin_modifier_zone_livraison(zone_id):
+    nom = request.form.get("nom", "").strip()
+    try:
+        frais = max(0, float(request.form.get("frais", 0) or 0))
+    except ValueError:
+        frais = 0
+    actif = 1 if request.form.get("actif") == "on" else 0
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute(
+                "UPDATE zones_livraison SET nom=%s, frais=%s, actif=%s WHERE id=%s", (nom, frais, actif, zone_id)
+            )
+    finally:
+        connexion.close()
+    return redirect(url_for("admin_zones_livraison"))
+
+
+@app.route("/admin/zones-livraison/<int:zone_id>/supprimer", methods=["POST"])
+@admin_requis
+def admin_supprimer_zone_livraison(zone_id):
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("DELETE FROM zones_livraison WHERE id=%s", (zone_id,))
+    finally:
+        connexion.close()
+    return redirect(url_for("admin_zones_livraison"))
 
 
 @app.route("/admin/parametres/taux-usd", methods=["POST"])

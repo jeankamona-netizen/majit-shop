@@ -65,6 +65,9 @@ CREATE TABLE IF NOT EXISTS commandes (
     date VARCHAR(30) NOT NULL,
     nom VARCHAR(255) NOT NULL,
     telephone VARCHAR(50) NOT NULL,
+    province VARCHAR(100),
+    ville VARCHAR(100),
+    commune VARCHAR(100),
     adresse TEXT NOT NULL,
     latitude DECIMAL(10,7),
     longitude DECIMAL(10,7),
@@ -75,6 +78,8 @@ CREATE TABLE IF NOT EXISTS commandes (
     montant_verse_cdf DECIMAL(12,2),
     montant_verse_usd DECIMAL(12,2),
     code_livraison VARCHAR(10),
+    zone_livraison VARCHAR(150),
+    frais_livraison DECIMAL(12,2),
     date_livraison VARCHAR(30),
     vue TINYINT(1) NOT NULL DEFAULT 0,
     livreur_numero VARCHAR(20),
@@ -114,4 +119,11 @@ CREATE TABLE IF NOT EXISTS geoloc_cache (
 CREATE TABLE IF NOT EXISTS parametres (
     id INT PRIMARY KEY,
     taux_usd DECIMAL(10,2) NOT NULL DEFAULT 2800
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS zones_livraison (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(150) NOT NULL,
+    frais DECIMAL(12,2) NOT NULL DEFAULT 0,
+    actif TINYINT(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

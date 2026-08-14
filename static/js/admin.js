@@ -107,6 +107,7 @@
 
     var STATUT_LABELS = {
         en_attente: "en attente",
+        en_preparation: "en préparation",
         en_livraison: "en livraison",
         livree: "livrée",
         annulee: "annulée",

@@ -800,6 +800,33 @@ a {
     background: var(--orange-600);
 }
 
+.bouton-whatsapp {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    border: none;
+    border-radius: 30px;
+    padding: 0.8rem 1.8rem;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    background: #25d366;
+    color: white;
+    text-decoration: none;
+    width: fit-content;
+}
+
+.bouton-whatsapp:hover {
+    background: #1ebe5a;
+}
+
+.bouton-whatsapp svg {
+    width: 1.2rem;
+    height: 1.2rem;
+    flex-shrink: 0;
+}
+
 /* Panier */
 .table-panier-wrap {
     background: white;
@@ -1113,6 +1140,13 @@ a {
     padding: 0.5rem 0;
     border-bottom: 1px solid #eee;
     font-size: 0.9rem;
+}
+
+.commande-frais-livraison {
+    text-align: right;
+    margin-top: 0.6rem;
+    font-size: 0.92rem;
+    color: var(--gris-600, #666);
 }
 
 .commande-total {
