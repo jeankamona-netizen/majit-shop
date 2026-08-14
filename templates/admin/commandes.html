@@ -28,7 +28,7 @@
             <tr>
                 <th class="admin-col-numero">N°</th>
                 <th>Facture N°</th>
-                <th>Client</th>
+                <th class="admin-col-client">Client</th>
                 <th>Articles</th>
                 <th>Statut</th>
             </tr>
@@ -41,7 +41,7 @@
                     <strong>{{ c.numero }}</strong><br>
                     <span class="admin-commande-contact">{{ c.date.replace('T', ' ') }}</span>
                 </td>
-                <td>
+                <td class="admin-col-client">
                     {{ c.nom }}<br>
                     <span class="admin-commande-contact">{{ c.telephone }} — {{ c.adresse }}{% if c.ville %}, {{ c.ville }}{% endif %}{% if c.commune %} ({{ c.commune }}){% endif %}{% if c.province %}, {{ c.province }}{% endif %}</span><br>
                     {% if c.latitude and c.longitude %}

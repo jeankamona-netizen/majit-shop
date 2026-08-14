@@ -310,6 +310,10 @@ img.admin-logo {
     padding-right: 0.3rem !important;
 }
 
+.admin-col-client {
+    min-width: 220px;
+}
+
 .admin-table th {
     background: var(--violet-100);
     color: var(--violet-800);
@@ -317,6 +321,17 @@ img.admin-logo {
 
 .admin-table tbody tr {
     scroll-margin-top: 150px;
+}
+
+.admin-table input[type="text"],
+.admin-table input[type="number"],
+.admin-table input[type="date"],
+.admin-table select {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.9rem;
 }
 
 .admin-table tbody tr:target {
