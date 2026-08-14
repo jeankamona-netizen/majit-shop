@@ -93,6 +93,11 @@ PROVINCES_RDC = [
     "Tanganyika", "Haut-Lomami", "Lualaba", "Haut-Katanga",
 ]
 
+# Provinces couvertes par la livraison pour le moment. Liste volontairement
+# restreinte par rapport à PROVINCES_RDC (qui reste la liste complète de
+# référence) — à élargir plus tard sans toucher au reste du code.
+PROVINCES_LIVRAISON_ACTIVES = ["Haut-Katanga", "Lualaba"]
+
 SOUS_CATEGORIES = {
     "telephones": {
         "telephones_tablettes": "Téléphones et tablettes",
@@ -1419,7 +1424,7 @@ def commander():
             erreurs["nom"] = "Merci d'indiquer votre nom."
         if not telephone:
             erreurs["telephone"] = "Merci d'indiquer un numéro de téléphone."
-        if province not in PROVINCES_RDC:
+        if province not in PROVINCES_LIVRAISON_ACTIVES:
             erreurs["province"] = "Merci de choisir votre province."
         if not ville:
             erreurs["ville"] = "Merci d'indiquer votre ville."
@@ -1507,7 +1512,7 @@ def commander():
         categories=CATEGORIES,
         erreurs=erreurs,
         valeurs=request.form,
-        provinces=PROVINCES_RDC,
+        provinces=PROVINCES_LIVRAISON_ACTIVES,
         zones=charger_zones_livraison(actives_seulement=True),
     )
 
@@ -2021,6 +2026,36 @@ def livreur():
     return render_template(
         "livreur.html", categories=CATEGORIES, disponibles=disponibles, en_cours=en_cours, moi=moi,
         taux_usd=obtenir_taux_usd(),
+    )
+
+
+@app.route("/livreur/performance")
+@livreur_requis
+def livreur_performance():
+    moi = personne_livraison_courante()
+    aujourd_hui = date.today().isoformat()
+    commandes = charger_commandes()
+    livrees_aujourdhui = [
+        c for c in commandes
+        if c.get("livreur_numero") == moi["numero"]
+        and c["statut"] == "livree"
+        and (c.get("date_livraison") or "").startswith(aujourd_hui)
+    ]
+    livrees_aujourdhui.sort(key=lambda c: c.get("date_livraison") or "", reverse=True)
+
+    montant_cdf = sum(c.get("montant_verse_cdf") or 0 for c in livrees_aujourdhui)
+    montant_usd = sum(c.get("montant_verse_usd") or 0 for c in livrees_aujourdhui)
+    montant_total_cdf = sum(c.get("montant_verse") or 0 for c in livrees_aujourdhui)
+
+    return render_template(
+        "livreur_performance.html",
+        categories=CATEGORIES,
+        moi=moi,
+        nb_courses=len(livrees_aujourdhui),
+        montant_cdf=montant_cdf,
+        montant_usd=montant_usd,
+        montant_total_cdf=montant_total_cdf,
+        commandes_jour=livrees_aujourdhui,
     )
 
 

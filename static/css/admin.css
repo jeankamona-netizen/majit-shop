@@ -633,6 +633,75 @@ img.admin-logo {
     color: #777;
 }
 
+.perf-grille {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.2rem;
+    margin-bottom: 2rem;
+}
+
+.perf-carte {
+    background: white;
+    border-radius: 10px;
+    padding: 1.6rem 1.2rem;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.8rem;
+}
+
+.perf-anneau {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.perf-anneau-orange {
+    background: conic-gradient(var(--orange-500) 100%, #f2e6ff 0);
+}
+
+.perf-anneau-violet {
+    background: conic-gradient(var(--violet-700) 100%, #ffe9d6 0);
+}
+
+.perf-anneau::before {
+    content: "";
+    position: absolute;
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: white;
+}
+
+.perf-anneau-valeur {
+    position: relative;
+    z-index: 1;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--violet-800);
+}
+
+.perf-anneau-valeur-petit {
+    font-size: 1rem;
+}
+
+.perf-carte-label {
+    font-weight: 600;
+    color: var(--violet-800);
+}
+
+.perf-carte-detail {
+    font-size: 0.82rem;
+    color: #777;
+    margin-top: -0.5rem;
+}
+
 .admin-stat-accent {
     background: linear-gradient(120deg, var(--violet-800), var(--orange-500));
 }

@@ -1,0 +1,61 @@
+{% extends "admin/admin_base.html" if admin_connecte else "livreur_base.html" %}
+
+{% block titre %}Ma performance — Majt Shop{% endblock %}
+
+{% block contenu %}
+<h1>Ma performance du jour</h1>
+<p class="admin-note">Résumé de vos livraisons pour aujourd'hui.</p>
+
+<div class="perf-grille">
+    <div class="perf-carte">
+        <div class="perf-anneau perf-anneau-orange">
+            <span class="perf-anneau-valeur">{{ nb_courses }}</span>
+        </div>
+        <p class="perf-carte-label">Courses livrées aujourd'hui</p>
+    </div>
+
+    <div class="perf-carte">
+        <div class="perf-anneau perf-anneau-violet">
+            <span class="perf-anneau-valeur perf-anneau-valeur-petit">{{ montant_total_cdf|cdf }}</span>
+        </div>
+        <p class="perf-carte-label">Montant à verser aujourd'hui</p>
+        {% if montant_cdf and montant_usd %}
+        <p class="perf-carte-detail">{{ montant_cdf|cdf }} + {{ montant_usd|round(2) }} $</p>
+        {% endif %}
+    </div>
+</div>
+
+<h2 class="admin-section-titre">Détail des livraisons du jour</h2>
+{% if commandes_jour %}
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Commande</th>
+                <th>Client</th>
+                <th>Heure</th>
+                <th>Montant versé</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in commandes_jour %}
+            <tr>
+                <td><strong>{{ c.numero }}</strong></td>
+                <td>{{ c.nom }}</td>
+                <td>{{ (c.date_livraison or '').replace('T', ' ') }}</td>
+                <td>
+                    {% if c.montant_verse_usd %}
+                        {% if c.montant_verse_cdf %}{{ c.montant_verse_cdf|cdf }} + {% endif %}{{ c.montant_verse_usd|round(2) }} $
+                    {% else %}
+                        {{ (c.montant_verse or 0)|cdf }}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p>Aucune livraison confirmée aujourd'hui pour le moment.</p>
+{% endif %}
+{% endblock %}
