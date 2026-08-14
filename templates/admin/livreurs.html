@@ -9,6 +9,9 @@
 <div class="admin-liens-rapides">
     <a href="{{ url_for('admin_ajouter_livreur') }}" class="admin-lien-ajout">+ Ajouter un livreur</a>
     <a href="{{ url_for('admin_performance') }}" class="admin-lien-ajout admin-lien-secondaire">Performance</a>
+    {% if est_super_admin %}
+    <a href="{{ url_for('admin_ajouter_gestionnaire') }}" class="admin-lien-ajout admin-lien-secondaire">+ Ajouter un gestionnaire</a>
+    {% endif %}
 </div>
 
 <div class="admin-table-wrap">
@@ -58,9 +61,6 @@
 
 {% if est_super_admin %}
 <h2 class="admin-section-titre">Gestionnaires</h2>
-<div class="admin-liens-rapides">
-    <a href="{{ url_for('admin_ajouter_gestionnaire') }}" class="admin-lien-ajout">+ Ajouter un gestionnaire</a>
-</div>
 
 <div class="admin-table-wrap">
     <table class="admin-table">
