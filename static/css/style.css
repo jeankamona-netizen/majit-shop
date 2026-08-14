@@ -349,6 +349,33 @@ a {
     color: white;
 }
 
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.2rem;
+    margin-top: 2rem;
+}
+
+.pagination-lien {
+    background: white;
+    border: 1px solid #ddd;
+    color: var(--violet-700);
+    padding: 0.5rem 1.2rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.pagination-lien:hover {
+    border-color: var(--violet-500);
+}
+
+.pagination-info {
+    font-size: 0.85rem;
+    color: #666;
+}
+
 .voir-tout {
     color: var(--orange-600);
     font-weight: 600;

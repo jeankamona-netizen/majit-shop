@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
 {% block titre %}{{ produit.nom }} — Majt Shop{% endblock %}
+{% block meta_description %}{{ (produit.description or produit.nom) ~ " — " ~ ((produit|prix_final)|cdf|striptags) ~ " sur Majt Shop." }}{% endblock %}
+{% block og_type %}product{% endblock %}
+{% block og_image %}{{ url_for('static', filename='images/' + produit.image, _external=True) }}{% endblock %}
 
 {% block contenu %}
 <section class="detail-produit">
@@ -20,7 +23,7 @@
                 {% endif %}
 
                 <div class="detail-image">
-                    {% if produit.reduction %}<span class="badge-reduction badge-reduction-detail">-{{ produit.reduction }}%</span>{% endif %}
+                    {% if produit|reduction_active %}<span class="badge-reduction badge-reduction-detail">-{{ produit.reduction }}%</span>{% endif %}
                     <img id="image-principale" src="{{ url_for('static', filename='images/' + produit.image) }}" alt="{{ produit.nom }}">
                 </div>
             </div>
@@ -30,11 +33,11 @@
                 <p class="detail-categorie">{{ categories[produit.categorie] }}</p>
 
                 <div class="detail-prix-bloc">
-                    {% if produit.reduction %}
+                    {% if produit|reduction_active %}
                         <span class="prix-barre prix-barre-detail">{{ produit.prix|cdf }}</span>
                     {% endif %}
                     <span class="detail-prix">{{ (produit|prix_final)|cdf }}</span>
-                    {% if produit.reduction %}
+                    {% if produit|reduction_active %}
                         <span class="pastille-reduction">Prix réduit de {{ produit.reduction }}%</span>
                     {% endif %}
                     <span class="detail-prix-usd">{{ (produit|prix_final)|usd }}</span>

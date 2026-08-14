@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block titre %}{{ nom_categorie }} — Majt Shop{% endblock %}
+{% block meta_description %}Découvrez notre sélection {{ nom_categorie }} sur Majt Shop — livraison à Kinshasa et partout en RD Congo.{% endblock %}
 
 {% block contenu %}
 <section class="section-categorie">
@@ -31,14 +32,14 @@
             {% for produit in produits %}
             <a href="{{ url_for('produit', produit_id=produit.id) }}" class="carte-produit">
                 <div class="carte-image-wrap">
-                    {% if produit.reduction %}<span class="badge-reduction">-{{ produit.reduction }}%</span>{% endif %}
+                    {% if produit|reduction_active %}<span class="badge-reduction">-{{ produit.reduction }}%</span>{% endif %}
                     {% if not produit.stock %}<span class="badge-rupture">Rupture</span>{% endif %}
                     <img src="{{ url_for('static', filename='images/' + produit.image) }}" alt="{{ produit.nom }}">
                 </div>
                 <h3>{{ produit.nom }}</h3>
                 <p class="description">{{ produit.description }}</p>
                 <p class="prix">
-                    {% if produit.reduction %}
+                    {% if produit|reduction_active %}
                         <span class="prix-barre">{{ produit.prix|cdf }}</span>
                         <span class="prix-actuel">{{ (produit|prix_final)|cdf }}</span>
                     {% else %}
@@ -51,6 +52,26 @@
             <p>Aucun produit trouvé.</p>
             {% endfor %}
         </div>
+
+        {% if total_pages is defined and total_pages > 1 %}
+        <nav class="pagination" aria-label="Pagination">
+            {% if page > 1 %}
+                {% if categorie_active %}
+                <a href="{{ url_for('categorie', slug=categorie_active, public=public_filtre, sous_categorie=sous_categorie_filtre, page=page-1) }}" class="pagination-lien">← Précédent</a>
+                {% else %}
+                <a href="{{ url_for('recherche', q=q, page=page-1) }}" class="pagination-lien">← Précédent</a>
+                {% endif %}
+            {% endif %}
+            <span class="pagination-info">Page {{ page }} / {{ total_pages }}</span>
+            {% if page < total_pages %}
+                {% if categorie_active %}
+                <a href="{{ url_for('categorie', slug=categorie_active, public=public_filtre, sous_categorie=sous_categorie_filtre, page=page+1) }}" class="pagination-lien">Suivant →</a>
+                {% else %}
+                <a href="{{ url_for('recherche', q=q, page=page+1) }}" class="pagination-lien">Suivant →</a>
+                {% endif %}
+            {% endif %}
+        </nav>
+        {% endif %}
     </div>
 </section>
 {% endblock %}

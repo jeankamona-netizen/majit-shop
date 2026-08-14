@@ -9,7 +9,7 @@ from functools import wraps
 from pathlib import Path
 
 import pymysql
-from flask import Flask, render_template, abort, request, redirect, url_for, session
+from flask import Flask, render_template, abort, request, redirect, url_for, session, Response
 from flask_wtf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -159,28 +159,36 @@ def charger_produits():
         connexion.close()
 
 
+COLONNES_PRODUITS_OPTIONNELLES = ["reduction_debut", "reduction_fin"]
+
+
 def sauvegarder_produits(produits):
     connexion = obtenir_connexion()
     try:
         with connexion.cursor() as cur:
+            cur.execute("SHOW COLUMNS FROM produits")
+            colonnes_existantes = {ligne["Field"] for ligne in cur.fetchall()}
+            colonnes_optionnelles = [c for c in COLONNES_PRODUITS_OPTIONNELLES if c in colonnes_existantes]
+            colonnes = [
+                "id", "nom", "categorie", "sous_categorie", "prix", "reduction", "image", "images",
+                "description", "tailles", "couleurs", "variantes", "stock", "public", "vues",
+            ] + colonnes_optionnelles
+            requete = "INSERT INTO produits ({}) VALUES ({})".format(
+                ", ".join(colonnes), ", ".join(["%s"] * len(colonnes))
+            )
+
             cur.execute("DELETE FROM produits")
             for p in produits:
-                cur.execute(
-                    """
-                    INSERT INTO produits (id, nom, categorie, sous_categorie, prix, reduction, image, images,
-                        description, tailles, couleurs, variantes, stock, public, vues)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """,
-                    (
-                        p["id"], p["nom"], p["categorie"], p.get("sous_categorie") or None,
-                        p.get("prix", 0), p.get("reduction", 0),
-                        p.get("image", "placeholder.jpg"), json.dumps(p.get("images", []), ensure_ascii=False),
-                        p.get("description", ""), json.dumps(p.get("tailles", []), ensure_ascii=False),
-                        json.dumps(p.get("couleurs", []), ensure_ascii=False),
-                        json.dumps(p.get("variantes", {}), ensure_ascii=False) if p.get("variantes") else None,
-                        p.get("stock", 0), p.get("public", "unisexe"), p.get("vues", 0),
-                    ),
-                )
+                valeurs = [
+                    p["id"], p["nom"], p["categorie"], p.get("sous_categorie") or None,
+                    p.get("prix", 0), p.get("reduction", 0),
+                    p.get("image", "placeholder.jpg"), json.dumps(p.get("images", []), ensure_ascii=False),
+                    p.get("description", ""), json.dumps(p.get("tailles", []), ensure_ascii=False),
+                    json.dumps(p.get("couleurs", []), ensure_ascii=False),
+                    json.dumps(p.get("variantes", {}), ensure_ascii=False) if p.get("variantes") else None,
+                    p.get("stock", 0), p.get("public", "unisexe"), p.get("vues", 0),
+                ] + [p.get(c) or None for c in colonnes_optionnelles]
+                cur.execute(requete, tuple(valeurs))
     finally:
         connexion.close()
 
@@ -244,7 +252,7 @@ COLONNES_COMMANDES_BASE = [
 ]
 COLONNES_COMMANDES_OPTIONNELLES = [
     "montant_verse_cdf", "montant_verse_usd", "code_livraison", "province", "ville", "commune",
-    "zone_livraison", "frais_livraison",
+    "zone_livraison", "frais_livraison", "coupon_code", "reduction_coupon",
 ]
 
 
@@ -516,6 +524,68 @@ def charger_zones_livraison(actives_seulement=False):
         connexion.close()
 
 
+def charger_coupons():
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute(
+                "SELECT id, code, type, valeur, date_fin, actif, usage_max, usage_compte "
+                "FROM coupons ORDER BY code"
+            )
+            coupons = list(cur.fetchall())
+            for c in coupons:
+                c["valeur"] = float(c["valeur"])
+                c["actif"] = bool(c["actif"])
+            return coupons
+    except pymysql.err.ProgrammingError:
+        return []
+    finally:
+        connexion.close()
+
+
+def valider_coupon(code, sous_total):
+    if not code:
+        return None, None, 0
+
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute(
+                "SELECT id, code, type, valeur, date_fin, actif, usage_max, usage_compte "
+                "FROM coupons WHERE code = %s",
+                (code,),
+            )
+            coupon = cur.fetchone()
+    except pymysql.err.ProgrammingError:
+        return None, "Code promo invalide.", 0
+    finally:
+        connexion.close()
+
+    if not coupon or not coupon["actif"]:
+        return None, "Code promo invalide.", 0
+    if coupon["date_fin"] and date.today().isoformat() > coupon["date_fin"]:
+        return None, "Ce code promo a expiré.", 0
+    if coupon["usage_max"] is not None and coupon["usage_compte"] >= coupon["usage_max"]:
+        return None, "Ce code promo a atteint sa limite d'utilisation.", 0
+
+    valeur = float(coupon["valeur"])
+    if coupon["type"] == "pourcentage":
+        reduction = round(sous_total * valeur / 100)
+    else:
+        reduction = round(valeur)
+    reduction = min(reduction, sous_total)
+    return coupon, None, reduction
+
+
+def incrementer_usage_coupon(coupon_id):
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("UPDATE coupons SET usage_compte = usage_compte + 1 WHERE id = %s", (coupon_id,))
+    finally:
+        connexion.close()
+
+
 def charger_cache_geoloc():
     connexion = obtenir_connexion()
     try:
@@ -705,10 +775,23 @@ def reserver_stock_commande(lignes_panier):
         connexion.close()
 
 
-def prix_final(produit):
+def reduction_active(produit):
     reduction = produit.get("reduction", 0) or 0
-    if reduction:
-        return round(produit["prix"] * (1 - reduction / 100))
+    if not reduction:
+        return False
+    aujourd_hui = date.today().isoformat()
+    debut = produit.get("reduction_debut")
+    fin = produit.get("reduction_fin")
+    if debut and aujourd_hui < debut:
+        return False
+    if fin and aujourd_hui > fin:
+        return False
+    return True
+
+
+def prix_final(produit):
+    if reduction_active(produit):
+        return round(produit["prix"] * (1 - produit["reduction"] / 100))
     return produit["prix"]
 
 
@@ -897,6 +980,11 @@ def prix_final_filter(produit):
     return prix_final(produit)
 
 
+@app.template_filter("reduction_active")
+def reduction_active_filter(produit):
+    return reduction_active(produit)
+
+
 @app.template_filter("usd")
 def formater_usd(valeur_cdf):
     taux = obtenir_taux_usd()
@@ -946,6 +1034,29 @@ def compter_visite():
 
 
 # --- Boutique ---
+
+@app.route("/robots.txt")
+def robots_txt():
+    base = request.url_root.rstrip("/")
+    contenu = f"User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /livreur\nDisallow: /panier\nSitemap: {base}/sitemap.xml\n"
+    return Response(contenu, mimetype="text/plain")
+
+
+@app.route("/sitemap.xml")
+def sitemap_xml():
+    base = request.url_root.rstrip("/")
+    urls = [base + "/"]
+    for slug in CATEGORIES:
+        urls.append(base + url_for("categorie", slug=slug))
+    for p in charger_produits():
+        if p.get("stock", 0) > 0:
+            urls.append(base + url_for("produit", produit_id=p["id"]))
+    lignes = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    for u in urls:
+        lignes.append(f"<url><loc>{escape(u)}</loc></url>")
+    lignes.append("</urlset>")
+    return Response("\n".join(lignes), mimetype="application/xml")
+
 
 @app.route("/")
 def accueil():
@@ -1004,9 +1115,11 @@ def categorie(slug):
     else:
         sous_categorie_filtre = ""
 
+    produits_page, page, total_pages, total_produits = paginer(produits, request.args.get("page"))
+
     return render_template(
         "categorie.html",
-        produits=produits,
+        produits=produits_page,
         categories=CATEGORIES,
         categorie_active=slug,
         nom_categorie=CATEGORIES[slug],
@@ -1016,7 +1129,25 @@ def categorie(slug):
         sous_categories_options=sous_categories_options,
         sous_categories_presentes=sous_categories_presentes,
         sous_categorie_filtre=sous_categorie_filtre,
+        page=page,
+        total_pages=total_pages,
+        total_produits=total_produits,
     )
+
+
+PRODUITS_PAR_PAGE = 24
+
+
+def paginer(liste, page_form):
+    try:
+        page = max(1, int(page_form))
+    except (TypeError, ValueError):
+        page = 1
+    total = len(liste)
+    total_pages = max(1, -(-total // PRODUITS_PAR_PAGE))
+    page = min(page, total_pages)
+    debut = (page - 1) * PRODUITS_PAR_PAGE
+    return liste[debut:debut + PRODUITS_PAR_PAGE], page, total_pages, total
 
 
 def normaliser_recherche(texte):
@@ -1071,12 +1202,17 @@ def recherche():
         p for p in charger_produits()
         if produit_correspond(p, mots)
     ] if mots else []
+    produits_page, page, total_pages, total_produits = paginer(produits, request.args.get("page"))
     return render_template(
         "categorie.html",
-        produits=produits,
+        produits=produits_page,
         categories=CATEGORIES,
         categorie_active=None,
         nom_categorie=f"Résultats pour « {q} »" if q else "Recherche",
+        q=q,
+        page=page,
+        total_pages=total_pages,
+        total_produits=total_produits,
     )
 
 
@@ -1181,6 +1317,11 @@ def commander():
                 erreurs["zone_livraison"] = "Zone de livraison invalide, merci de réessayer."
         frais_livraison = zone_choisie["frais"] if zone_choisie else 0
 
+        coupon_code_form = request.form.get("coupon_code", "").strip().upper()
+        coupon, message_coupon, reduction_coupon = valider_coupon(coupon_code_form, total)
+        if message_coupon:
+            erreurs["coupon"] = message_coupon
+
         if not nom:
             erreurs["nom"] = "Merci d'indiquer votre nom."
         if not telephone:
@@ -1242,7 +1383,9 @@ def commander():
                 ],
                 "zone_livraison": zone_choisie["nom"] if zone_choisie else None,
                 "frais_livraison": frais_livraison,
-                "total": total + frais_livraison,
+                "coupon_code": coupon["code"] if coupon else None,
+                "reduction_coupon": reduction_coupon,
+                "total": total + frais_livraison - reduction_coupon,
                 "statut": "en_attente",
                 "montant_verse": None,
                 "date_livraison": None,
@@ -1252,6 +1395,8 @@ def commander():
             commandes = charger_commandes()
             commandes.append(commande)
             sauvegarder_commandes(commandes)
+            if coupon:
+                incrementer_usage_coupon(coupon["id"])
 
             session["derniere_commande"] = commande
             mes_commandes = session.get("mes_commandes", [])
@@ -2532,6 +2677,141 @@ def admin_migration_ajouter_colonnes_frais_livraison():
         connexion.close()
 
 
+@app.route("/admin/migrations/ajouter-colonnes-promotion", methods=["POST"])
+@super_admin_requis
+def admin_migration_ajouter_colonnes_promotion():
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SHOW COLUMNS FROM produits")
+            colonnes_existantes = {ligne["Field"] for ligne in cur.fetchall()}
+            ajoutees = []
+            for colonne in ("reduction_debut", "reduction_fin"):
+                if colonne not in colonnes_existantes:
+                    cur.execute(f"ALTER TABLE produits ADD COLUMN {colonne} VARCHAR(10)")
+                    ajoutees.append(colonne)
+        return {"colonnes_ajoutees": ajoutees}
+    finally:
+        connexion.close()
+
+
+@app.route("/admin/migrations/ajouter-table-coupons", methods=["POST"])
+@super_admin_requis
+def admin_migration_ajouter_table_coupons():
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS coupons (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    code VARCHAR(50) NOT NULL UNIQUE,
+                    type VARCHAR(20) NOT NULL DEFAULT 'pourcentage',
+                    valeur DECIMAL(12,2) NOT NULL DEFAULT 0,
+                    date_fin VARCHAR(10),
+                    actif TINYINT(1) NOT NULL DEFAULT 1,
+                    usage_max INT,
+                    usage_compte INT NOT NULL DEFAULT 0
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                """
+            )
+        return {"statut": "table prete"}
+    finally:
+        connexion.close()
+
+
+@app.route("/admin/migrations/ajouter-colonnes-coupon", methods=["POST"])
+@super_admin_requis
+def admin_migration_ajouter_colonnes_coupon():
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SHOW COLUMNS FROM commandes")
+            colonnes_existantes = {ligne["Field"] for ligne in cur.fetchall()}
+            ajoutees = []
+            if "coupon_code" not in colonnes_existantes:
+                cur.execute("ALTER TABLE commandes ADD COLUMN coupon_code VARCHAR(50)")
+                ajoutees.append("coupon_code")
+            if "reduction_coupon" not in colonnes_existantes:
+                cur.execute("ALTER TABLE commandes ADD COLUMN reduction_coupon DECIMAL(12,2)")
+                ajoutees.append("reduction_coupon")
+        return {"colonnes_ajoutees": ajoutees}
+    finally:
+        connexion.close()
+
+
+@app.route("/admin/coupons", methods=["GET", "POST"])
+@admin_requis
+def admin_coupons():
+    if request.method == "POST":
+        code = request.form.get("code", "").strip().upper()
+        type_coupon = request.form.get("type") if request.form.get("type") in ("pourcentage", "montant") else "pourcentage"
+        try:
+            valeur = max(0, float(request.form.get("valeur", 0) or 0))
+        except ValueError:
+            valeur = 0
+        date_fin = request.form.get("date_fin", "").strip() or None
+        usage_max_form = request.form.get("usage_max", "").strip()
+        try:
+            usage_max = max(1, int(usage_max_form)) if usage_max_form else None
+        except ValueError:
+            usage_max = None
+        if code and valeur > 0:
+            connexion = obtenir_connexion()
+            try:
+                with connexion.cursor() as cur:
+                    cur.execute(
+                        "INSERT INTO coupons (code, type, valeur, date_fin, actif, usage_max) "
+                        "VALUES (%s, %s, %s, %s, 1, %s)",
+                        (code, type_coupon, valeur, date_fin, usage_max),
+                    )
+            except pymysql.err.IntegrityError:
+                pass
+            finally:
+                connexion.close()
+        return redirect(url_for("admin_coupons"))
+    return render_template("admin/coupons.html", coupons=charger_coupons(), categories=CATEGORIES)
+
+
+@app.route("/admin/coupons/<int:coupon_id>/modifier", methods=["POST"])
+@admin_requis
+def admin_modifier_coupon(coupon_id):
+    type_coupon = request.form.get("type") if request.form.get("type") in ("pourcentage", "montant") else "pourcentage"
+    try:
+        valeur = max(0, float(request.form.get("valeur", 0) or 0))
+    except ValueError:
+        valeur = 0
+    date_fin = request.form.get("date_fin", "").strip() or None
+    usage_max_form = request.form.get("usage_max", "").strip()
+    try:
+        usage_max = max(1, int(usage_max_form)) if usage_max_form else None
+    except ValueError:
+        usage_max = None
+    actif = 1 if request.form.get("actif") == "on" else 0
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute(
+                "UPDATE coupons SET type=%s, valeur=%s, date_fin=%s, usage_max=%s, actif=%s WHERE id=%s",
+                (type_coupon, valeur, date_fin, usage_max, actif, coupon_id),
+            )
+    finally:
+        connexion.close()
+    return redirect(url_for("admin_coupons"))
+
+
+@app.route("/admin/coupons/<int:coupon_id>/supprimer", methods=["POST"])
+@admin_requis
+def admin_supprimer_coupon(coupon_id):
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("DELETE FROM coupons WHERE id=%s", (coupon_id,))
+    finally:
+        connexion.close()
+    return redirect(url_for("admin_coupons"))
+
+
 @app.route("/admin/zones-livraison", methods=["GET", "POST"])
 @admin_requis
 def admin_zones_livraison():
@@ -2638,6 +2918,9 @@ def admin_ajouter_produit():
         except ValueError:
             reduction = 0
 
+        reduction_debut = request.form.get("reduction_debut", "").strip() or None
+        reduction_fin = request.form.get("reduction_fin", "").strip() or None
+
         try:
             stock = max(0, int(request.form.get("stock", 0) or 0))
         except ValueError:
@@ -2668,6 +2951,8 @@ def admin_ajouter_produit():
             "sous_categorie": sous_categorie_choisie,
             "prix": float(request.form.get("prix", 0) or 0),
             "reduction": reduction,
+            "reduction_debut": reduction_debut,
+            "reduction_fin": reduction_fin,
             "public": request.form.get("public") if request.form.get("public") in PUBLICS else "unisexe",
             "stock": stock,
             "image": nom_image,
@@ -2707,6 +2992,8 @@ def admin_modifier_produit(produit_id):
             produit_cible["reduction"] = max(0, min(90, int(request.form.get("reduction", 0) or 0)))
         except ValueError:
             produit_cible["reduction"] = 0
+        produit_cible["reduction_debut"] = request.form.get("reduction_debut", "").strip() or None
+        produit_cible["reduction_fin"] = request.form.get("reduction_fin", "").strip() or None
         produit_cible["description"] = request.form.get("description", "").strip()
         produit_cible["couleurs"] = parser_liste(request.form.get("couleurs", ""))
         produit_cible["tailles"] = parser_liste(request.form.get("tailles", ""))

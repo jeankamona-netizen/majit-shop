@@ -53,6 +53,10 @@
                 <textarea id="adresse" name="adresse" rows="3" required>{{ valeurs.get('adresse', '') }}</textarea>
                 {% if erreurs.adresse %}<p class="commande-erreur">{{ erreurs.adresse }}</p>{% endif %}
 
+                <label for="coupon_code">Code promo (facultatif)</label>
+                <input type="text" id="coupon_code" name="coupon_code" value="{{ valeurs.get('coupon_code', '') }}" style="text-transform: uppercase;">
+                {% if erreurs.coupon %}<p class="commande-erreur">{{ erreurs.coupon }}</p>{% endif %}
+
                 <label>Mode de paiement</label>
                 <p class="commande-paiement">Paiement à la livraison</p>
 

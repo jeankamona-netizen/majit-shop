@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block titre %}Majt Shop{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Majt Shop — vêtements, chaussures, électroniques et accessoires de qualité, livrés chez vous à Kinshasa et partout en RD Congo.{% endblock %}">
+    <link rel="canonical" href="{{ request.url }}">
+    <meta property="og:site_name" content="Majt Shop">
+    <meta property="og:title" content="{% block og_title %}{{ self.titre() }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ self.meta_description() }}{% endblock %}">
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ url_for('static', filename='images/logo.png', _external=True) }}{% endblock %}">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta name="twitter:card" content="summary_large_image">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logo.png') }}">
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">

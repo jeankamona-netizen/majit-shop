@@ -26,6 +26,9 @@
             {% if commande.frais_livraison %}
             <div class="commande-frais-livraison">Frais de livraison ({{ commande.zone_livraison }}) : <strong>{{ commande.frais_livraison|cdf }}</strong></div>
             {% endif %}
+            {% if commande.reduction_coupon %}
+            <div class="commande-frais-livraison">Code promo ({{ commande.coupon_code }}) : <strong>-{{ commande.reduction_coupon|cdf }}</strong></div>
+            {% endif %}
             <div class="commande-total">Total : <strong>{{ commande.total|cdf }}</strong></div>
 
             <div class="confirmation-boutons">

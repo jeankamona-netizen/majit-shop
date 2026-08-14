@@ -35,6 +35,13 @@
     <label for="reduction">Réduction (%)</label>
     <input type="number" id="reduction" step="1" min="0" max="90" name="reduction" value="{{ produit.reduction if produit else 0 }}">
 
+    <label for="reduction_debut">Promotion valable à partir du (facultatif)</label>
+    <input type="date" id="reduction_debut" name="reduction_debut" value="{{ produit.reduction_debut if produit else '' }}">
+
+    <label for="reduction_fin">Promotion valable jusqu'au (facultatif)</label>
+    <input type="date" id="reduction_fin" name="reduction_fin" value="{{ produit.reduction_fin if produit else '' }}">
+    <p class="admin-note">Laissez ces deux champs vides pour une réduction sans date d'expiration.</p>
+
     <label for="public">Public visé</label>
     <select id="public" name="public">
         {% for cle, label in publics_options.items() %}

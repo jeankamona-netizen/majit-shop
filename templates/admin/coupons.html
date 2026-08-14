@@ -1,0 +1,98 @@
+{% extends "admin/admin_base.html" %}
+
+{% block titre %}Coupons — Administration Majt Shop{% endblock %}
+
+{% block contenu %}
+<h1>Codes promo</h1>
+<p class="admin-note">Créez des codes que vos clients peuvent saisir au moment de commander. Une fois désactivé ou expiré, un code n'est plus accepté.</p>
+
+<div class="admin-facturation-grille">
+    <div class="admin-facturation-ajout">
+        <h2 class="admin-section-titre">Ajouter un coupon</h2>
+        <form method="post" action="{{ url_for('admin_coupons') }}" class="admin-formulaire">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label for="code">Code</label>
+            <input type="text" id="code" name="code" placeholder="Ex. BIENVENUE10" style="text-transform: uppercase;" required>
+
+            <label for="type">Type de réduction</label>
+            <select id="type" name="type">
+                <option value="pourcentage">Pourcentage (%)</option>
+                <option value="montant">Montant fixe (CDF)</option>
+            </select>
+
+            <label for="valeur">Valeur</label>
+            <input type="number" id="valeur" name="valeur" min="0" step="1" required>
+
+            <label for="date_fin">Expire le (facultatif)</label>
+            <input type="date" id="date_fin" name="date_fin">
+
+            <label for="usage_max">Nombre d'utilisations max (facultatif)</label>
+            <input type="number" id="usage_max" name="usage_max" min="1" step="1">
+
+            <button type="submit">Ajouter le coupon</button>
+        </form>
+    </div>
+
+    <div class="admin-facturation-brouillon">
+        <h2 class="admin-section-titre">Coupons existants</h2>
+        {% if coupons %}
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Type</th>
+                        <th>Valeur</th>
+                        <th>Expire le</th>
+                        <th>Usage</th>
+                        <th>Statut</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in coupons %}
+                    <tr>
+                        <td>
+                            <form method="post" action="{{ url_for('admin_modifier_coupon', coupon_id=c.id) }}" class="admin-ligne-qte">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <strong>{{ c.code }}</strong>
+                        </td>
+                        <td>
+                                <select name="type" style="width: 8rem;">
+                                    <option value="pourcentage" {{ 'selected' if c.type == 'pourcentage' else '' }}>Pourcentage</option>
+                                    <option value="montant" {{ 'selected' if c.type == 'montant' else '' }}>Montant fixe</option>
+                                </select>
+                        </td>
+                        <td>
+                                <input type="number" name="valeur" min="0" step="1" value="{{ c.valeur|round|int }}" style="width: 6rem;">
+                        </td>
+                        <td>
+                                <input type="date" name="date_fin" value="{{ c.date_fin or '' }}" style="width: 9rem;">
+                        </td>
+                        <td>
+                                {{ c.usage_compte }} / <input type="number" name="usage_max" min="1" step="1" value="{{ c.usage_max or '' }}" placeholder="∞" style="width: 4rem;">
+                        </td>
+                        <td>
+                                <label style="display:flex; align-items:center; gap:0.3rem; font-size:0.85rem;">
+                                    <input type="checkbox" name="actif" {{ 'checked' if c.actif else '' }}> Actif
+                                </label>
+                        </td>
+                        <td>
+                                <button type="submit" title="Enregistrer">✓</button>
+                            </form>
+                            <form method="post" action="{{ url_for('admin_supprimer_coupon', coupon_id=c.id) }}" onsubmit="return confirm('Supprimer ce coupon ?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="admin-lien-annuler">Supprimer</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p>Aucun coupon créé pour le moment.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

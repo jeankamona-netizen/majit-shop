@@ -47,6 +47,8 @@ CREATE TABLE IF NOT EXISTS produits (
     sous_categorie VARCHAR(50),
     prix DECIMAL(12,2) NOT NULL DEFAULT 0,
     reduction INT NOT NULL DEFAULT 0,
+    reduction_debut VARCHAR(10),
+    reduction_fin VARCHAR(10),
     image VARCHAR(255) NOT NULL DEFAULT 'placeholder.jpg',
     images JSON,
     description TEXT,
@@ -80,6 +82,8 @@ CREATE TABLE IF NOT EXISTS commandes (
     code_livraison VARCHAR(10),
     zone_livraison VARCHAR(150),
     frais_livraison DECIMAL(12,2),
+    coupon_code VARCHAR(50),
+    reduction_coupon DECIMAL(12,2),
     date_livraison VARCHAR(30),
     vue TINYINT(1) NOT NULL DEFAULT 0,
     livreur_numero VARCHAR(20),
@@ -126,4 +130,15 @@ CREATE TABLE IF NOT EXISTS zones_livraison (
     nom VARCHAR(150) NOT NULL,
     frais DECIMAL(12,2) NOT NULL DEFAULT 0,
     actif TINYINT(1) NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS coupons (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    type VARCHAR(20) NOT NULL DEFAULT 'pourcentage',
+    valeur DECIMAL(12,2) NOT NULL DEFAULT 0,
+    date_fin VARCHAR(10),
+    actif TINYINT(1) NOT NULL DEFAULT 1,
+    usage_max INT,
+    usage_compte INT NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
