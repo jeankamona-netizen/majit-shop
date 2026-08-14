@@ -31,7 +31,6 @@
                 <th>Client</th>
                 <th>Articles</th>
                 <th>Statut</th>
-                <th>Montant versé</th>
             </tr>
         </thead>
         <tbody>
@@ -98,8 +97,7 @@
                         <button type="submit" class="admin-lien-restaurer">Restaurer la commande</button>
                     </form>
                     {% endif %}
-                </td>
-                <td>
+
                     {% set solde = c.montant_verse is not none and c.montant_verse >= c.total %}
                     {% if c.statut == 'annulee' %}
                         <span class="admin-commande-contact">—</span>
@@ -135,7 +133,7 @@
                 </td>
             </tr>
             {% else %}
-            <tr><td colspan="6">Aucune commande pour le moment.</td></tr>
+            <tr><td colspan="5">Aucune commande pour le moment.</td></tr>
             {% endfor %}
         </tbody>
     </table>
