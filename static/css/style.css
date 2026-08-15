@@ -1207,11 +1207,14 @@ a {
 }
 
 .commande-liste li {
-    display: flex;
-    justify-content: space-between;
     padding: 0.5rem 0;
     border-bottom: 1px solid #eee;
     font-size: 0.9rem;
+}
+
+.commande-liste-montant {
+    white-space: nowrap;
+    font-weight: 600;
 }
 
 .commande-frais-livraison {
@@ -1458,12 +1461,6 @@ a {
 
     .suivi-label {
         font-size: 0.65rem;
-    }
-
-    .commande-liste li {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.2rem;
     }
 }
 

@@ -83,8 +83,7 @@
                 <ul class="commande-liste">
                     {% for ligne in lignes %}
                     <li>
-                        <span>{{ ligne.produit.nom }}{% if ligne.couleur %} ({{ ligne.couleur }}{% if ligne.taille %}, {{ ligne.taille }}{% endif %}){% elif ligne.taille %} ({{ ligne.taille }}){% endif %} × {{ ligne.quantite }} =</span>
-                        <span>{{ ligne.sous_total|cdf }}</span>
+                        <span>{{ ligne.produit.nom }}{% if ligne.couleur %} ({{ ligne.couleur }}{% if ligne.taille %}, {{ ligne.taille }}{% endif %}){% elif ligne.taille %} ({{ ligne.taille }}){% endif %} × {{ ligne.quantite }} <span class="commande-liste-montant">= {{ ligne.sous_total|cdf }}</span></span>
                     </li>
                     {% endfor %}
                 </ul>
