@@ -445,6 +445,17 @@ def construire_lignes_ventes(canal=None):
                 "quantite": ligne["quantite"],
                 "montant": ligne["sous_total"],
             })
+        if c.get("frais_livraison"):
+            lignes_ventes.append({
+                "date": jour,
+                "semaine": f"{annee} - semaine {semaine:02d}",
+                "mois": jour[:7],
+                "article": "Frais de livraison",
+                "categorie": "Frais de livraison",
+                "commande": c["numero"],
+                "quantite": 1,
+                "montant": c["frais_livraison"],
+            })
     return lignes_ventes
 
 
@@ -1959,15 +1970,23 @@ def admin_tableau_de_bord():
     commandes = charger_commandes()
 
     aujourd_hui = date.today().isoformat()
+    debut_mois = date.today().replace(day=1).isoformat()
     commandes_en_attente = [c for c in commandes if c["statut"] == "en_attente"]
     commandes_en_preparation = [c for c in commandes if c["statut"] == "en_preparation"]
     commandes_en_livraison = [c for c in commandes if c["statut"] == "en_livraison"]
     commandes_livrees = [c for c in commandes if c["statut"] == "livree"]
     commandes_livrees_en_ligne = [c for c in commandes_livrees if not c["numero"].startswith("FAC")]
     commandes_livrees_boutique = [c for c in commandes_livrees if c["numero"].startswith("FAC")]
-    chiffre_affaires_en_ligne = sum(c.get("montant_verse") or 0 for c in commandes_livrees_en_ligne)
-    chiffre_affaires_boutique = sum(c.get("montant_verse") or 0 for c in commandes_livrees_boutique)
-    chiffre_affaires_total = chiffre_affaires_en_ligne + chiffre_affaires_boutique
+
+    # Chiffre d'affaires : scope mois en cours (date de livraison), pas
+    # tout l'historique - en ligne + boutique + frais de livraison encaissés.
+    commandes_livrees_mois = [c for c in commandes_livrees if (c.get("date_livraison") or "")[:10] >= debut_mois]
+    commandes_livrees_mois_en_ligne = [c for c in commandes_livrees_mois if not c["numero"].startswith("FAC")]
+    commandes_livrees_mois_boutique = [c for c in commandes_livrees_mois if c["numero"].startswith("FAC")]
+    chiffre_affaires_en_ligne = sum(c.get("montant_verse") or 0 for c in commandes_livrees_mois_en_ligne)
+    chiffre_affaires_boutique = sum(c.get("montant_verse") or 0 for c in commandes_livrees_mois_boutique)
+    frais_livraison_mois = sum(c.get("frais_livraison") or 0 for c in commandes_livrees_mois_en_ligne)
+    chiffre_affaires_total = chiffre_affaires_en_ligne + chiffre_affaires_boutique + frais_livraison_mois
 
     livreurs_par_numero = {l["numero"]: l for l in charger_livreurs()}
     missions = {}
@@ -1990,6 +2009,10 @@ def admin_tableau_de_bord():
 
     # --- Widgets façon "tableau de bord des opérations" ---
     commandes_non_annulees = [c for c in commandes if c["statut"] != "annulee"]
+    commandes_mois_toutes = [c for c in commandes_non_annulees if c["date"][:10] >= debut_mois]
+    nb_attente_mois = sum(1 for c in commandes_mois_toutes if c["statut"] == "en_attente")
+    nb_preparation_mois = sum(1 for c in commandes_mois_toutes if c["statut"] == "en_preparation")
+    nb_en_livraison_mois = sum(1 for c in commandes_mois_toutes if c["statut"] == "en_livraison")
 
     nb_livrees_aujourdhui = sum(
         1 for c in commandes_livrees if (c.get("date_livraison") or "")[:10] == aujourd_hui
@@ -2018,7 +2041,6 @@ def admin_tableau_de_bord():
     ventes_jour_en_ligne = sum(c.get("total", 0) for c in commandes_jour_en_ligne)
     ventes_jour_boutique = sum(c.get("total", 0) for c in commandes_jour_boutique)
     ventes_jour_total = ventes_jour_en_ligne + ventes_jour_boutique
-    frais_livraison_jour = sum(c.get("frais_livraison") or 0 for c in commandes_jour_en_ligne)
 
     produits_par_id = {p["id"]: p for p in produits}
     courbes_categories, legende_categories, labels_jours_categories, ticks_axe_y_categories, hauteur_graphique, largeur_graphique = donnees_ventes_par_categorie(
@@ -2028,9 +2050,10 @@ def admin_tableau_de_bord():
     return render_template(
         "admin/tableau_de_bord.html",
         categories=CATEGORIES,
-        nb_commandes_attente=len(commandes_en_attente),
-        nb_commandes_en_preparation=len(commandes_en_preparation),
-        nb_commandes_en_livraison=len(commandes_en_livraison),
+        nb_attente_mois=nb_attente_mois,
+        nb_preparation_mois=nb_preparation_mois,
+        nb_en_livraison_mois=nb_en_livraison_mois,
+        frais_livraison_mois=frais_livraison_mois,
         nb_commandes_livrees=len(commandes_livrees_en_ligne),
         chiffre_affaires_en_ligne=chiffre_affaires_en_ligne,
         chiffre_affaires_boutique=chiffre_affaires_boutique,
@@ -2045,7 +2068,6 @@ def admin_tableau_de_bord():
         ventes_jour_total=ventes_jour_total,
         ventes_jour_en_ligne=ventes_jour_en_ligne,
         ventes_jour_boutique=ventes_jour_boutique,
-        frais_livraison_jour=frais_livraison_jour,
         nb_commandes_livrees_boutique=len(commandes_livrees_boutique),
         courbes_categories=courbes_categories,
         legende_categories=legende_categories,

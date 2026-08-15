@@ -43,7 +43,9 @@
         <div class="dash-anneau dash-anneau-vert">
             <span class="dash-anneau-valeur">{{ nb_produits }}</span>
         </div>
-        <span class="dash-pastille">Au catalogue</span>
+        <div class="dash-legende-canaux">
+            <span><i class="dash-puce" style="background:{{ '#c0392b' if nb_rupture else '#22c55e' }};"></i> Articles en rupture — {{ nb_rupture }}</span>
+        </div>
     </a>
 
     <a href="{{ url_for('admin_commandes', statut='livree') }}" class="dash-carte dash-carte-lien">
@@ -59,30 +61,20 @@
             <span><i class="dash-puce dash-puce-gris"></i> Boutique — {{ nb_commandes_livrees_boutique }}</span>
         </div>
     </a>
-
-    <a href="{{ url_for('admin_zones_livraison') }}" class="dash-carte dash-carte-lien">
-        <div class="dash-carte-entete">
-            <span class="dash-icone dash-icone-bleu"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg></span>
-            <span class="dash-carte-titre">Frais de livraison</span>
-        </div>
-        <div class="dash-anneau dash-anneau-bleu">
-            <span class="dash-anneau-valeur dash-anneau-valeur-petit">{{ frais_livraison_jour|cdf }}</span>
-        </div>
-        <span class="dash-pastille">Aujourd'hui</span>
-    </a>
 </div>
 
 <div class="dash-grille-large">
     <a href="{{ url_for('admin_revenus') }}" class="dash-carte dash-carte-revenu dash-carte-lien">
         <div class="dash-carte-entete">
             <span class="dash-icone dash-icone-orange"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></span>
-            <span class="dash-carte-titre">Chiffre d'affaires total</span>
+            <span class="dash-carte-titre">Chiffre d'affaires total (mois en cours)</span>
         </div>
         <div class="dash-revenu-valeur">{{ chiffre_affaires_total|cdf }}</div>
-        <span class="dash-pastille">En ligne + boutique, toutes commandes livrées</span>
+        <span class="dash-pastille">En ligne + boutique + frais de livraison, ce mois-ci</span>
         <div class="dash-revenu-sous-totaux">
             <span><i class="dash-puce dash-puce-violet"></i> En ligne — {{ chiffre_affaires_en_ligne|cdf }}</span>
             <span><i class="dash-puce dash-puce-gris"></i> Facturation (boutique) — {{ chiffre_affaires_boutique|cdf }}</span>
+            <span><i class="dash-puce" style="background:#0369a1;"></i> Frais de livraison — {{ frais_livraison_mois|cdf }}</span>
         </div>
     </a>
 
@@ -125,20 +117,24 @@
 
 <div class="admin-stats-grille">
     <a href="{{ url_for('admin_commandes', statut='en_attente') }}" class="admin-stat-carte">
-        <span class="admin-stat-valeur">{{ nb_commandes_attente }}</span>
-        <span class="admin-stat-label">Commandes en attente</span>
+        <span class="dash-icone dash-icone-orange"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></span>
+        <span class="admin-stat-valeur">{{ nb_attente_mois }}</span>
+        <span class="admin-stat-label">Commandes en attente (mois)</span>
     </a>
     <a href="{{ url_for('admin_commandes', statut='en_preparation') }}" class="admin-stat-carte">
-        <span class="admin-stat-valeur">{{ nb_commandes_en_preparation }}</span>
-        <span class="admin-stat-label">En préparation</span>
+        <span class="dash-icone dash-icone-violet"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg></span>
+        <span class="admin-stat-valeur">{{ nb_preparation_mois }}</span>
+        <span class="admin-stat-label">En préparation (mois)</span>
     </a>
     <a href="{{ url_for('admin_commandes', statut='en_livraison') }}" class="admin-stat-carte">
-        <span class="admin-stat-valeur">{{ nb_commandes_en_livraison }}</span>
-        <span class="admin-stat-label">En cours de livraison</span>
+        <span class="dash-icone dash-icone-bleu"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg></span>
+        <span class="admin-stat-valeur">{{ nb_en_livraison_mois }}</span>
+        <span class="admin-stat-label">En cours de livraison (mois)</span>
     </a>
-    <a href="{{ url_for('admin_produits', stock='rupture') }}" class="admin-stat-carte {{ 'admin-stat-alerte' if nb_rupture else '' }}">
-        <span class="admin-stat-valeur">{{ nb_rupture }}</span>
-        <span class="admin-stat-label">Articles en rupture de stock</span>
+    <a href="{{ url_for('admin_zones_livraison') }}" class="admin-stat-carte">
+        <span class="dash-icone dash-icone-orange"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></span>
+        <span class="admin-stat-valeur">{{ frais_livraison_mois|cdf }}</span>
+        <span class="admin-stat-label">Frais de livraison (mois)</span>
     </a>
 </div>
 
