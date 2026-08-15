@@ -14,7 +14,7 @@
             <ul class="commande-liste">
                 {% for ligne in commande.lignes %}
                 <li>
-                    <span>{{ ligne.nom }}{% if ligne.couleur %} ({{ ligne.couleur }}{% if ligne.taille %}, {{ ligne.taille }}{% endif %}){% elif ligne.taille %} ({{ ligne.taille }}){% endif %} × {{ ligne.quantite }}</span>
+                    <span>{{ ligne.nom }}{% if ligne.couleur %} ({{ ligne.couleur }}{% if ligne.taille %}, {{ ligne.taille }}{% endif %}){% elif ligne.taille %} ({{ ligne.taille }}){% endif %} × {{ ligne.quantite }} =</span>
                     <span>{{ ligne.sous_total|cdf }}</span>
                 </li>
                 {% endfor %}
