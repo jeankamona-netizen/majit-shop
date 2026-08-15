@@ -248,6 +248,8 @@ def _commande_depuis_ligne(ligne):
     ligne["montant_verse"] = float(ligne["montant_verse"]) if ligne["montant_verse"] is not None else None
     ligne["montant_verse_cdf"] = float(ligne["montant_verse_cdf"]) if ligne.get("montant_verse_cdf") is not None else None
     ligne["montant_verse_usd"] = float(ligne["montant_verse_usd"]) if ligne.get("montant_verse_usd") is not None else None
+    ligne["frais_livraison"] = float(ligne["frais_livraison"]) if ligne.get("frais_livraison") is not None else None
+    ligne["reduction_coupon"] = float(ligne["reduction_coupon"]) if ligne.get("reduction_coupon") is not None else None
     ligne["code_livraison"] = ligne.get("code_livraison")
     ligne["vue"] = bool(ligne["vue"])
     ligne["lignes"] = json.loads(ligne["lignes"]) if ligne["lignes"] else []
