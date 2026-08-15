@@ -22,21 +22,26 @@
                 <input type="tel" id="telephone" name="telephone" value="{{ valeurs.get('telephone', '') }}" required>
                 {% if erreurs.telephone %}<p class="commande-erreur">{{ erreurs.telephone }}</p>{% endif %}
 
-                <label for="province">Province</label>
-                <select id="province" name="province" required>
-                    <option value="" disabled {{ 'selected' if not valeurs.get('province') else '' }}>Sélectionnez votre province</option>
-                    {% for p in provinces %}
-                    <option value="{{ p }}" {{ 'selected' if valeurs.get('province') == p else '' }}>{{ p }}</option>
-                    {% endfor %}
-                </select>
+                <label for="province_texte">Province</label>
+                <div class="geo-autocomplete-champ">
+                    <input type="text" id="province_texte" name="province_texte" class="geo-autocomplete-entree" autocomplete="off" placeholder="Commencez à saisir votre province..." value="{{ valeurs.get('province_texte', '') }}">
+                    <input type="hidden" id="province_id" name="province_id" value="{{ valeurs.get('province_id', '') }}">
+                </div>
                 {% if erreurs.province %}<p class="commande-erreur">{{ erreurs.province }}</p>{% endif %}
 
-                <label for="ville">Ville</label>
-                <input type="text" id="ville" name="ville" value="{{ valeurs.get('ville', '') }}" required>
+                <label for="ville_texte">Ville</label>
+                <div class="geo-autocomplete-champ">
+                    <input type="text" id="ville_texte" name="ville_texte" class="geo-autocomplete-entree" autocomplete="off" placeholder="Sélectionnez d'abord une province" disabled value="{{ valeurs.get('ville_texte', '') }}">
+                    <input type="hidden" id="ville_id" name="ville_id" value="{{ valeurs.get('ville_id', '') }}">
+                </div>
                 {% if erreurs.ville %}<p class="commande-erreur">{{ erreurs.ville }}</p>{% endif %}
 
-                <label for="commune">Commune (facultatif)</label>
-                <input type="text" id="commune" name="commune" value="{{ valeurs.get('commune', '') }}">
+                <label for="commune_texte">Commune</label>
+                <div class="geo-autocomplete-champ">
+                    <input type="text" id="commune_texte" name="commune_texte" class="geo-autocomplete-entree" autocomplete="off" placeholder="Sélectionnez d'abord une ville" disabled value="{{ valeurs.get('commune_texte', '') }}">
+                    <input type="hidden" id="commune_id" name="commune_id" value="{{ valeurs.get('commune_id', '') }}">
+                </div>
+                {% if erreurs.commune %}<p class="commande-erreur">{{ erreurs.commune }}</p>{% endif %}
 
                 {% if zones %}
                 <label for="zone_livraison_id">Zone de livraison</label>
@@ -90,6 +95,75 @@
     </div>
 </section>
 
+<script src="{{ url_for('static', filename='js/geo-autocomplete.js') }}"></script>
+<script>
+(function () {
+    var etatInitial = {
+        province: { id: {{ valeurs.get('province_id', '')|tojson }}, texte: {{ valeurs.get('province_texte', '')|tojson }} },
+        ville: { id: {{ valeurs.get('ville_id', '')|tojson }}, texte: {{ valeurs.get('ville_texte', '')|tojson }} },
+        commune: { id: {{ valeurs.get('commune_id', '')|tojson }}, texte: {{ valeurs.get('commune_texte', '')|tojson }} }
+    };
+
+    var champProvince = creerAutocompletionGeo({
+        input: document.getElementById("province_texte"),
+        hidden: document.getElementById("province_id"),
+        endpoint: "{{ url_for('api_provinces') }}",
+        onSelect: function () { villeReactiver(); },
+        onClear: function () { villeReinitialiser(); }
+    });
+
+    var champVille = creerAutocompletionGeo({
+        input: document.getElementById("ville_texte"),
+        hidden: document.getElementById("ville_id"),
+        endpoint: "{{ url_for('api_villes') }}",
+        extraParams: function () {
+            var provinceId = document.getElementById("province_id").value;
+            return provinceId ? { province_id: provinceId } : null;
+        },
+        onSelect: function () { communeReactiver(); },
+        onClear: function () { communeReinitialiser(); }
+    });
+
+    var champCommune = creerAutocompletionGeo({
+        input: document.getElementById("commune_texte"),
+        hidden: document.getElementById("commune_id"),
+        endpoint: "{{ url_for('api_communes') }}",
+        extraParams: function () {
+            var villeId = document.getElementById("ville_id").value;
+            return villeId ? { ville_id: villeId } : null;
+        }
+    });
+
+    function villeReactiver() {
+        champVille.activer("Commencez à saisir votre ville...");
+    }
+    function villeReinitialiser() {
+        champVille.desactiver("Sélectionnez d'abord une province");
+        communeReinitialiser();
+    }
+    function communeReactiver() {
+        champCommune.activer("Commencez à saisir votre commune...");
+    }
+    function communeReinitialiser() {
+        champCommune.desactiver("Sélectionnez d'abord une ville");
+    }
+
+    // Restaure la sélection après un rechargement suite à une erreur de
+    // validation qui ne concerne pas la géographie (ex. téléphone manquant) :
+    // sans ça, l'utilisateur devrait retaper toute la hiérarchie.
+    if (etatInitial.province.id) {
+        champProvince.definir(etatInitial.province.texte, etatInitial.province.id);
+        villeReactiver();
+        if (etatInitial.ville.id) {
+            champVille.definir(etatInitial.ville.texte, etatInitial.ville.id);
+            communeReactiver();
+            if (etatInitial.commune.id) {
+                champCommune.definir(etatInitial.commune.texte, etatInitial.commune.id);
+            }
+        }
+    }
+})();
+</script>
 <script src="{{ url_for('static', filename='js/position.js') }}"></script>
 <script>
 (function () {

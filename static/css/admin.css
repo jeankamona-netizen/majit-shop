@@ -801,15 +801,48 @@ img.admin-logo {
     justify-content: flex-start;
 }
 
+.dash-legende-jour {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    justify-content: center;
+    gap: 0.3rem 0.8rem;
+    font-size: 0.76rem;
+}
+
+.dash-graphique-grille {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: 130px auto;
+    column-gap: 0.5rem;
+    row-gap: 0.4rem;
+    width: 100%;
+}
+
+.dash-graphique-axe-y {
+    grid-column: 1;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-size: 0.68rem;
+    color: #999;
+    padding: 0.1rem 0;
+}
+
 .dash-graphique-svg {
+    grid-column: 2;
+    grid-row: 1;
     width: 100%;
     height: 130px;
 }
 
 .dash-graphique-dates {
+    grid-column: 2;
+    grid-row: 2;
     display: flex;
     justify-content: space-between;
-    font-size: 0.75rem;
+    font-size: 0.68rem;
     color: #888;
 }
 
@@ -2244,5 +2277,46 @@ img.admin-logo {
     align-items: center;
     justify-content: space-between;
     padding: 0.8rem 1.5rem;
+}
+
+/* Hiérarchie géographique province > ville > commune */
+.admin-geo-province {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.admin-geo-entete {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.admin-geo-ajout {
+    margin: 0.5rem 0 0.5rem 1rem;
+}
+
+.admin-geo-liste {
+    list-style: none;
+    margin: 0.3rem 0 0 1rem;
+    padding-left: 1rem;
+    border-left: 2px solid #f0f0f0;
+}
+
+.admin-geo-liste > li {
+    padding: 0.5rem 0;
+}
+
+.admin-geo-liste-communes {
+    margin-top: 0.4rem;
+}
+
+.admin-geo-liste-communes > li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.3rem 0;
 }
 

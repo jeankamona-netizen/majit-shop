@@ -9,12 +9,16 @@
     <a href="{{ url_for('admin_commandes') }}" class="dash-carte dash-carte-lien">
         <div class="dash-carte-entete">
             <span class="dash-icone dash-icone-orange"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></span>
-            <span class="dash-carte-titre">Produits vendus aujourd'hui</span>
+            <span class="dash-carte-titre">Commandes du jour</span>
         </div>
-        <div class="dash-anneau dash-anneau-orange">
-            <span class="dash-anneau-valeur">{{ produits_vendus_jour }}</span>
+        <div class="dash-donut" style="background: {{ degrade_jour }};">
+            <span class="dash-donut-centre">{{ total_jour }}</span>
         </div>
-        <span class="dash-pastille">{{ nb_commandes_jour }} commande{{ 's' if nb_commandes_jour != 1 else '' }} aujourd'hui</span>
+        <div class="dash-legende-canaux dash-legende-jour">
+            {% for s in segments_jour %}
+            <span><i class="dash-puce" style="background:{{ s.couleur }};"></i> {{ s.label }} — {{ s.valeur }}</span>
+            {% endfor %}
+        </div>
     </a>
 
     <a href="{{ url_for('admin_revenus') }}" class="dash-carte dash-carte-lien">
@@ -82,17 +86,25 @@
             <span><i class="dash-puce" style="background:{{ l.couleur }};"></i> {{ l.categorie }}</span>
             {% endfor %}
         </div>
-        <svg viewBox="0 0 {{ largeur_graphique }} {{ hauteur_graphique }}" class="dash-graphique-svg" preserveAspectRatio="none">
-            {% for courbe in courbes_categories %}
-            <polyline points="{{ courbe.points_svg }}" fill="none" stroke="{{ courbe.couleur }}" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"></polyline>
-            {% for pt in courbe.points %}
-            <circle cx="{{ pt.x }}" cy="{{ pt.y }}" r="2.5" fill="{{ courbe.couleur }}" vector-effect="non-scaling-stroke"></circle>
-            {% endfor %}
-            {% endfor %}
-        </svg>
-        <div class="dash-graphique-dates">
-            <span>{{ labels_jours_categories[0] }}</span>
-            <span>{{ labels_jours_categories[-1] }}</span>
+        <div class="dash-graphique-grille">
+            <div class="dash-graphique-axe-y">
+                {% for v in ticks_axe_y_categories %}
+                <span>{{ v }}</span>
+                {% endfor %}
+            </div>
+            <svg viewBox="0 0 {{ largeur_graphique }} {{ hauteur_graphique }}" class="dash-graphique-svg" preserveAspectRatio="none">
+                {% for courbe in courbes_categories %}
+                <polyline points="{{ courbe.points_svg }}" fill="none" stroke="{{ courbe.couleur }}" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                {% for pt in courbe.points %}
+                <circle cx="{{ pt.x }}" cy="{{ pt.y }}" r="2.5" fill="{{ courbe.couleur }}" vector-effect="non-scaling-stroke"></circle>
+                {% endfor %}
+                {% endfor %}
+            </svg>
+            <div class="dash-graphique-dates">
+                {% for label in labels_jours_categories %}
+                <span>{{ label }}</span>
+                {% endfor %}
+            </div>
         </div>
         {% else %}
         <p class="admin-note">Pas encore de ventes sur cette période.</p>
@@ -117,25 +129,9 @@
         <span class="admin-stat-valeur">{{ nb_commandes_en_livraison }}</span>
         <span class="admin-stat-label">En cours de livraison</span>
     </a>
-    <a href="{{ url_for('admin_commandes', statut='livree') }}" class="admin-stat-carte">
-        <span class="admin-stat-valeur">{{ nb_commandes_livrees }}</span>
-        <span class="admin-stat-label">Commandes livrées</span>
-    </a>
-    <a href="{{ url_for('admin_produits') }}" class="admin-stat-carte">
-        <span class="admin-stat-valeur">{{ nb_produits }}</span>
-        <span class="admin-stat-label">Articles au catalogue</span>
-    </a>
     <a href="{{ url_for('admin_produits', stock='rupture') }}" class="admin-stat-carte {{ 'admin-stat-alerte' if nb_rupture else '' }}">
         <span class="admin-stat-valeur">{{ nb_rupture }}</span>
         <span class="admin-stat-label">Articles en rupture de stock</span>
-    </a>
-    <a href="{{ url_for('admin_revenus', canal='en_ligne') }}" class="admin-stat-carte admin-stat-accent">
-        <span class="admin-stat-valeur">{{ chiffre_affaires_en_ligne|cdf }}</span>
-        <span class="admin-stat-label">Chiffre d'affaires généré en ligne (après livraison)</span>
-    </a>
-    <a href="{{ url_for('admin_revenus', canal='boutique') }}" class="admin-stat-carte admin-stat-accent">
-        <span class="admin-stat-valeur">{{ chiffre_affaires_boutique|cdf }}</span>
-        <span class="admin-stat-label">Chiffre d'affaires généré en boutique (après facturation)</span>
     </a>
 </div>
 

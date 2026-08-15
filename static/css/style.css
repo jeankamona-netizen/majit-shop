@@ -1057,6 +1057,49 @@ a {
     margin-top: 0.3rem;
 }
 
+.geo-autocomplete-champ {
+    position: relative;
+}
+
+.commande-formulaire input.geo-autocomplete-entree {
+    width: 100%;
+}
+
+.commande-formulaire input.geo-autocomplete-entree:disabled {
+    background: #f2f2f2;
+    color: #999;
+    cursor: not-allowed;
+}
+
+.geo-autocomplete-liste {
+    position: absolute;
+    z-index: 20;
+    left: 0;
+    right: 0;
+    top: 100%;
+    margin-top: 2px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+    max-height: 220px;
+    overflow-y: auto;
+    list-style: none;
+    padding: 0.25rem 0;
+}
+
+.geo-autocomplete-liste li {
+    padding: 0.55rem 0.8rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.geo-autocomplete-liste li:hover,
+.geo-autocomplete-liste li.geo-autocomplete-actif {
+    background: var(--violet-100);
+    color: var(--violet-800);
+}
+
 .commande-paiement {
     margin-top: 0.3rem;
     background: var(--violet-100);

@@ -71,6 +71,9 @@ CREATE TABLE IF NOT EXISTS commandes (
     province VARCHAR(100),
     ville VARCHAR(100),
     commune VARCHAR(100),
+    province_id INT,
+    ville_id INT,
+    commune_id INT,
     adresse TEXT NOT NULL,
     latitude DECIMAL(10,7),
     longitude DECIMAL(10,7),
@@ -131,6 +134,38 @@ CREATE TABLE IF NOT EXISTS zones_livraison (
     nom VARCHAR(150) NOT NULL,
     frais DECIMAL(12,2) NOT NULL DEFAULT 0,
     actif TINYINT(1) NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Hiérarchie géographique RDC (province > ville > commune), data-driven :
+-- alimente l'autocomplétion du checkout et sert de base de validation
+-- côté serveur. Volontairement sans clé étrangère depuis `commandes`
+-- (même raison que pour livreur_numero ci-dessus : réécriture complète de
+-- la table à chaque sauvegarde).
+CREATE TABLE IF NOT EXISTS provinces (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(100) NOT NULL,
+    actif TINYINT(1) NOT NULL DEFAULT 1,
+    UNIQUE KEY idx_provinces_nom (nom)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS villes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    province_id INT NOT NULL,
+    nom VARCHAR(100) NOT NULL,
+    actif TINYINT(1) NOT NULL DEFAULT 1,
+    UNIQUE KEY idx_villes_province_nom (province_id, nom),
+    INDEX idx_villes_nom (nom),
+    FOREIGN KEY (province_id) REFERENCES provinces(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS communes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ville_id INT NOT NULL,
+    nom VARCHAR(100) NOT NULL,
+    actif TINYINT(1) NOT NULL DEFAULT 1,
+    UNIQUE KEY idx_communes_ville_nom (ville_id, nom),
+    INDEX idx_communes_nom (nom),
+    FOREIGN KEY (ville_id) REFERENCES villes(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS coupons (

@@ -1,0 +1,105 @@
+{% extends "admin/admin_base.html" %}
+
+{% block titre %}Zones géographiques — Administration Majt Shop{% endblock %}
+
+{% block contenu %}
+<h1>Provinces, villes et communes</h1>
+<p class="admin-note">Cette hiérarchie alimente l'autocomplétion province → ville → commune au moment de la commande. Désactiver une province/ville/commune la retire des suggestions proposées au client, sans toucher aux commandes déjà passées.</p>
+
+<div class="admin-facturation-grille">
+    <div class="admin-facturation-ajout">
+        <h2 class="admin-section-titre">Ajouter une province</h2>
+        <form method="post" action="{{ url_for('admin_geographie') }}" class="admin-formulaire">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="type" value="province">
+            <label for="province_nom">Nom de la province</label>
+            <input type="text" id="province_nom" name="nom" list="provinces_rdc" placeholder="Ex. Kinshasa..." required>
+            <datalist id="provinces_rdc">
+                {% for p in provinces_rdc %}
+                <option value="{{ p }}"></option>
+                {% endfor %}
+            </datalist>
+            <button type="submit">Ajouter la province</button>
+        </form>
+    </div>
+
+    <div class="admin-facturation-brouillon">
+        <h2 class="admin-section-titre">Provinces existantes</h2>
+        {% if not provinces %}
+        <p>Aucune province enregistrée pour le moment.</p>
+        {% endif %}
+        {% for province in provinces %}
+        <div class="admin-geo-province">
+            <div class="admin-geo-entete">
+                <strong>{{ province.nom }}</strong>
+                {% if province.actif %}
+                <span class="statut-badge statut-livree">Active</span>
+                {% else %}
+                <span class="statut-badge statut-annulee">Désactivée</span>
+                {% endif %}
+                <form method="post" action="{{ url_for('admin_geographie_basculer_actif', type_lieu='province', lieu_id=province.id) }}" onsubmit="return confirm('{{ 'Désactiver' if province.actif else 'Réactiver' }} la province {{ province.nom }} ?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit">{{ 'Désactiver' if province.actif else 'Réactiver' }}</button>
+                </form>
+            </div>
+
+            <form method="post" action="{{ url_for('admin_geographie') }}" class="admin-ligne-qte admin-geo-ajout">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="type" value="ville">
+                <input type="hidden" name="province_id" value="{{ province.id }}">
+                <input type="text" name="nom" placeholder="Ajouter une ville..." required>
+                <button type="submit">+</button>
+            </form>
+
+            <ul class="admin-geo-liste">
+                {% for ville in villes_par_province.get(province.id, []) %}
+                <li>
+                    <div class="admin-geo-entete">
+                        <span>{{ ville.nom }}</span>
+                        {% if ville.actif %}
+                        <span class="statut-badge statut-livree">Active</span>
+                        {% else %}
+                        <span class="statut-badge statut-annulee">Désactivée</span>
+                        {% endif %}
+                        <form method="post" action="{{ url_for('admin_geographie_basculer_actif', type_lieu='ville', lieu_id=ville.id) }}" onsubmit="return confirm('{{ 'Désactiver' if ville.actif else 'Réactiver' }} la ville {{ ville.nom }} ?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit">{{ 'Désactiver' if ville.actif else 'Réactiver' }}</button>
+                        </form>
+                    </div>
+
+                    <form method="post" action="{{ url_for('admin_geographie') }}" class="admin-ligne-qte admin-geo-ajout">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="type" value="commune">
+                        <input type="hidden" name="ville_id" value="{{ ville.id }}">
+                        <input type="text" name="nom" placeholder="Ajouter une commune..." required>
+                        <button type="submit">+</button>
+                    </form>
+
+                    <ul class="admin-geo-liste admin-geo-liste-communes">
+                        {% for commune in communes_par_ville.get(ville.id, []) %}
+                        <li>
+                            <span>{{ commune.nom }}</span>
+                            {% if commune.actif %}
+                            <span class="statut-badge statut-livree">Active</span>
+                            {% else %}
+                            <span class="statut-badge statut-annulee">Désactivée</span>
+                            {% endif %}
+                            <form method="post" action="{{ url_for('admin_geographie_basculer_actif', type_lieu='commune', lieu_id=commune.id) }}" onsubmit="return confirm('{{ 'Désactiver' if commune.actif else 'Réactiver' }} la commune {{ commune.nom }} ?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit">{{ 'Désactiver' if commune.actif else 'Réactiver' }}</button>
+                            </form>
+                        </li>
+                        {% else %}
+                        <li><span class="admin-note">Aucune commune.</span></li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                {% else %}
+                <li><span class="admin-note">Aucune ville dans cette province.</span></li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

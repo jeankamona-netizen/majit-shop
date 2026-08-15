@@ -93,11 +93,6 @@ PROVINCES_RDC = [
     "Tanganyika", "Haut-Lomami", "Lualaba", "Haut-Katanga",
 ]
 
-# Provinces couvertes par la livraison pour le moment. Liste volontairement
-# restreinte par rapport à PROVINCES_RDC (qui reste la liste complète de
-# référence) — à élargir plus tard sans toucher au reste du code.
-PROVINCES_LIVRAISON_ACTIVES = ["Haut-Katanga", "Lualaba"]
-
 # Données géographiques initiales de la hiérarchie province > ville > commune
 # (voir tables `provinces`/`villes`/`communes`). Purement déclaratif : ajouter
 # une province/ville/commune plus tard se fait ici (ou via l'admin), jamais
@@ -275,6 +270,7 @@ COLONNES_COMMANDES_BASE = [
 COLONNES_COMMANDES_OPTIONNELLES = [
     "montant_verse_cdf", "montant_verse_usd", "code_livraison", "province", "ville", "commune",
     "zone_livraison", "frais_livraison", "coupon_code", "reduction_coupon", "tracking_token",
+    "province_id", "ville_id", "commune_id",
 ]
 
 
@@ -578,7 +574,7 @@ def charger_provinces(recherche=None, actives_seulement=True, limite=8):
                 requete += " AND actif = 1"
             if recherche:
                 requete += " AND nom LIKE %s"
-                params.append(f"%{recherche}%")
+                params.append(f"{recherche}%")
             requete += " ORDER BY nom LIMIT %s"
             params.append(limite)
             cur.execute(requete, params)
@@ -601,7 +597,7 @@ def charger_villes(province_id, recherche=None, actives_seulement=True, limite=8
                 requete += " AND actif = 1"
             if recherche:
                 requete += " AND nom LIKE %s"
-                params.append(f"%{recherche}%")
+                params.append(f"{recherche}%")
             requete += " ORDER BY nom LIMIT %s"
             params.append(limite)
             cur.execute(requete, params)
@@ -624,7 +620,7 @@ def charger_communes(ville_id, recherche=None, actives_seulement=True, limite=8)
                 requete += " AND actif = 1"
             if recherche:
                 requete += " AND nom LIKE %s"
-                params.append(f"%{recherche}%")
+                params.append(f"{recherche}%")
             requete += " ORDER BY nom LIMIT %s"
             params.append(limite)
             cur.execute(requete, params)
@@ -664,6 +660,39 @@ def valider_hierarchie_geographique(province_id, ville_id, commune_id):
         return None, None, None, "Système géographique indisponible."
     finally:
         connexion.close()
+
+
+# --- API d'autocomplétion géographique ---------------------------------
+# Lecture publique (nécessaire pour le checkout, avant toute connexion) :
+# résultats toujours limités et indexés, jamais de liste complète chargée.
+
+@app.route("/api/provinces")
+def api_provinces():
+    q = request.args.get("q", "").strip()
+    resultats = charger_provinces(recherche=q or None)
+    return {"resultats": [{"id": p["id"], "nom": p["nom"]} for p in resultats]}
+
+
+@app.route("/api/villes")
+def api_villes():
+    try:
+        province_id = int(request.args.get("province_id", ""))
+    except (TypeError, ValueError):
+        return {"resultats": []}
+    q = request.args.get("q", "").strip()
+    resultats = charger_villes(province_id, recherche=q or None)
+    return {"resultats": [{"id": v["id"], "nom": v["nom"]} for v in resultats]}
+
+
+@app.route("/api/communes")
+def api_communes():
+    try:
+        ville_id = int(request.args.get("ville_id", ""))
+    except (TypeError, ValueError):
+        return {"resultats": []}
+    q = request.args.get("q", "").strip()
+    resultats = charger_communes(ville_id, recherche=q or None)
+    return {"resultats": [{"id": c["id"], "nom": c["nom"]} for c in resultats]}
 
 
 def charger_coupons():
@@ -1522,10 +1551,36 @@ def commander():
     if request.method == "POST":
         nom = request.form.get("nom", "").strip()
         telephone = request.form.get("telephone", "").strip()
-        province = request.form.get("province", "").strip()
-        ville = request.form.get("ville", "").strip()
-        commune = request.form.get("commune", "").strip()
         adresse = request.form.get("adresse", "").strip()
+
+        def _lire_id_geo(champ):
+            valeur = request.form.get(champ, "").strip()
+            try:
+                return int(valeur)
+            except (TypeError, ValueError):
+                return None
+
+        province_id = _lire_id_geo("province_id")
+        ville_id = _lire_id_geo("ville_id")
+        commune_id = _lire_id_geo("commune_id")
+
+        # Le texte tapé par le client dans les champs d'autocomplétion n'a
+        # aucune valeur légale : seuls les ids (sélectionnés via une
+        # suggestion réellement affichée) comptent, et la hiérarchie est
+        # revérifiée en base ici — jamais confiance au navigateur.
+        province_obj = ville_obj = commune_obj = None
+        if not province_id:
+            erreurs["province"] = "Merci de sélectionner votre province dans les suggestions proposées."
+        elif not ville_id:
+            erreurs["ville"] = "Merci de sélectionner votre ville dans les suggestions proposées."
+        elif not commune_id:
+            erreurs["commune"] = "Merci de sélectionner votre commune dans les suggestions proposées."
+        else:
+            province_obj, ville_obj, commune_obj, erreur_geo = valider_hierarchie_geographique(
+                province_id, ville_id, commune_id
+            )
+            if erreur_geo:
+                erreurs["province"] = erreur_geo
 
         zones_actives = charger_zones_livraison(actives_seulement=True)
         zone_choisie = None
@@ -1545,10 +1600,6 @@ def commander():
             erreurs["nom"] = "Merci d'indiquer votre nom."
         if not telephone:
             erreurs["telephone"] = "Merci d'indiquer un numéro de téléphone."
-        if province not in PROVINCES_LIVRAISON_ACTIVES:
-            erreurs["province"] = "Merci de choisir votre province."
-        if not ville:
-            erreurs["ville"] = "Merci d'indiquer votre ville."
         if not adresse:
             erreurs["adresse"] = "Merci d'indiquer une adresse de livraison."
 
@@ -1583,9 +1634,12 @@ def commander():
                 "date": datetime.now().isoformat(timespec="seconds"),
                 "nom": nom,
                 "telephone": telephone,
-                "province": province,
-                "ville": ville,
-                "commune": commune,
+                "province": province_obj["nom"],
+                "ville": ville_obj["nom"],
+                "commune": commune_obj["nom"],
+                "province_id": province_obj["id"],
+                "ville_id": ville_obj["id"],
+                "commune_id": commune_obj["id"],
                 "adresse": adresse,
                 "latitude": latitude,
                 "longitude": longitude,
@@ -1633,7 +1687,6 @@ def commander():
         categories=CATEGORIES,
         erreurs=erreurs,
         valeurs=request.form,
-        provinces=PROVINCES_LIVRAISON_ACTIVES,
         zones=charger_zones_livraison(actives_seulement=True),
     )
 
@@ -1864,8 +1917,19 @@ def donnees_ventes_par_categorie(commandes, produits_par_id, jours=7):
         {"categorie": CATEGORIES.get(cat, cat), "couleur": COULEURS_CATEGORIES.get(cat, "#999")}
         for cat in categories_presentes
     ]
-    labels_jours = [j[5:].replace("-", "/") for j in jours_liste]
-    return courbes, legende, labels_jours, hauteur_graphique, largeur_graphique
+    # jj/mm (convention française), un label sous chaque point du graphique.
+    labels_jours = [f"{j[8:10]}/{j[5:7]}" for j in jours_liste]
+
+    # Repères de l'axe verticale : du haut (valeur_max) vers le bas (0),
+    # dédupliqués pour ne pas répéter la même valeur quand valeur_max est petit.
+    nb_reperes = 4
+    ticks_axe_y = []
+    for i in range(nb_reperes, -1, -1):
+        valeur_repere = round(valeur_max * i / nb_reperes)
+        if not ticks_axe_y or ticks_axe_y[-1] != valeur_repere:
+            ticks_axe_y.append(valeur_repere)
+
+    return courbes, legende, labels_jours, ticks_axe_y, hauteur_graphique, largeur_graphique
 
 
 @app.route("/admin")
@@ -1907,8 +1971,27 @@ def admin_tableau_de_bord():
 
     # --- Widgets façon "tableau de bord des opérations" ---
     commandes_non_annulees = [c for c in commandes if c["statut"] != "annulee"]
-    commandes_jour = [c for c in commandes_non_annulees if c["date"][:10] == aujourd_hui]
-    produits_vendus_jour = sum(l.get("quantite", 0) for c in commandes_jour for l in c["lignes"])
+
+    nb_livrees_aujourdhui = sum(
+        1 for c in commandes_livrees if (c.get("date_livraison") or "")[:10] == aujourd_hui
+    )
+    segments_jour = [
+        {"statut": "en_attente", "label": "En attente", "couleur": "#b9770e", "valeur": len(commandes_en_attente)},
+        {"statut": "en_preparation", "label": "En préparation", "couleur": "#7b2ba8", "valeur": len(commandes_en_preparation)},
+        {"statut": "en_livraison", "label": "En livraison", "couleur": "#1a5fb4", "valeur": len(commandes_en_livraison)},
+        {"statut": "livree", "label": "Livrées aujourd'hui", "couleur": "#1e8449", "valeur": nb_livrees_aujourdhui},
+    ]
+    total_jour = sum(s["valeur"] for s in segments_jour)
+    degrade_jour_stops = []
+    cumul = 0
+    for s in segments_jour:
+        if not s["valeur"]:
+            continue
+        debut = cumul / total_jour * 100 if total_jour else 0
+        cumul += s["valeur"]
+        fin = cumul / total_jour * 100 if total_jour else 0
+        degrade_jour_stops.append(f"{s['couleur']} {debut:.2f}% {fin:.2f}%")
+    degrade_jour = "conic-gradient(" + ", ".join(degrade_jour_stops) + ")" if degrade_jour_stops else "conic-gradient(#eee 100%, #eee 0)"
 
     nb_en_ligne = sum(1 for c in commandes_non_annulees if not c["numero"].startswith("FAC"))
     nb_boutique = sum(1 for c in commandes_non_annulees if c["numero"].startswith("FAC"))
@@ -1917,7 +2000,7 @@ def admin_tableau_de_bord():
     part_boutique = 100 - part_en_ligne
 
     produits_par_id = {p["id"]: p for p in produits}
-    courbes_categories, legende_categories, labels_jours_categories, hauteur_graphique, largeur_graphique = donnees_ventes_par_categorie(
+    courbes_categories, legende_categories, labels_jours_categories, ticks_axe_y_categories, hauteur_graphique, largeur_graphique = donnees_ventes_par_categorie(
         commandes, produits_par_id, jours=7
     )
 
@@ -1936,8 +2019,9 @@ def admin_tableau_de_bord():
         nb_rupture=len([p for p in produits if p.get("stock", 0) <= 0]),
         livreurs_en_mission=livreurs_en_mission,
         taux_usd=obtenir_taux_usd(),
-        produits_vendus_jour=produits_vendus_jour,
-        nb_commandes_jour=len(commandes_jour),
+        segments_jour=segments_jour,
+        total_jour=total_jour,
+        degrade_jour=degrade_jour,
         part_en_ligne=part_en_ligne,
         part_boutique=part_boutique,
         nb_en_ligne=nb_en_ligne,
@@ -1946,6 +2030,7 @@ def admin_tableau_de_bord():
         courbes_categories=courbes_categories,
         legende_categories=legende_categories,
         labels_jours_categories=labels_jours_categories,
+        ticks_axe_y_categories=ticks_axe_y_categories,
         hauteur_graphique=hauteur_graphique,
         largeur_graphique=largeur_graphique,
     )
@@ -3158,6 +3243,94 @@ def admin_migration_ajouter_colonne_tracking_token():
     }
 
 
+@app.route("/admin/migrations/creer-hierarchie-geographique", methods=["POST"])
+@super_admin_requis
+def admin_migration_creer_hierarchie_geographique():
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS provinces (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    nom VARCHAR(100) NOT NULL,
+                    actif TINYINT(1) NOT NULL DEFAULT 1,
+                    UNIQUE KEY idx_provinces_nom (nom)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                """
+            )
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS villes (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    province_id INT NOT NULL,
+                    nom VARCHAR(100) NOT NULL,
+                    actif TINYINT(1) NOT NULL DEFAULT 1,
+                    UNIQUE KEY idx_villes_province_nom (province_id, nom),
+                    INDEX idx_villes_nom (nom),
+                    FOREIGN KEY (province_id) REFERENCES provinces(id)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                """
+            )
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS communes (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    ville_id INT NOT NULL,
+                    nom VARCHAR(100) NOT NULL,
+                    actif TINYINT(1) NOT NULL DEFAULT 1,
+                    UNIQUE KEY idx_communes_ville_nom (ville_id, nom),
+                    INDEX idx_communes_nom (nom),
+                    FOREIGN KEY (ville_id) REFERENCES villes(id)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                """
+            )
+
+            provinces_inserees = 0
+            villes_inserees = 0
+            communes_inserees = 0
+            for nom_province, villes in DONNEES_GEOGRAPHIQUES_INITIALES.items():
+                cur.execute("INSERT IGNORE INTO provinces (nom) VALUES (%s)", (nom_province,))
+                provinces_inserees += cur.rowcount
+                cur.execute("SELECT id FROM provinces WHERE nom = %s", (nom_province,))
+                province_id = cur.fetchone()["id"]
+                for nom_ville, communes in villes.items():
+                    cur.execute(
+                        "INSERT IGNORE INTO villes (province_id, nom) VALUES (%s, %s)",
+                        (province_id, nom_ville),
+                    )
+                    villes_inserees += cur.rowcount
+                    cur.execute(
+                        "SELECT id FROM villes WHERE province_id = %s AND nom = %s",
+                        (province_id, nom_ville),
+                    )
+                    ville_id = cur.fetchone()["id"]
+                    for nom_commune in communes:
+                        cur.execute(
+                            "INSERT IGNORE INTO communes (ville_id, nom) VALUES (%s, %s)",
+                            (ville_id, nom_commune),
+                        )
+                        communes_inserees += cur.rowcount
+
+            cur.execute("SHOW COLUMNS FROM commandes")
+            colonnes_existantes = {ligne["Field"] for ligne in cur.fetchall()}
+            colonnes_ajoutees = []
+            for colonne in ("province_id", "ville_id", "commune_id"):
+                if colonne not in colonnes_existantes:
+                    cur.execute(f"ALTER TABLE commandes ADD COLUMN {colonne} INT")
+                    colonnes_ajoutees.append(colonne)
+
+        return {
+            "tables_pretes": ["provinces", "villes", "communes"],
+            "provinces_inserees": provinces_inserees,
+            "villes_inserees": villes_inserees,
+            "communes_inserees": communes_inserees,
+            "colonnes_commandes_ajoutees": colonnes_ajoutees,
+        }
+    finally:
+        connexion.close()
+
+
 @app.route("/admin/coupons", methods=["GET", "POST"])
 @admin_requis
 def admin_coupons():
@@ -3282,6 +3455,81 @@ def admin_supprimer_zone_livraison(zone_id):
     finally:
         connexion.close()
     return redirect(url_for("admin_zones_livraison"))
+
+
+@app.route("/admin/geographie", methods=["GET", "POST"])
+@admin_requis
+def admin_geographie():
+    if request.method == "POST":
+        type_ajout = request.form.get("type")
+        nom = request.form.get("nom", "").strip()
+        connexion = obtenir_connexion()
+        try:
+            with connexion.cursor() as cur:
+                if type_ajout == "province" and nom:
+                    cur.execute("INSERT IGNORE INTO provinces (nom) VALUES (%s)", (nom,))
+                elif type_ajout == "ville" and nom:
+                    province_id = request.form.get("province_id", "").strip()
+                    if province_id:
+                        cur.execute(
+                            "INSERT IGNORE INTO villes (province_id, nom) VALUES (%s, %s)", (province_id, nom)
+                        )
+                elif type_ajout == "commune" and nom:
+                    ville_id = request.form.get("ville_id", "").strip()
+                    if ville_id:
+                        cur.execute(
+                            "INSERT IGNORE INTO communes (ville_id, nom) VALUES (%s, %s)", (ville_id, nom)
+                        )
+        except pymysql.err.ProgrammingError:
+            pass
+        finally:
+            connexion.close()
+        return redirect(url_for("admin_geographie"))
+
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SELECT id, nom, actif FROM provinces ORDER BY nom")
+            provinces = list(cur.fetchall())
+            cur.execute("SELECT id, province_id, nom, actif FROM villes ORDER BY nom")
+            villes = list(cur.fetchall())
+            cur.execute("SELECT id, ville_id, nom, actif FROM communes ORDER BY nom")
+            communes = list(cur.fetchall())
+    except pymysql.err.ProgrammingError:
+        provinces, villes, communes = [], [], []
+    finally:
+        connexion.close()
+
+    villes_par_province = {}
+    for v in villes:
+        villes_par_province.setdefault(v["province_id"], []).append(v)
+    communes_par_ville = {}
+    for c in communes:
+        communes_par_ville.setdefault(c["ville_id"], []).append(c)
+
+    return render_template(
+        "admin/geographie.html",
+        provinces=provinces,
+        villes_par_province=villes_par_province,
+        communes_par_ville=communes_par_ville,
+        provinces_rdc=PROVINCES_RDC,
+        categories=CATEGORIES,
+    )
+
+
+@app.route("/admin/geographie/<string:type_lieu>/<int:lieu_id>/basculer-actif", methods=["POST"])
+@admin_requis
+def admin_geographie_basculer_actif(type_lieu, lieu_id):
+    table = {"province": "provinces", "ville": "villes", "commune": "communes"}.get(type_lieu)
+    if not table:
+        abort(404)
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute(f"UPDATE {table} SET actif = 1 - actif WHERE id = %s", (lieu_id,))
+    finally:
+        connexion.close()
+    return redirect(url_for("admin_geographie"))
 
 
 @app.route("/admin/parametres/taux-usd", methods=["POST"])
