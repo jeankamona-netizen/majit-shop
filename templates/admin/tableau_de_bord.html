@@ -48,9 +48,12 @@
             <span class="dash-carte-titre">Commandes livrées</span>
         </div>
         <div class="dash-anneau dash-anneau-violet">
-            <span class="dash-anneau-valeur">{{ nb_commandes_livrees }}</span>
+            <span class="dash-anneau-valeur">{{ nb_commandes_livrees + nb_commandes_livrees_boutique }}</span>
         </div>
-        <span class="dash-pastille">En ligne</span>
+        <div class="dash-legende-canaux">
+            <span><i class="dash-puce dash-puce-violet"></i> En ligne — {{ nb_commandes_livrees }}</span>
+            <span><i class="dash-puce dash-puce-gris"></i> Boutique — {{ nb_commandes_livrees_boutique }}</span>
+        </div>
     </a>
 </div>
 

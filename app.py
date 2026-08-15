@@ -98,6 +98,22 @@ PROVINCES_RDC = [
 # référence) — à élargir plus tard sans toucher au reste du code.
 PROVINCES_LIVRAISON_ACTIVES = ["Haut-Katanga", "Lualaba"]
 
+# Données géographiques initiales de la hiérarchie province > ville > commune
+# (voir tables `provinces`/`villes`/`communes`). Purement déclaratif : ajouter
+# une province/ville/commune plus tard se fait ici (ou via l'admin), jamais
+# en dur dans la logique métier.
+DONNEES_GEOGRAPHIQUES_INITIALES = {
+    "Haut-Katanga": {
+        "Lubumbashi": ["Annexe", "Kamalondo", "Kampemba", "Katuba", "Kenya", "Lubumbashi", "Rwashi"],
+        "Likasi": ["Kikula", "Likasi", "Panda", "Shituru"],
+        "Kasumbalesa": ["Lwina", "Musoshi", "Musumali"],
+    },
+    "Lualaba": {
+        "Kolwezi": ["Dilala", "Manika"],
+        "Kasaji": ["Lueu", "Lukoji", "Tshimbundi"],
+    },
+}
+
 SOUS_CATEGORIES = {
     "telephones": {
         "telephones_tablettes": "Téléphones et tablettes",
@@ -541,6 +557,111 @@ def charger_zones_livraison(actives_seulement=False):
             return zones
     except pymysql.err.ProgrammingError:
         return []
+    finally:
+        connexion.close()
+
+
+# --- Hiérarchie géographique province > ville > commune ---------------------
+# Utilisée par l'autocomplétion du checkout (recherche limitée à quelques
+# résultats) et par la validation serveur des commandes. La comparaison
+# LIKE + collation utf8mb4_unicode_ci de la base est déjà insensible à la
+# casse et aux accents, donc aucun traitement Python supplémentaire n'est
+# nécessaire ici.
+
+def charger_provinces(recherche=None, actives_seulement=True, limite=8):
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            requete = "SELECT id, nom, actif FROM provinces WHERE 1=1"
+            params = []
+            if actives_seulement:
+                requete += " AND actif = 1"
+            if recherche:
+                requete += " AND nom LIKE %s"
+                params.append(f"%{recherche}%")
+            requete += " ORDER BY nom LIMIT %s"
+            params.append(limite)
+            cur.execute(requete, params)
+            return list(cur.fetchall())
+    except pymysql.err.ProgrammingError:
+        return []
+    finally:
+        connexion.close()
+
+
+def charger_villes(province_id, recherche=None, actives_seulement=True, limite=8):
+    if not province_id:
+        return []
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            requete = "SELECT id, province_id, nom, actif FROM villes WHERE province_id = %s"
+            params = [province_id]
+            if actives_seulement:
+                requete += " AND actif = 1"
+            if recherche:
+                requete += " AND nom LIKE %s"
+                params.append(f"%{recherche}%")
+            requete += " ORDER BY nom LIMIT %s"
+            params.append(limite)
+            cur.execute(requete, params)
+            return list(cur.fetchall())
+    except pymysql.err.ProgrammingError:
+        return []
+    finally:
+        connexion.close()
+
+
+def charger_communes(ville_id, recherche=None, actives_seulement=True, limite=8):
+    if not ville_id:
+        return []
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            requete = "SELECT id, ville_id, nom, actif FROM communes WHERE ville_id = %s"
+            params = [ville_id]
+            if actives_seulement:
+                requete += " AND actif = 1"
+            if recherche:
+                requete += " AND nom LIKE %s"
+                params.append(f"%{recherche}%")
+            requete += " ORDER BY nom LIMIT %s"
+            params.append(limite)
+            cur.execute(requete, params)
+            return list(cur.fetchall())
+    except pymysql.err.ProgrammingError:
+        return []
+    finally:
+        connexion.close()
+
+
+def valider_hierarchie_geographique(province_id, ville_id, commune_id):
+    """Vérifie côté serveur que province_id/ville_id/commune_id existent,
+    sont actifs, et forment une hiérarchie réellement cohérente (la ville
+    appartient à la province, la commune appartient à la ville). Ne fait
+    jamais confiance au texte affiché ni aux ids envoyés par le navigateur.
+    Retourne (province, ville, commune, erreur)."""
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SELECT id, nom, actif FROM provinces WHERE id = %s", (province_id,))
+            province = cur.fetchone()
+            if not province or not province["actif"]:
+                return None, None, None, "Province invalide."
+
+            cur.execute("SELECT id, province_id, nom, actif FROM villes WHERE id = %s", (ville_id,))
+            ville = cur.fetchone()
+            if not ville or not ville["actif"] or ville["province_id"] != province["id"]:
+                return None, None, None, "Ville invalide pour cette province."
+
+            cur.execute("SELECT id, ville_id, nom, actif FROM communes WHERE id = %s", (commune_id,))
+            commune = cur.fetchone()
+            if not commune or not commune["actif"] or commune["ville_id"] != ville["id"]:
+                return None, None, None, "Commune invalide pour cette ville."
+
+            return province, ville, commune, None
+    except pymysql.err.ProgrammingError:
+        return None, None, None, "Système géographique indisponible."
     finally:
         connexion.close()
 
@@ -1760,10 +1881,9 @@ def admin_tableau_de_bord():
     commandes_en_livraison = [c for c in commandes if c["statut"] == "en_livraison"]
     commandes_livrees = [c for c in commandes if c["statut"] == "livree"]
     commandes_livrees_en_ligne = [c for c in commandes_livrees if not c["numero"].startswith("FAC")]
+    commandes_livrees_boutique = [c for c in commandes_livrees if c["numero"].startswith("FAC")]
     chiffre_affaires_en_ligne = sum(c.get("montant_verse") or 0 for c in commandes_livrees_en_ligne)
-    chiffre_affaires_boutique = sum(
-        c.get("montant_verse") or 0 for c in commandes_livrees if c["numero"].startswith("FAC")
-    )
+    chiffre_affaires_boutique = sum(c.get("montant_verse") or 0 for c in commandes_livrees_boutique)
     chiffre_affaires_total = chiffre_affaires_en_ligne + chiffre_affaires_boutique
 
     livreurs_par_numero = {l["numero"]: l for l in charger_livreurs()}
@@ -1822,6 +1942,7 @@ def admin_tableau_de_bord():
         part_boutique=part_boutique,
         nb_en_ligne=nb_en_ligne,
         nb_boutique=nb_boutique,
+        nb_commandes_livrees_boutique=len(commandes_livrees_boutique),
         courbes_categories=courbes_categories,
         legende_categories=legende_categories,
         labels_jours_categories=labels_jours_categories,
