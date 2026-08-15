@@ -2,6 +2,7 @@ import logging
 import os
 import json
 import random
+import re
 import secrets
 import unicodedata
 import urllib.request
@@ -1203,6 +1204,22 @@ def formater_cdf(valeur):
     # seul le point entre le nombre et "CDF" reste un point de coupure valide.
     nombre = f"{round(valeur):,}".replace(",", " ")
     return Markup(f"{escape(nombre)} <span class=\"cdf-suffixe\">CDF</span>")
+
+
+@app.template_filter("tel_normalise")
+def normaliser_telephone(numero):
+    """Numero nettoye (chiffres avec indicatif pays, sans '+') pour construire
+    des liens tel:/wa.me. Les numeros deja internationaux (checkout recent,
+    qui envoie "+243...") gardent leur indicatif ; les anciens numeros locaux
+    sans indicatif (comptes livreurs, commandes anterieures a cette fonction)
+    recoivent +243 par defaut apres avoir retire un eventuel 0 initial."""
+    if not numero:
+        return ""
+    numero = numero.strip()
+    if numero.startswith("+"):
+        return re.sub(r"\D", "", numero)
+    chiffres = re.sub(r"\D", "", numero).lstrip("0")
+    return f"243{chiffres}" if chiffres else ""
 
 
 @app.template_filter("prix_final")

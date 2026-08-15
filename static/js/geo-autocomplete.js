@@ -89,7 +89,9 @@
                 return encodeURIComponent(k) + "=" + encodeURIComponent(params[k]);
             }).join("&");
             fetch(url).then(function (r) { return r.json(); }).then(function (data) {
-                afficher(data.resultats || []);
+                var resultats = data.resultats || [];
+                afficher(resultats);
+                if (config.onRecherche) config.onRecherche(resultats, input.value.trim());
             }).catch(function () { fermer(); });
         }, 200);
 

@@ -18,8 +18,12 @@
                 <input type="text" id="nom" name="nom" value="{{ valeurs.get('nom', '') }}" required>
                 {% if erreurs.nom %}<p class="commande-erreur">{{ erreurs.nom }}</p>{% endif %}
 
-                <label for="telephone">Téléphone</label>
-                <input type="tel" id="telephone" name="telephone" value="{{ valeurs.get('telephone', '') }}" required>
+                <label for="telephone_local">Téléphone</label>
+                <div class="telephone-champ">
+                    <span class="telephone-prefixe">+243</span>
+                    <input type="tel" id="telephone_local" inputmode="numeric" autocomplete="off" placeholder="991 698 826" maxlength="10" required>
+                </div>
+                <input type="hidden" id="telephone" name="telephone" value="{{ valeurs.get('telephone', '') }}">
                 {% if erreurs.telephone %}<p class="commande-erreur">{{ erreurs.telephone }}</p>{% endif %}
 
                 <label for="province_texte">Province</label>
@@ -27,6 +31,7 @@
                     <input type="text" id="province_texte" name="province_texte" class="geo-autocomplete-entree" autocomplete="off" placeholder="Commencez à saisir votre province..." value="{{ valeurs.get('province_texte', '') }}">
                     <input type="hidden" id="province_id" name="province_id" value="{{ valeurs.get('province_id', '') }}">
                 </div>
+                <p id="province_erreur_geo" class="commande-erreur" hidden></p>
                 {% if erreurs.province %}<p class="commande-erreur">{{ erreurs.province }}</p>{% endif %}
 
                 <label for="ville_texte">Ville</label>
@@ -34,6 +39,7 @@
                     <input type="text" id="ville_texte" name="ville_texte" class="geo-autocomplete-entree" autocomplete="off" placeholder="Sélectionnez d'abord une province" disabled value="{{ valeurs.get('ville_texte', '') }}">
                     <input type="hidden" id="ville_id" name="ville_id" value="{{ valeurs.get('ville_id', '') }}">
                 </div>
+                <p id="ville_erreur_geo" class="commande-erreur" hidden></p>
                 {% if erreurs.ville %}<p class="commande-erreur">{{ erreurs.ville }}</p>{% endif %}
 
                 <label for="commune_texte">Commune</label>
@@ -41,6 +47,7 @@
                     <input type="text" id="commune_texte" name="commune_texte" class="geo-autocomplete-entree" autocomplete="off" placeholder="Sélectionnez d'abord une ville" disabled value="{{ valeurs.get('commune_texte', '') }}">
                     <input type="hidden" id="commune_id" name="commune_id" value="{{ valeurs.get('commune_id', '') }}">
                 </div>
+                <p id="commune_erreur_geo" class="commande-erreur" hidden></p>
                 {% if erreurs.commune %}<p class="commande-erreur">{{ erreurs.commune }}</p>{% endif %}
 
                 {% if zones %}
@@ -75,7 +82,7 @@
                 </button>
                 <p id="position-statut" class="commande-position-statut"></p>
 
-                <button type="submit" class="bouton-confirmer">Confirmer la commande</button>
+                <button type="submit" id="bouton-confirmer-commande" class="bouton-confirmer" disabled>Confirmer la commande</button>
             </form>
 
             <div class="commande-recap">
@@ -103,12 +110,36 @@
         commune: { id: {{ valeurs.get('commune_id', '')|tojson }}, texte: {{ valeurs.get('commune_texte', '')|tojson }} }
     };
 
+    var boutonConfirmer = document.getElementById("bouton-confirmer-commande");
+
+    function verifierPret() {
+        var pret = document.getElementById("province_id").value &&
+            document.getElementById("ville_id").value &&
+            document.getElementById("commune_id").value;
+        boutonConfirmer.disabled = !pret;
+    }
+
+    function afficherErreurGeo(champ, texte) {
+        var p = document.getElementById(champ + "_erreur_geo");
+        p.textContent = "⚠️ Majt Shop n'est pas encore opérationnel à : « " + texte + " ». Merci de choisir " +
+            (champ === "province" ? "une autre province" : champ === "ville" ? "une autre ville" : "une autre commune") +
+            " dans la liste proposée.";
+        p.hidden = false;
+    }
+    function masquerErreurGeo(champ) {
+        document.getElementById(champ + "_erreur_geo").hidden = true;
+    }
+
     var champProvince = creerAutocompletionGeo({
         input: document.getElementById("province_texte"),
         hidden: document.getElementById("province_id"),
         endpoint: "{{ url_for('api_provinces') }}",
-        onSelect: function () { villeReactiver(); },
-        onClear: function () { villeReinitialiser(); }
+        onSelect: function () { masquerErreurGeo("province"); villeReactiver(); verifierPret(); },
+        onClear: function () { masquerErreurGeo("province"); villeReinitialiser(); verifierPret(); },
+        onRecherche: function (resultats, texte) {
+            if (texte && resultats.length === 0) afficherErreurGeo("province", texte);
+            else masquerErreurGeo("province");
+        }
     });
 
     var champVille = creerAutocompletionGeo({
@@ -119,8 +150,12 @@
             var provinceId = document.getElementById("province_id").value;
             return provinceId ? { province_id: provinceId } : null;
         },
-        onSelect: function () { communeReactiver(); },
-        onClear: function () { communeReinitialiser(); }
+        onSelect: function () { masquerErreurGeo("ville"); communeReactiver(); verifierPret(); },
+        onClear: function () { masquerErreurGeo("ville"); communeReinitialiser(); verifierPret(); },
+        onRecherche: function (resultats, texte) {
+            if (texte && resultats.length === 0) afficherErreurGeo("ville", texte);
+            else masquerErreurGeo("ville");
+        }
     });
 
     var champCommune = creerAutocompletionGeo({
@@ -130,6 +165,12 @@
         extraParams: function () {
             var villeId = document.getElementById("ville_id").value;
             return villeId ? { ville_id: villeId } : null;
+        },
+        onSelect: function () { masquerErreurGeo("commune"); verifierPret(); },
+        onClear: function () { masquerErreurGeo("commune"); verifierPret(); },
+        onRecherche: function (resultats, texte) {
+            if (texte && resultats.length === 0) afficherErreurGeo("commune", texte);
+            else masquerErreurGeo("commune");
         }
     });
 
@@ -138,6 +179,7 @@
     }
     function villeReinitialiser() {
         champVille.desactiver("Sélectionnez d'abord une province");
+        masquerErreurGeo("ville");
         communeReinitialiser();
     }
     function communeReactiver() {
@@ -145,6 +187,7 @@
     }
     function communeReinitialiser() {
         champCommune.desactiver("Sélectionnez d'abord une ville");
+        masquerErreurGeo("commune");
     }
 
     // Restaure la sélection après un rechargement suite à une erreur de
@@ -161,6 +204,30 @@
             }
         }
     }
+    verifierPret();
+})();
+</script>
+<script>
+(function () {
+    var local = document.getElementById("telephone_local");
+    var hidden = document.getElementById("telephone");
+
+    function actualiserTelephone() {
+        var chiffres = local.value.replace(/\D/g, "").slice(0, 10);
+        if (local.value !== chiffres) local.value = chiffres;
+        // Le 0 initial est une convention d'écriture locale (ex. 0991698826) ;
+        // il ne fait pas partie du numéro une fois l'indicatif +243 ajouté.
+        var sansZeroInitial = chiffres.replace(/^0/, "");
+        hidden.value = sansZeroInitial ? "+243" + sansZeroInitial : "";
+    }
+
+    // Pré-remplit le champ visible à partir de la valeur postée (rechargement
+    // après une erreur de validation qui ne concerne pas le téléphone).
+    var valeurInitiale = hidden.value || "";
+    local.value = valeurInitiale.replace(/^\+243/, "").replace(/\D/g, "").slice(0, 10);
+    actualiserTelephone();
+
+    local.addEventListener("input", actualiserTelephone);
 })();
 </script>
 <script src="{{ url_for('static', filename='js/position.js') }}"></script>
