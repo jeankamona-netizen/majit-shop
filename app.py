@@ -2043,6 +2043,7 @@ def admin_tableau_de_bord():
     ventes_jour_en_ligne = sum(c.get("total", 0) for c in commandes_jour_en_ligne)
     ventes_jour_boutique = sum(c.get("total", 0) for c in commandes_jour_boutique)
     ventes_jour_total = ventes_jour_en_ligne + ventes_jour_boutique
+    frais_livraison_jour = sum(c.get("frais_livraison") or 0 for c in commandes_jour_en_ligne)
 
     produits_par_id = {p["id"]: p for p in produits}
     courbes_categories, legende_categories, labels_jours_categories, ticks_axe_y_categories, hauteur_graphique, largeur_graphique = donnees_ventes_par_categorie(
@@ -2063,13 +2064,13 @@ def admin_tableau_de_bord():
         nb_produits=len(produits),
         nb_rupture=len([p for p in produits if p.get("stock", 0) <= 0]),
         livreurs_en_mission=livreurs_en_mission,
-        taux_usd=obtenir_taux_usd(),
         segments_jour=segments_jour,
         total_jour=total_jour,
         degrade_jour=degrade_jour,
         ventes_jour_total=ventes_jour_total,
         ventes_jour_en_ligne=ventes_jour_en_ligne,
         ventes_jour_boutique=ventes_jour_boutique,
+        frais_livraison_jour=frais_livraison_jour,
         nb_commandes_livrees_boutique=len(commandes_livrees_boutique),
         courbes_categories=courbes_categories,
         legende_categories=legende_categories,
@@ -3576,16 +3577,18 @@ def admin_geographie_basculer_actif(type_lieu, lieu_id):
     return redirect(url_for("admin_geographie"))
 
 
-@app.route("/admin/parametres/taux-usd", methods=["POST"])
+@app.route("/admin/parametres/taux-usd", methods=["GET", "POST"])
 @admin_requis
-def admin_definir_taux_usd():
-    try:
-        valeur = float(request.form.get("taux_usd", "0").replace(",", "."))
-    except ValueError:
-        valeur = 0
-    if valeur > 0:
-        definir_taux_usd(valeur)
-    return redirect(url_for("admin_tableau_de_bord"))
+def admin_taux_usd():
+    if request.method == "POST":
+        try:
+            valeur = float(request.form.get("taux_usd", "0").replace(",", "."))
+        except ValueError:
+            valeur = 0
+        if valeur > 0:
+            definir_taux_usd(valeur)
+        return redirect(url_for("admin_taux_usd"))
+    return render_template("admin/taux_change.html", categories=CATEGORIES, taux_usd=obtenir_taux_usd())
 
 
 @app.route("/admin/produits/importer-lot", methods=["POST"])

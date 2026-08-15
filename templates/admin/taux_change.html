@@ -1,0 +1,19 @@
+{% extends "admin/admin_base.html" %}
+
+{% block titre %}Taux de change — Administration Majt Shop{% endblock %}
+
+{% block contenu %}
+<h1>Taux de change</h1>
+<div class="admin-liens-rapides">
+    <a href="{{ url_for('admin_tableau_de_bord') }}" class="admin-lien-ajout admin-lien-secondaire">← Tableau de bord</a>
+</div>
+
+<form method="post" action="{{ url_for('admin_taux_usd') }}" class="admin-taux-usd">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="taux_usd">1 USD ($) =</label>
+    <input type="number" id="taux_usd" name="taux_usd" step="0.01" min="0" value="{{ taux_usd }}">
+    <span>CDF</span>
+    <button type="submit">Enregistrer</button>
+</form>
+<p class="admin-note">Affiché aux clients sous le prix des articles, ex : « {{ 18500|usd }} ».</p>
+{% endblock %}

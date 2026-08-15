@@ -32,6 +32,7 @@
         <div class="dash-legende-canaux">
             <span><i class="dash-puce dash-puce-violet"></i> En ligne — {{ ventes_jour_en_ligne|cdf }}</span>
             <span><i class="dash-puce dash-puce-gris"></i> Boutique — {{ ventes_jour_boutique|cdf }}</span>
+            <span><i class="dash-puce" style="background:#0369a1;"></i> Frais de livraison — {{ frais_livraison_jour|cdf }}</span>
         </div>
     </a>
 
@@ -142,20 +143,11 @@
     <a href="{{ url_for('admin_commandes') }}" class="admin-lien-ajout">Voir les commandes</a>
     <a href="{{ url_for('admin_produits') }}" class="admin-lien-ajout admin-lien-secondaire">Gérer les produits</a>
     <a href="{{ url_for('admin_facturation') }}" class="admin-lien-ajout admin-lien-secondaire">Facturation</a>
+    <a href="{{ url_for('admin_taux_usd') }}" class="admin-lien-ajout admin-lien-secondaire">Taux de change</a>
     {% if est_super_admin %}
     <a href="{{ url_for('admin_journal') }}" class="admin-lien-ajout">Journal d'activité</a>
     {% endif %}
 </div>
-
-<h2 class="admin-section-titre">Taux de change</h2>
-<form method="post" action="{{ url_for('admin_definir_taux_usd') }}" class="admin-taux-usd">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <label for="taux_usd">1 USD ($) =</label>
-    <input type="number" id="taux_usd" name="taux_usd" step="0.01" min="0" value="{{ taux_usd }}">
-    <span>CDF</span>
-    <button type="submit">Enregistrer</button>
-</form>
-<p class="admin-note">Affiché aux clients sous le prix des articles, ex : « {{ 18500|usd }} ».</p>
 
 <h2 class="admin-section-titre">Livreurs en mission</h2>
 <div class="admin-table-wrap">
