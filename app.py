@@ -1198,7 +1198,10 @@ def restaurer_commande(commande):
 
 @app.template_filter("cdf")
 def formater_cdf(valeur):
-    nombre = f"{round(valeur):,}".replace(",", " ")
+    # Espace insécable entre les milliers : le nombre ne doit jamais se
+    # couper au milieu (ex. "15" / "000") quand la colonne est étroite —
+    # seul le point entre le nombre et "CDF" reste un point de coupure valide.
+    nombre = f"{round(valeur):,}".replace(",", " ")
     return Markup(f"{escape(nombre)} <span class=\"cdf-suffixe\">CDF</span>")
 
 
