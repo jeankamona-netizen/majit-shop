@@ -1048,7 +1048,9 @@ a {
 }
 
 .commande-formulaire input,
+.commande-formulaire select,
 .commande-formulaire textarea {
+    width: 100%;
     padding: 0.6rem;
     border: 1px solid #ccc;
     border-radius: 6px;

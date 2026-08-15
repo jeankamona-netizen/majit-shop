@@ -574,7 +574,7 @@ def charger_provinces(recherche=None, actives_seulement=True, limite=8):
                 requete += " AND actif = 1"
             if recherche:
                 requete += " AND nom LIKE %s"
-                params.append(f"{recherche}%")
+                params.append(f"%{recherche}%")
             requete += " ORDER BY nom LIMIT %s"
             params.append(limite)
             cur.execute(requete, params)
@@ -597,7 +597,7 @@ def charger_villes(province_id, recherche=None, actives_seulement=True, limite=8
                 requete += " AND actif = 1"
             if recherche:
                 requete += " AND nom LIKE %s"
-                params.append(f"{recherche}%")
+                params.append(f"%{recherche}%")
             requete += " ORDER BY nom LIMIT %s"
             params.append(limite)
             cur.execute(requete, params)
@@ -620,7 +620,7 @@ def charger_communes(ville_id, recherche=None, actives_seulement=True, limite=8)
                 requete += " AND actif = 1"
             if recherche:
                 requete += " AND nom LIKE %s"
-                params.append(f"{recherche}%")
+                params.append(f"%{recherche}%")
             requete += " ORDER BY nom LIMIT %s"
             params.append(limite)
             cur.execute(requete, params)
