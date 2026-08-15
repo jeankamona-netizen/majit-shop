@@ -1690,6 +1690,53 @@ def admin_deconnexion():
     return redirect(url_for("connexion"))
 
 
+COULEURS_CATEGORIES = {
+    "vetements": "#8b5cf6", "chaussures": "#f97316", "telephones": "#0ea5e9",
+    "accessoires": "#ec4899", "automobiles": "#22c55e", "jouets": "#eab308", "bebes": "#14b8a6",
+}
+
+
+def donnees_ventes_par_categorie(commandes, produits_par_id, jours=14):
+    aujourd_hui = date.today()
+    jours_liste = [(aujourd_hui - timedelta(days=i)).isoformat() for i in range(jours - 1, -1, -1)]
+    quantites = {j: {} for j in jours_liste}
+    categories_presentes = []
+
+    for c in commandes:
+        if c["statut"] == "annulee":
+            continue
+        jour = c["date"][:10]
+        if jour not in quantites:
+            continue
+        for ligne in c["lignes"]:
+            p = produits_par_id.get(ligne.get("produit_id"))
+            cat = p["categorie"] if p else "accessoires"
+            if cat not in categories_presentes:
+                categories_presentes.append(cat)
+            quantites[jour][cat] = quantites[jour].get(cat, 0) + ligne.get("quantite", 0)
+
+    total_max = max((sum(quantites[j].values()) for j in jours_liste), default=0) or 1
+    hauteur_graphique = 120
+    barres = []
+    for j in jours_liste:
+        y_cumule = hauteur_graphique
+        segments = []
+        for cat in categories_presentes:
+            qte = quantites[j].get(cat, 0)
+            if not qte:
+                continue
+            hauteur = round((qte / total_max) * hauteur_graphique, 1)
+            y_cumule -= hauteur
+            segments.append({"couleur": COULEURS_CATEGORIES.get(cat, "#999"), "y": y_cumule, "hauteur": hauteur})
+        barres.append({"jour": j[5:].replace("-", "/"), "segments": segments})
+
+    legende = [
+        {"categorie": CATEGORIES.get(cat, cat), "couleur": COULEURS_CATEGORIES.get(cat, "#999")}
+        for cat in categories_presentes
+    ]
+    return barres, legende, hauteur_graphique
+
+
 @app.route("/admin")
 @admin_requis
 def admin_tableau_de_bord():
@@ -1707,6 +1754,7 @@ def admin_tableau_de_bord():
     chiffre_affaires_boutique = sum(
         c.get("montant_verse") or 0 for c in commandes_livrees if c["numero"].startswith("FAC")
     )
+    chiffre_affaires_total = chiffre_affaires_en_ligne + chiffre_affaires_boutique
 
     livreurs_par_numero = {l["numero"]: l for l in charger_livreurs()}
     missions = {}
@@ -1727,6 +1775,26 @@ def admin_tableau_de_bord():
         missions[num]["adresses"].append(c["adresse"])
     livreurs_en_mission = sorted(missions.values(), key=lambda m: m["nom"])
 
+    # --- Widgets façon "tableau de bord des opérations" ---
+    commandes_non_annulees = [c for c in commandes if c["statut"] != "annulee"]
+    commandes_jour = [c for c in commandes_non_annulees if c["date"][:10] == aujourd_hui]
+    produits_vendus_jour = sum(l.get("quantite", 0) for c in commandes_jour for l in c["lignes"])
+
+    nb_en_ligne = sum(1 for c in commandes_non_annulees if not c["numero"].startswith("FAC"))
+    nb_boutique = sum(1 for c in commandes_non_annulees if c["numero"].startswith("FAC"))
+    total_canaux = nb_en_ligne + nb_boutique or 1
+    part_en_ligne = round(nb_en_ligne / total_canaux * 100)
+    part_boutique = 100 - part_en_ligne
+
+    nb_commandes_total = len(commandes_non_annulees) or 1
+    panier_moyen = sum(c.get("total", 0) for c in commandes_non_annulees) / nb_commandes_total
+    articles_moyens = sum(l.get("quantite", 0) for c in commandes_non_annulees for l in c["lignes"]) / nb_commandes_total
+
+    produits_par_id = {p["id"]: p for p in produits}
+    barres_categories, legende_categories, hauteur_graphique = donnees_ventes_par_categorie(
+        commandes, produits_par_id
+    )
+
     return render_template(
         "admin/tableau_de_bord.html",
         categories=CATEGORIES,
@@ -1737,10 +1805,22 @@ def admin_tableau_de_bord():
         nb_commandes_livrees=len(commandes_livrees_en_ligne),
         chiffre_affaires_en_ligne=chiffre_affaires_en_ligne,
         chiffre_affaires_boutique=chiffre_affaires_boutique,
+        chiffre_affaires_total=chiffre_affaires_total,
         nb_produits=len(produits),
         nb_rupture=len([p for p in produits if p.get("stock", 0) <= 0]),
         livreurs_en_mission=livreurs_en_mission,
         taux_usd=obtenir_taux_usd(),
+        produits_vendus_jour=produits_vendus_jour,
+        nb_commandes_jour=len(commandes_jour),
+        part_en_ligne=part_en_ligne,
+        part_boutique=part_boutique,
+        nb_en_ligne=nb_en_ligne,
+        nb_boutique=nb_boutique,
+        panier_moyen=panier_moyen,
+        articles_moyens=articles_moyens,
+        barres_categories=barres_categories,
+        legende_categories=legende_categories,
+        hauteur_graphique=hauteur_graphique,
     )
 
 

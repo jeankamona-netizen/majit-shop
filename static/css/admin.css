@@ -314,6 +314,10 @@ img.admin-logo {
     min-width: 220px;
 }
 
+.admin-col-statut {
+    min-width: 190px;
+}
+
 .admin-table th {
     background: var(--violet-100);
     color: var(--violet-800);
@@ -595,6 +599,198 @@ img.admin-logo {
 }
 
 /* Tableau de bord */
+.dash-grille {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.dash-grille-large {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.dash-carte {
+    background: white;
+    border-radius: 10px;
+    padding: 1.2rem;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.6rem;
+}
+
+.dash-carte-entete {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    align-self: flex-start;
+}
+
+.dash-icone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.dash-icone svg {
+    width: 18px;
+    height: 18px;
+}
+
+.dash-icone-orange { background: #ffe4cc; color: var(--orange-600); }
+.dash-icone-bleu { background: #d6ecff; color: #0369a1; }
+.dash-icone-vert { background: #d3f5df; color: #15803d; }
+.dash-icone-violet { background: #ece0ff; color: var(--violet-700); }
+
+.dash-carte-titre {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--violet-800);
+    text-align: left;
+}
+
+.dash-anneau {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.dash-anneau::before {
+    content: "";
+    position: absolute;
+    width: 104px;
+    height: 104px;
+    border-radius: 50%;
+    background: white;
+}
+
+.dash-anneau-orange { background: conic-gradient(var(--orange-500) 100%, #f2e6ff 0); }
+.dash-anneau-vert { background: conic-gradient(#22c55e 100%, #eee 0); }
+.dash-anneau-violet { background: conic-gradient(var(--violet-700) 100%, #eee 0); }
+
+.dash-anneau-valeur {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 96px;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--violet-800);
+    line-height: 1.15;
+    word-break: break-word;
+}
+
+.dash-anneau-valeur-petit {
+    font-size: 1rem;
+}
+
+.dash-anneau-valeur .cdf-suffixe {
+    display: block;
+    font-size: 0.62em;
+    font-weight: 700;
+    margin-top: 0.1rem;
+}
+
+.dash-donut {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: conic-gradient(var(--violet-700) var(--part, 50%), #ddd 0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.dash-donut::before {
+    content: "";
+    position: absolute;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: white;
+}
+
+.dash-donut-centre {
+    position: relative;
+    z-index: 1;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--violet-800);
+}
+
+.dash-pastille {
+    font-size: 0.78rem;
+    color: #888;
+}
+
+.dash-legende-canaux {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.8rem;
+    font-size: 0.8rem;
+    color: #555;
+}
+
+.dash-puce {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 0.3rem;
+}
+
+.dash-puce-violet { background: var(--violet-700); }
+.dash-puce-gris { background: #ddd; }
+
+.dash-carte-revenu {
+    justify-content: center;
+}
+
+.dash-revenu-valeur {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--orange-600);
+}
+
+.dash-carte-graphique {
+    align-items: stretch;
+}
+
+.dash-legende-categories {
+    justify-content: flex-start;
+}
+
+.dash-graphique-svg {
+    width: 100%;
+    height: 130px;
+}
+
+.dash-graphique-dates {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: #888;
+}
+
 .admin-stats-grille {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -653,8 +849,8 @@ img.admin-logo {
 }
 
 .perf-anneau {
-    width: 120px;
-    height: 120px;
+    width: 170px;
+    height: 170px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -673,8 +869,8 @@ img.admin-logo {
 .perf-anneau::before {
     content: "";
     position: absolute;
-    width: 88px;
-    height: 88px;
+    width: 130px;
+    height: 130px;
     border-radius: 50%;
     background: white;
 }
@@ -682,13 +878,27 @@ img.admin-logo {
 .perf-anneau-valeur {
     position: relative;
     z-index: 1;
-    font-size: 1.6rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 118px;
+    font-size: 1.5rem;
     font-weight: 800;
     color: var(--violet-800);
+    line-height: 1.15;
+    word-break: break-word;
 }
 
 .perf-anneau-valeur-petit {
-    font-size: 1rem;
+    font-size: 1.15rem;
+}
+
+.perf-anneau-valeur .cdf-suffixe {
+    display: block;
+    font-size: 0.62em;
+    font-weight: 700;
+    margin-top: 0.15rem;
 }
 
 .perf-carte-label {

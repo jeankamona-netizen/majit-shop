@@ -3,7 +3,95 @@
 {% block titre %}Tableau de bord — Administration Majt Shop{% endblock %}
 
 {% block contenu %}
-<h1>Tableau de bord</h1>
+<h1>Tableau de bord des opérations de Majt Shop — ventes par catégorie</h1>
+
+<div class="dash-grille">
+    <div class="dash-carte">
+        <div class="dash-carte-entete">
+            <span class="dash-icone dash-icone-orange"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></span>
+            <span class="dash-carte-titre">Produits vendus aujourd'hui</span>
+        </div>
+        <div class="dash-anneau dash-anneau-orange">
+            <span class="dash-anneau-valeur">{{ produits_vendus_jour }}</span>
+        </div>
+        <span class="dash-pastille">{{ nb_commandes_jour }} commande{{ 's' if nb_commandes_jour != 1 else '' }} aujourd'hui</span>
+    </div>
+
+    <div class="dash-carte">
+        <div class="dash-carte-entete">
+            <span class="dash-icone dash-icone-bleu"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg></span>
+            <span class="dash-carte-titre">Ventes en ligne / boutique</span>
+        </div>
+        <div class="dash-donut" style="--part: {{ part_en_ligne }}%;">
+            <span class="dash-donut-centre">{{ part_en_ligne }}%</span>
+        </div>
+        <div class="dash-legende-canaux">
+            <span><i class="dash-puce dash-puce-violet"></i> En ligne — {{ nb_en_ligne }}</span>
+            <span><i class="dash-puce dash-puce-gris"></i> Boutique — {{ nb_boutique }}</span>
+        </div>
+    </div>
+
+    <div class="dash-carte">
+        <div class="dash-carte-entete">
+            <span class="dash-icone dash-icone-vert"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></span>
+            <span class="dash-carte-titre">Panier moyen</span>
+        </div>
+        <div class="dash-anneau dash-anneau-vert">
+            <span class="dash-anneau-valeur dash-anneau-valeur-petit">{{ panier_moyen|cdf }}</span>
+        </div>
+        <span class="dash-pastille">Par commande</span>
+    </div>
+
+    <div class="dash-carte">
+        <div class="dash-carte-entete">
+            <span class="dash-icone dash-icone-violet"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12.01V2h10.01l8.58 8.58a2 2 0 0 1 0 2.83z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg></span>
+            <span class="dash-carte-titre">Articles par commande</span>
+        </div>
+        <div class="dash-anneau dash-anneau-violet">
+            <span class="dash-anneau-valeur">{{ "%.1f"|format(articles_moyens) }}</span>
+        </div>
+        <span class="dash-pastille">En moyenne</span>
+    </div>
+</div>
+
+<div class="dash-grille-large">
+    <div class="dash-carte dash-carte-revenu">
+        <div class="dash-carte-entete">
+            <span class="dash-icone dash-icone-orange"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></span>
+            <span class="dash-carte-titre">Chiffre d'affaires total</span>
+        </div>
+        <div class="dash-revenu-valeur">{{ chiffre_affaires_total|cdf }}</div>
+        <span class="dash-pastille">En ligne + boutique, toutes commandes livrées</span>
+    </div>
+
+    <div class="dash-carte dash-carte-graphique">
+        <div class="dash-carte-entete">
+            <span class="dash-icone dash-icone-bleu"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span>
+            <span class="dash-carte-titre">Ventes par catégorie (14 derniers jours)</span>
+        </div>
+        {% if legende_categories %}
+        <div class="dash-legende-canaux dash-legende-categories">
+            {% for l in legende_categories %}
+            <span><i class="dash-puce" style="background:{{ l.couleur }};"></i> {{ l.categorie }}</span>
+            {% endfor %}
+        </div>
+        <svg viewBox="0 0 {{ barres_categories|length * 16 }} {{ hauteur_graphique }}" class="dash-graphique-svg" preserveAspectRatio="none">
+            {% for barre in barres_categories %}
+                {% set x_barre = loop.index0 * 16 + 3 %}
+                {% for seg in barre.segments %}
+                <rect x="{{ x_barre }}" y="{{ seg.y }}" width="10" height="{{ seg.hauteur }}" fill="{{ seg.couleur }}"></rect>
+                {% endfor %}
+            {% endfor %}
+        </svg>
+        <div class="dash-graphique-dates">
+            <span>{{ barres_categories[0].jour }}</span>
+            <span>{{ barres_categories[-1].jour }}</span>
+        </div>
+        {% else %}
+        <p class="admin-note">Pas encore de ventes sur cette période.</p>
+        {% endif %}
+    </div>
+</div>
 
 <div class="admin-stats-grille">
     <a href="{{ url_for('admin_visites') }}" class="admin-stat-carte">

@@ -30,7 +30,7 @@
                 <th>Facture N°</th>
                 <th class="admin-col-client">Client</th>
                 <th>Articles</th>
-                <th>Statut</th>
+                <th class="admin-col-statut">Statut</th>
             </tr>
         </thead>
         <tbody>
@@ -47,8 +47,8 @@
                     {% if c.latitude and c.longitude %}
                     <a href="https://www.openstreetmap.org/?mlat={{ c.latitude }}&mlon={{ c.longitude }}#map=17/{{ c.latitude }}/{{ c.longitude }}" target="_blank" rel="noopener" class="admin-lien-carte"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> Voir sur la carte</a><br>
                     {% endif %}
-                    {% if c.frais_livraison %}<span class="admin-commande-contact">Dont livraison ({{ c.zone_livraison }}) : {{ c.frais_livraison|cdf }}</span><br>{% endif %}
-                    {% if c.reduction_coupon %}<span class="admin-commande-contact">Coupon {{ c.coupon_code }} : -{{ c.reduction_coupon|cdf }}</span><br>{% endif %}
+                    {% if c.frais_livraison %}<span class="admin-commande-contact">Livraison à {{ c.zone_livraison }} : {{ c.frais_livraison|cdf }}</span><br>{% endif %}
+                    {% if c.reduction_coupon %}<span class="admin-commande-contact">Code-promo {{ c.coupon_code }} : - {{ c.reduction_coupon|cdf }}</span><br>{% endif %}
                     <span class="admin-commande-total">Total : {{ c.total|cdf }}</span>
                 </td>
                 <td class="admin-commande-articles">
@@ -68,7 +68,7 @@
                     </div>
                     {% endfor %}
                 </td>
-                <td>
+                <td class="admin-col-statut">
                     {% if c.statut == 'livree' %}
                         <a href="{{ url_for('admin_commandes', statut='livree') }}" class="statut-badge statut-livree">Livrée</a>
                     {% elif c.statut == 'annulee' %}
