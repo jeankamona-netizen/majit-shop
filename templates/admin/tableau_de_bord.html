@@ -23,15 +23,15 @@
 
     <a href="{{ url_for('admin_revenus') }}" class="dash-carte dash-carte-lien">
         <div class="dash-carte-entete">
-            <span class="dash-icone dash-icone-bleu"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg></span>
-            <span class="dash-carte-titre">Ventes en ligne / boutique</span>
+            <span class="dash-icone dash-icone-orange"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg></span>
+            <span class="dash-carte-titre">Ventes du jour</span>
         </div>
-        <div class="dash-donut" style="--part: {{ part_en_ligne }}%;">
-            <span class="dash-donut-centre">{{ part_en_ligne }}%</span>
+        <div class="dash-anneau dash-anneau-orange">
+            <span class="dash-anneau-valeur dash-anneau-valeur-petit">{{ ventes_jour_total|cdf }}</span>
         </div>
         <div class="dash-legende-canaux">
-            <span><i class="dash-puce dash-puce-violet"></i> En ligne — {{ nb_en_ligne }}</span>
-            <span><i class="dash-puce dash-puce-gris"></i> Boutique — {{ nb_boutique }}</span>
+            <span><i class="dash-puce dash-puce-violet"></i> En ligne — {{ ventes_jour_en_ligne|cdf }}</span>
+            <span><i class="dash-puce dash-puce-gris"></i> Boutique — {{ ventes_jour_boutique|cdf }}</span>
         </div>
     </a>
 
@@ -58,6 +58,17 @@
             <span><i class="dash-puce dash-puce-violet"></i> En ligne — {{ nb_commandes_livrees }}</span>
             <span><i class="dash-puce dash-puce-gris"></i> Boutique — {{ nb_commandes_livrees_boutique }}</span>
         </div>
+    </a>
+
+    <a href="{{ url_for('admin_zones_livraison') }}" class="dash-carte dash-carte-lien">
+        <div class="dash-carte-entete">
+            <span class="dash-icone dash-icone-bleu"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg></span>
+            <span class="dash-carte-titre">Frais de livraison</span>
+        </div>
+        <div class="dash-anneau dash-anneau-bleu">
+            <span class="dash-anneau-valeur dash-anneau-valeur-petit">{{ frais_livraison_jour|cdf }}</span>
+        </div>
+        <span class="dash-pastille">Aujourd'hui</span>
     </a>
 </div>
 

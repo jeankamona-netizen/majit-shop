@@ -2012,11 +2012,13 @@ def admin_tableau_de_bord():
         degrade_jour_stops.append(f"{s['couleur']} {debut:.2f}% {fin:.2f}%")
     degrade_jour = "conic-gradient(" + ", ".join(degrade_jour_stops) + ")" if degrade_jour_stops else "conic-gradient(#eee 100%, #eee 0)"
 
-    nb_en_ligne = sum(1 for c in commandes_non_annulees if not c["numero"].startswith("FAC"))
-    nb_boutique = sum(1 for c in commandes_non_annulees if c["numero"].startswith("FAC"))
-    total_canaux = nb_en_ligne + nb_boutique or 1
-    part_en_ligne = round(nb_en_ligne / total_canaux * 100)
-    part_boutique = 100 - part_en_ligne
+    commandes_jour_toutes = [c for c in commandes_non_annulees if c["date"][:10] == aujourd_hui]
+    commandes_jour_en_ligne = [c for c in commandes_jour_toutes if not c["numero"].startswith("FAC")]
+    commandes_jour_boutique = [c for c in commandes_jour_toutes if c["numero"].startswith("FAC")]
+    ventes_jour_en_ligne = sum(c.get("total", 0) for c in commandes_jour_en_ligne)
+    ventes_jour_boutique = sum(c.get("total", 0) for c in commandes_jour_boutique)
+    ventes_jour_total = ventes_jour_en_ligne + ventes_jour_boutique
+    frais_livraison_jour = sum(c.get("frais_livraison") or 0 for c in commandes_jour_en_ligne)
 
     produits_par_id = {p["id"]: p for p in produits}
     courbes_categories, legende_categories, labels_jours_categories, ticks_axe_y_categories, hauteur_graphique, largeur_graphique = donnees_ventes_par_categorie(
@@ -2040,10 +2042,10 @@ def admin_tableau_de_bord():
         segments_jour=segments_jour,
         total_jour=total_jour,
         degrade_jour=degrade_jour,
-        part_en_ligne=part_en_ligne,
-        part_boutique=part_boutique,
-        nb_en_ligne=nb_en_ligne,
-        nb_boutique=nb_boutique,
+        ventes_jour_total=ventes_jour_total,
+        ventes_jour_en_ligne=ventes_jour_en_ligne,
+        ventes_jour_boutique=ventes_jour_boutique,
+        frais_livraison_jour=frais_livraison_jour,
         nb_commandes_livrees_boutique=len(commandes_livrees_boutique),
         courbes_categories=courbes_categories,
         legende_categories=legende_categories,

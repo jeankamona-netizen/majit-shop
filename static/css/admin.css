@@ -693,6 +693,7 @@ img.admin-logo {
 .dash-anneau-orange { background: conic-gradient(var(--orange-500) 100%, #f2e6ff 0); }
 .dash-anneau-vert { background: conic-gradient(#22c55e 100%, #eee 0); }
 .dash-anneau-violet { background: conic-gradient(var(--violet-700) 100%, #eee 0); }
+.dash-anneau-bleu { background: conic-gradient(#0369a1 100%, #eee 0); }
 
 .dash-anneau-valeur {
     position: relative;
