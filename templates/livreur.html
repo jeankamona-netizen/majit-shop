@@ -86,7 +86,8 @@
             <div class="livreur-badge-agent">Livreur : {{ c.livreur_nom }} ({{ c.livreur_numero }})</div>
             {% endif %}
 
-            {% set message_arrivee = "Bonjour " ~ c.nom ~ ", ici " ~ (moi.prenom ~ " " ~ moi.nom if moi else "votre livreur") ~ " de Majt Shop, pour la commande " ~ c.numero ~ ". Je suis arrivé à l'adresse indiquée sur votre facture." %}
+            {% set lien_suivi = url_for('suivi_commande', token=c.tracking_token, _external=True) if c.tracking_token else "" %}
+            {% set message_arrivee = "Bonjour " ~ c.nom ~ ", ici " ~ (moi.prenom ~ " " ~ moi.nom if moi else "votre livreur") ~ " de Majt Shop, pour la commande " ~ c.numero ~ ". Je suis arrivé à l'adresse indiquée sur votre facture." ~ (" Suivre ma commande : " ~ lien_suivi if lien_suivi else "") %}
             <div class="livreur-client">
                 <div class="livreur-nom">{{ c.nom }}</div>
                 <div class="livreur-tel-actions">
