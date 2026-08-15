@@ -113,10 +113,6 @@
 </div>
 
 <div class="admin-stats-grille">
-    <a href="{{ url_for('admin_visites') }}" class="admin-stat-carte">
-        <span class="admin-stat-valeur">{{ visiteurs_jour }}</span>
-        <span class="admin-stat-label">Visiteurs aujourd'hui</span>
-    </a>
     <a href="{{ url_for('admin_commandes', statut='en_attente') }}" class="admin-stat-carte">
         <span class="admin-stat-valeur">{{ nb_commandes_attente }}</span>
         <span class="admin-stat-label">Commandes en attente</span>

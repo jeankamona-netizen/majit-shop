@@ -1937,7 +1937,6 @@ def donnees_ventes_par_categorie(commandes, produits_par_id, jours=7):
 def admin_tableau_de_bord():
     produits = charger_produits()
     commandes = charger_commandes()
-    visites = charger_visites()
 
     aujourd_hui = date.today().isoformat()
     commandes_en_attente = [c for c in commandes if c["statut"] == "en_attente"]
@@ -2007,7 +2006,6 @@ def admin_tableau_de_bord():
     return render_template(
         "admin/tableau_de_bord.html",
         categories=CATEGORIES,
-        visiteurs_jour=sum(1 for v in visites if v.get("date") == aujourd_hui),
         nb_commandes_attente=len(commandes_en_attente),
         nb_commandes_en_preparation=len(commandes_en_preparation),
         nb_commandes_en_livraison=len(commandes_en_livraison),
