@@ -625,6 +625,18 @@ img.admin-logo {
     gap: 0.6rem;
 }
 
+.dash-carte-lien {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.dash-carte-lien:hover {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+    transform: translateY(-2px);
+}
+
 .dash-carte-entete {
     display: flex;
     align-items: center;
@@ -769,6 +781,16 @@ img.admin-logo {
     font-size: 2rem;
     font-weight: 800;
     color: var(--orange-600);
+}
+
+.dash-revenu-sous-totaux {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.8rem;
+    font-size: 0.8rem;
+    color: #555;
+    margin-top: 0.2rem;
 }
 
 .dash-carte-graphique {

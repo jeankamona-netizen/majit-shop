@@ -1696,7 +1696,7 @@ COULEURS_CATEGORIES = {
 }
 
 
-def donnees_ventes_par_categorie(commandes, produits_par_id, jours=14):
+def donnees_ventes_par_categorie(commandes, produits_par_id, jours=7):
     aujourd_hui = date.today()
     jours_liste = [(aujourd_hui - timedelta(days=i)).isoformat() for i in range(jours - 1, -1, -1)]
     quantites = {j: {} for j in jours_liste}
@@ -1715,26 +1715,36 @@ def donnees_ventes_par_categorie(commandes, produits_par_id, jours=14):
                 categories_presentes.append(cat)
             quantites[jour][cat] = quantites[jour].get(cat, 0) + ligne.get("quantite", 0)
 
-    total_max = max((sum(quantites[j].values()) for j in jours_liste), default=0) or 1
     hauteur_graphique = 120
-    barres = []
-    for j in jours_liste:
-        y_cumule = hauteur_graphique
-        segments = []
-        for cat in categories_presentes:
+    largeur_graphique = (len(jours_liste) - 1) * 60 if len(jours_liste) > 1 else 120
+    pas_x = largeur_graphique / max(len(jours_liste) - 1, 1)
+    valeur_max = max(
+        (quantites[j].get(cat, 0) for j in jours_liste for cat in categories_presentes),
+        default=0,
+    ) or 1
+
+    courbes = []
+    for cat in categories_presentes:
+        points = []
+        for idx, j in enumerate(jours_liste):
             qte = quantites[j].get(cat, 0)
-            if not qte:
-                continue
-            hauteur = round((qte / total_max) * hauteur_graphique, 1)
-            y_cumule -= hauteur
-            segments.append({"couleur": COULEURS_CATEGORIES.get(cat, "#999"), "y": y_cumule, "hauteur": hauteur})
-        barres.append({"jour": j[5:].replace("-", "/"), "segments": segments})
+            points.append({
+                "x": round(idx * pas_x, 1),
+                "y": round(hauteur_graphique - (qte / valeur_max) * hauteur_graphique, 1),
+            })
+        courbes.append({
+            "categorie": CATEGORIES.get(cat, cat),
+            "couleur": COULEURS_CATEGORIES.get(cat, "#999"),
+            "points": points,
+            "points_svg": " ".join(f"{pt['x']},{pt['y']}" for pt in points),
+        })
 
     legende = [
         {"categorie": CATEGORIES.get(cat, cat), "couleur": COULEURS_CATEGORIES.get(cat, "#999")}
         for cat in categories_presentes
     ]
-    return barres, legende, hauteur_graphique
+    labels_jours = [j[5:].replace("-", "/") for j in jours_liste]
+    return courbes, legende, labels_jours, hauteur_graphique, largeur_graphique
 
 
 @app.route("/admin")
@@ -1786,13 +1796,9 @@ def admin_tableau_de_bord():
     part_en_ligne = round(nb_en_ligne / total_canaux * 100)
     part_boutique = 100 - part_en_ligne
 
-    nb_commandes_total = len(commandes_non_annulees) or 1
-    panier_moyen = sum(c.get("total", 0) for c in commandes_non_annulees) / nb_commandes_total
-    articles_moyens = sum(l.get("quantite", 0) for c in commandes_non_annulees for l in c["lignes"]) / nb_commandes_total
-
     produits_par_id = {p["id"]: p for p in produits}
-    barres_categories, legende_categories, hauteur_graphique = donnees_ventes_par_categorie(
-        commandes, produits_par_id
+    courbes_categories, legende_categories, labels_jours_categories, hauteur_graphique, largeur_graphique = donnees_ventes_par_categorie(
+        commandes, produits_par_id, jours=7
     )
 
     return render_template(
@@ -1816,11 +1822,11 @@ def admin_tableau_de_bord():
         part_boutique=part_boutique,
         nb_en_ligne=nb_en_ligne,
         nb_boutique=nb_boutique,
-        panier_moyen=panier_moyen,
-        articles_moyens=articles_moyens,
-        barres_categories=barres_categories,
+        courbes_categories=courbes_categories,
         legende_categories=legende_categories,
+        labels_jours_categories=labels_jours_categories,
         hauteur_graphique=hauteur_graphique,
+        largeur_graphique=largeur_graphique,
     )
 
 

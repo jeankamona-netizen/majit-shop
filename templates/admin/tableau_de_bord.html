@@ -6,7 +6,7 @@
 <h1>Tableau de bord des opérations de Majt Shop — ventes par catégorie</h1>
 
 <div class="dash-grille">
-    <div class="dash-carte">
+    <a href="{{ url_for('admin_commandes') }}" class="dash-carte dash-carte-lien">
         <div class="dash-carte-entete">
             <span class="dash-icone dash-icone-orange"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></span>
             <span class="dash-carte-titre">Produits vendus aujourd'hui</span>
@@ -15,9 +15,9 @@
             <span class="dash-anneau-valeur">{{ produits_vendus_jour }}</span>
         </div>
         <span class="dash-pastille">{{ nb_commandes_jour }} commande{{ 's' if nb_commandes_jour != 1 else '' }} aujourd'hui</span>
-    </div>
+    </a>
 
-    <div class="dash-carte">
+    <a href="{{ url_for('admin_revenus') }}" class="dash-carte dash-carte-lien">
         <div class="dash-carte-entete">
             <span class="dash-icone dash-icone-bleu"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg></span>
             <span class="dash-carte-titre">Ventes en ligne / boutique</span>
@@ -29,45 +29,49 @@
             <span><i class="dash-puce dash-puce-violet"></i> En ligne — {{ nb_en_ligne }}</span>
             <span><i class="dash-puce dash-puce-gris"></i> Boutique — {{ nb_boutique }}</span>
         </div>
-    </div>
+    </a>
 
-    <div class="dash-carte">
+    <a href="{{ url_for('admin_produits') }}" class="dash-carte dash-carte-lien">
         <div class="dash-carte-entete">
-            <span class="dash-icone dash-icone-vert"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></span>
-            <span class="dash-carte-titre">Panier moyen</span>
+            <span class="dash-icone dash-icone-vert"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg></span>
+            <span class="dash-carte-titre">Articles au catalogue</span>
         </div>
         <div class="dash-anneau dash-anneau-vert">
-            <span class="dash-anneau-valeur dash-anneau-valeur-petit">{{ panier_moyen|cdf }}</span>
+            <span class="dash-anneau-valeur">{{ nb_produits }}</span>
         </div>
-        <span class="dash-pastille">Par commande</span>
-    </div>
+        <span class="dash-pastille">Au catalogue</span>
+    </a>
 
-    <div class="dash-carte">
+    <a href="{{ url_for('admin_commandes', statut='livree') }}" class="dash-carte dash-carte-lien">
         <div class="dash-carte-entete">
-            <span class="dash-icone dash-icone-violet"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12.01V2h10.01l8.58 8.58a2 2 0 0 1 0 2.83z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg></span>
-            <span class="dash-carte-titre">Articles par commande</span>
+            <span class="dash-icone dash-icone-violet"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></span>
+            <span class="dash-carte-titre">Commandes livrées</span>
         </div>
         <div class="dash-anneau dash-anneau-violet">
-            <span class="dash-anneau-valeur">{{ "%.1f"|format(articles_moyens) }}</span>
+            <span class="dash-anneau-valeur">{{ nb_commandes_livrees }}</span>
         </div>
-        <span class="dash-pastille">En moyenne</span>
-    </div>
+        <span class="dash-pastille">En ligne</span>
+    </a>
 </div>
 
 <div class="dash-grille-large">
-    <div class="dash-carte dash-carte-revenu">
+    <a href="{{ url_for('admin_revenus') }}" class="dash-carte dash-carte-revenu dash-carte-lien">
         <div class="dash-carte-entete">
             <span class="dash-icone dash-icone-orange"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></span>
             <span class="dash-carte-titre">Chiffre d'affaires total</span>
         </div>
         <div class="dash-revenu-valeur">{{ chiffre_affaires_total|cdf }}</div>
         <span class="dash-pastille">En ligne + boutique, toutes commandes livrées</span>
-    </div>
+        <div class="dash-revenu-sous-totaux">
+            <span><i class="dash-puce dash-puce-violet"></i> En ligne — {{ chiffre_affaires_en_ligne|cdf }}</span>
+            <span><i class="dash-puce dash-puce-gris"></i> Facturation (boutique) — {{ chiffre_affaires_boutique|cdf }}</span>
+        </div>
+    </a>
 
-    <div class="dash-carte dash-carte-graphique">
+    <a href="{{ url_for('admin_revenus') }}" class="dash-carte dash-carte-graphique dash-carte-lien">
         <div class="dash-carte-entete">
-            <span class="dash-icone dash-icone-bleu"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span>
-            <span class="dash-carte-titre">Ventes par catégorie (14 derniers jours)</span>
+            <span class="dash-icone dash-icone-bleu"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 6"></polyline><polyline points="15 6 21 6 21 12"></polyline></svg></span>
+            <span class="dash-carte-titre">Ventes par catégorie (7 derniers jours)</span>
         </div>
         {% if legende_categories %}
         <div class="dash-legende-canaux dash-legende-categories">
@@ -75,22 +79,22 @@
             <span><i class="dash-puce" style="background:{{ l.couleur }};"></i> {{ l.categorie }}</span>
             {% endfor %}
         </div>
-        <svg viewBox="0 0 {{ barres_categories|length * 16 }} {{ hauteur_graphique }}" class="dash-graphique-svg" preserveAspectRatio="none">
-            {% for barre in barres_categories %}
-                {% set x_barre = loop.index0 * 16 + 3 %}
-                {% for seg in barre.segments %}
-                <rect x="{{ x_barre }}" y="{{ seg.y }}" width="10" height="{{ seg.hauteur }}" fill="{{ seg.couleur }}"></rect>
-                {% endfor %}
+        <svg viewBox="0 0 {{ largeur_graphique }} {{ hauteur_graphique }}" class="dash-graphique-svg" preserveAspectRatio="none">
+            {% for courbe in courbes_categories %}
+            <polyline points="{{ courbe.points_svg }}" fill="none" stroke="{{ courbe.couleur }}" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"></polyline>
+            {% for pt in courbe.points %}
+            <circle cx="{{ pt.x }}" cy="{{ pt.y }}" r="2.5" fill="{{ courbe.couleur }}" vector-effect="non-scaling-stroke"></circle>
+            {% endfor %}
             {% endfor %}
         </svg>
         <div class="dash-graphique-dates">
-            <span>{{ barres_categories[0].jour }}</span>
-            <span>{{ barres_categories[-1].jour }}</span>
+            <span>{{ labels_jours_categories[0] }}</span>
+            <span>{{ labels_jours_categories[-1] }}</span>
         </div>
         {% else %}
         <p class="admin-note">Pas encore de ventes sur cette période.</p>
         {% endif %}
-    </div>
+    </a>
 </div>
 
 <div class="admin-stats-grille">
