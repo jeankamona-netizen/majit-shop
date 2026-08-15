@@ -3467,7 +3467,50 @@ def admin_zones_livraison():
             finally:
                 connexion.close()
         return redirect(url_for("admin_zones_livraison"))
-    return render_template("admin/zones_livraison.html", zones=charger_zones_livraison(), categories=CATEGORIES)
+
+    periode = request.args.get("periode", "mois")
+    if periode not in PERIODES_PERFORMANCE:
+        periode = "mois"
+
+    aujourd_hui = date.today()
+    if periode == "jour":
+        debut = aujourd_hui
+    elif periode == "semaine":
+        debut = aujourd_hui - timedelta(days=aujourd_hui.weekday())
+    elif periode == "mois":
+        debut = aujourd_hui.replace(day=1)
+    else:
+        debut = aujourd_hui.replace(month=1, day=1)
+
+    commandes = charger_commandes()
+    livrees_periode = [
+        c for c in commandes
+        if c["statut"] == "livree" and c.get("date_livraison") and c.get("zone_livraison")
+        and date.fromisoformat(c["date_livraison"][:10]) >= debut
+    ]
+
+    zones = charger_zones_livraison()
+    stats_zones = []
+    for z in zones:
+        commandes_zone = [c for c in livrees_periode if c["zone_livraison"] == z["nom"]]
+        montant_genere = sum(c.get("frais_livraison") or 0 for c in commandes_zone)
+        stats_zones.append({
+            "nom": z["nom"],
+            "prix": z["frais"],
+            "nb_courses": len(commandes_zone),
+            "montant_genere": montant_genere,
+        })
+    total_genere = sum(s["montant_genere"] for s in stats_zones)
+
+    return render_template(
+        "admin/zones_livraison.html",
+        zones=zones,
+        categories=CATEGORIES,
+        periodes=PERIODES_PERFORMANCE,
+        periode=periode,
+        stats_zones=stats_zones,
+        total_genere=total_genere,
+    )
 
 
 @app.route("/admin/zones-livraison/<int:zone_id>/modifier", methods=["POST"])

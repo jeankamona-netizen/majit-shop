@@ -6,6 +6,48 @@
 <h1>Zones de livraison</h1>
 <p class="admin-note">Définissez les zones et leurs frais. Elles apparaissent au client lors de la commande ; laisser vide ou désactiver une zone la retire du formulaire de commande.</p>
 
+<h2 class="admin-section-titre">Revenus par zone</h2>
+<div class="admin-filtres">
+    {% for cle, label in periodes.items() %}
+    <a href="{{ url_for('admin_zones_livraison', periode=cle) }}" class="admin-filtre {{ 'admin-filtre-actif' if periode == cle else '' }}">{{ label }}</a>
+    {% endfor %}
+</div>
+
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th class="admin-col-numero">N°</th>
+                <th>Nom de la zone</th>
+                <th>Prix par course</th>
+                <th>Nbr courses</th>
+                <th>Montant généré</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in stats_zones %}
+            <tr>
+                <td class="admin-col-numero">{{ loop.index }}</td>
+                <td><strong>{{ s.nom }}</strong></td>
+                <td>{{ s.prix|cdf }}</td>
+                <td>{{ s.nb_courses }}</td>
+                <td>{{ s.montant_genere|cdf }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5">Aucune zone définie pour le moment.</td></tr>
+            {% endfor %}
+        </tbody>
+        {% if stats_zones %}
+        <tfoot>
+            <tr>
+                <td colspan="4"><strong>Total généré</strong></td>
+                <td><strong>{{ total_genere|cdf }}</strong></td>
+            </tr>
+        </tfoot>
+        {% endif %}
+    </table>
+</div>
+
 <div class="admin-facturation-grille">
     <div class="admin-facturation-ajout">
         <h2 class="admin-section-titre">Ajouter une zone</h2>
