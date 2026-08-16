@@ -330,6 +330,66 @@ def sauvegarder_commandes(commandes):
         connexion.close()
 
 
+def charger_commande(numero):
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SELECT * FROM commandes WHERE numero = %s", (numero,))
+            ligne = cur.fetchone()
+            return _commande_depuis_ligne(ligne) if ligne else None
+    finally:
+        connexion.close()
+
+
+def inserer_commande(c):
+    """INSERT ciblé d'une seule commande (Phase 3) : remplace le
+    charger_commandes()+append+sauvegarder_commandes() qui réécrivait toute
+    la table pour ajouter une seule ligne."""
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SHOW COLUMNS FROM commandes")
+            colonnes_existantes = {ligne["Field"] for ligne in cur.fetchall()}
+            colonnes = COLONNES_COMMANDES_BASE + [
+                col for col in COLONNES_COMMANDES_OPTIONNELLES if col in colonnes_existantes
+            ]
+            requete = "INSERT INTO commandes ({}) VALUES ({})".format(
+                ", ".join(colonnes), ", ".join(["%s"] * len(colonnes))
+            )
+            cur.execute(requete, tuple(_valeur_colonne_commande(c, col) for col in colonnes))
+    finally:
+        connexion.close()
+
+
+def supprimer_commande(numero):
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("DELETE FROM commandes WHERE numero = %s", (numero,))
+    finally:
+        connexion.close()
+
+
+def mettre_a_jour_commande(numero, champs):
+    """UPDATE ciblé (Phase 3) : `champs` ne contient que les colonnes
+    réellement modifiées par l'appelant, remplaçant le
+    charger_commandes()+mutation+sauvegarder_commandes() qui réécrivait
+    toute la table pour changer une seule commande."""
+    if not champs:
+        return
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            colonnes = list(champs.keys())
+            requete = "UPDATE commandes SET {} WHERE numero = %s".format(
+                ", ".join(f"{col} = %s" for col in colonnes)
+            )
+            valeurs = [_valeur_colonne_commande(champs, col) for col in colonnes] + [numero]
+            cur.execute(requete, tuple(valeurs))
+    finally:
+        connexion.close()
+
+
 def prochain_numero_sequence(prefixe):
     """Incremente atomiquement le compteur associe a `prefixe` (ex.
     "MJT260816") et retourne la nouvelle valeur. INSERT ... ON DUPLICATE
@@ -1209,14 +1269,20 @@ def marquer_commande_livree(commande, montant_cdf_form, montant_usd_form=None):
     commande["montant_verse_usd"] = montant_usd
     if not commande.get("date_livraison"):
         commande["date_livraison"] = datetime.now().isoformat(timespec="seconds")
-    return True
+    return {
+        "statut": commande["statut"],
+        "montant_verse": commande["montant_verse"],
+        "montant_verse_cdf": commande["montant_verse_cdf"],
+        "montant_verse_usd": commande["montant_verse_usd"],
+        "date_livraison": commande["date_livraison"],
+    }
 
 
 def marquer_en_preparation(commande):
     if commande["statut"] != "en_attente":
         return False
     commande["statut"] = "en_preparation"
-    return True
+    return {"statut": commande["statut"]}
 
 
 def annuler_commande(commande):
@@ -1230,7 +1296,7 @@ def annuler_commande(commande):
     sauvegarder_produits(produits)
     commande["statut"] = "annulee"
     commande["montant_verse"] = None
-    return True
+    return {"statut": commande["statut"], "montant_verse": commande["montant_verse"]}
 
 
 def restaurer_commande(commande):
@@ -1246,7 +1312,12 @@ def restaurer_commande(commande):
     commande["montant_verse"] = None
     commande["livreur_numero"] = None
     commande["livreur_nom"] = None
-    return True
+    return {
+        "statut": commande["statut"],
+        "montant_verse": commande["montant_verse"],
+        "livreur_numero": commande["livreur_numero"],
+        "livreur_nom": commande["livreur_nom"],
+    }
 
 
 @app.template_filter("cdf")
@@ -1738,9 +1809,7 @@ def commander():
                 "vue": False,
             }
 
-            commandes = charger_commandes()
-            commandes.append(commande)
-            sauvegarder_commandes(commandes)
+            inserer_commande(commande)
             if coupon:
                 incrementer_usage_coupon(coupon["id"])
 
@@ -2272,9 +2341,7 @@ def admin_facturation_valider():
         journaliser("stock", f"Facturation annulée (stock insuffisant) : {message_stock}")
         return redirect(url_for("admin_facturation", erreur_stock=message_stock))
 
-    commandes = charger_commandes()
-    commandes.append(facture)
-    sauvegarder_commandes(commandes)
+    inserer_commande(facture)
 
     session["facture_brouillon"] = {}
     return redirect(url_for("admin_facture_voir", numero=numero))
@@ -2292,9 +2359,8 @@ def admin_facture_voir(numero):
 @app.route("/admin/facturation/<numero>/supprimer", methods=["POST"])
 @admin_requis
 def admin_facture_supprimer(numero):
-    commandes = charger_commandes()
-    facture = next((c for c in commandes if c["numero"] == numero and c["numero"].startswith("FAC")), None)
-    if not facture:
+    facture = charger_commande(numero)
+    if not facture or not facture["numero"].startswith("FAC"):
         abort(404)
 
     produits = charger_produits()
@@ -2304,8 +2370,7 @@ def admin_facture_supprimer(numero):
             ajuster_stock_variante(p, ligne.get("couleur"), ligne.get("taille"), ligne["quantite"])
     sauvegarder_produits(produits)
 
-    commandes = [c for c in commandes if c["numero"] != numero]
-    sauvegarder_commandes(commandes)
+    supprimer_commande(numero)
     return redirect(url_for("admin_facturation"))
 
 
@@ -2452,16 +2517,17 @@ def livreur_profil():
 @livreur_requis
 def livreur_prendre_commande(numero):
     moi = personne_livraison_courante()
-    commandes = charger_commandes()
-    commande = next((c for c in commandes if c["numero"] == numero), None)
+    commande = charger_commande(numero)
     if not commande:
         abort(404)
     if commande["statut"] in ("en_attente", "en_preparation"):
-        commande["statut"] = "en_livraison"
-        commande["livreur_numero"] = moi["numero"]
-        commande["livreur_nom"] = f"{moi['prenom']} {moi['nom']}"
-        commande["code_livraison"] = f"{random.randint(0, 9999):04d}"
-        sauvegarder_commandes(commandes)
+        champs = {
+            "statut": "en_livraison",
+            "livreur_numero": moi["numero"],
+            "livreur_nom": f"{moi['prenom']} {moi['nom']}",
+            "code_livraison": f"{random.randint(0, 9999):04d}",
+        }
+        mettre_a_jour_commande(numero, champs)
     return redirect(url_for("livreur"))
 
 
@@ -2469,8 +2535,7 @@ def livreur_prendre_commande(numero):
 @livreur_requis
 @limiter.limit("15 per minute")
 def livreur_livrer_commande(numero):
-    commandes = charger_commandes()
-    commande = next((c for c in commandes if c["numero"] == numero), None)
+    commande = charger_commande(numero)
     if not commande:
         abort(404)
     if not peut_agir_sur_livraison(commande):
@@ -2491,17 +2556,17 @@ def livreur_livrer_commande(numero):
         )
         return redirect(url_for("livreur", erreur_code=numero))
 
-    if marquer_commande_livree(commande, request.form.get("montant_verse_cdf"), request.form.get("montant_verse_usd")):
+    champs = marquer_commande_livree(commande, request.form.get("montant_verse_cdf"), request.form.get("montant_verse_usd"))
+    if champs:
         journaliser("livraison", f"Commande {numero} livrée par {agent['numero'] if agent else '?'}")
-        sauvegarder_commandes(commandes)
+        mettre_a_jour_commande(numero, champs)
     return redirect(url_for("livreur"))
 
 
 @app.route("/livreur/commandes/<numero>/annuler", methods=["POST"])
 @livreur_requis
 def livreur_annuler_commande(numero):
-    commandes = charger_commandes()
-    commande = next((c for c in commandes if c["numero"] == numero), None)
+    commande = charger_commande(numero)
     if not commande:
         abort(404)
     if not peut_agir_sur_livraison(commande):
@@ -2511,8 +2576,9 @@ def livreur_annuler_commande(numero):
             f"(livreur_session={session.get('livreur_numero')}, ip={get_remote_address()})",
         )
         abort(403)
-    if annuler_commande(commande):
-        sauvegarder_commandes(commandes)
+    champs = annuler_commande(commande)
+    if champs:
+        mettre_a_jour_commande(numero, champs)
     return redirect(url_for("livreur"))
 
 
@@ -2520,13 +2586,13 @@ def livreur_annuler_commande(numero):
 @livreur_requis
 def livreur_modifier_ligne_commande(numero, index):
     moi = personne_livraison_courante()
-    commandes = charger_commandes()
-    commande = next((c for c in commandes if c["numero"] == numero), None)
+    commande = charger_commande(numero)
     if not commande:
         abort(404)
     if commande["statut"] == "en_livraison" and commande.get("livreur_numero") == moi["numero"]:
-        if modifier_quantite_ligne(commande, index, request.form.get("quantite")):
-            sauvegarder_commandes(commandes)
+        champs = modifier_quantite_ligne(commande, index, request.form.get("quantite"))
+        if champs:
+            mettre_a_jour_commande(numero, champs)
     return redirect(url_for("livreur"))
 
 
@@ -2829,10 +2895,12 @@ def admin_performance():
 @app.route("/admin/notifications/marquer-vues", methods=["POST"])
 @admin_requis
 def marquer_notifications_vues():
-    commandes = charger_commandes()
-    for c in commandes:
-        c["vue"] = True
-    sauvegarder_commandes(commandes)
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("UPDATE commandes SET vue = 1 WHERE vue = 0")
+    finally:
+        connexion.close()
     return ("", 204)
 
 
@@ -2882,25 +2950,25 @@ def admin_activite_etat():
 @app.route("/admin/commandes/<numero>/livrer", methods=["POST"])
 @admin_requis
 def admin_livrer_commande(numero):
-    commandes = charger_commandes()
-    commande = next((c for c in commandes if c["numero"] == numero), None)
+    commande = charger_commande(numero)
     if not commande:
         abort(404)
-    if marquer_commande_livree(commande, request.form.get("montant_verse_cdf"), request.form.get("montant_verse_usd")):
+    champs = marquer_commande_livree(commande, request.form.get("montant_verse_cdf"), request.form.get("montant_verse_usd"))
+    if champs:
         journaliser("livraison", f"Commande {numero} livrée par admin/gestionnaire")
-        sauvegarder_commandes(commandes)
+        mettre_a_jour_commande(numero, champs)
     return redirect(url_for("admin_commandes"))
 
 
 @app.route("/admin/commandes/<numero>/preparer", methods=["POST"])
 @admin_requis
 def admin_preparer_commande(numero):
-    commandes = charger_commandes()
-    commande = next((c for c in commandes if c["numero"] == numero), None)
+    commande = charger_commande(numero)
     if not commande:
         abort(404)
-    if marquer_en_preparation(commande):
-        sauvegarder_commandes(commandes)
+    champs = marquer_en_preparation(commande)
+    if champs:
+        mettre_a_jour_commande(numero, champs)
         journaliser("preparation", f"Commande {numero} marquée en préparation")
     return redirect(url_for("admin_commandes"))
 
@@ -2908,24 +2976,24 @@ def admin_preparer_commande(numero):
 @app.route("/admin/commandes/<numero>/annuler", methods=["POST"])
 @admin_requis
 def admin_annuler_commande(numero):
-    commandes = charger_commandes()
-    commande = next((c for c in commandes if c["numero"] == numero), None)
+    commande = charger_commande(numero)
     if not commande:
         abort(404)
-    if annuler_commande(commande):
-        sauvegarder_commandes(commandes)
+    champs = annuler_commande(commande)
+    if champs:
+        mettre_a_jour_commande(numero, champs)
     return redirect(url_for("admin_commandes"))
 
 
 @app.route("/admin/commandes/<numero>/restaurer", methods=["POST"])
 @admin_requis
 def admin_restaurer_commande(numero):
-    commandes = charger_commandes()
-    commande = next((c for c in commandes if c["numero"] == numero), None)
+    commande = charger_commande(numero)
     if not commande:
         abort(404)
-    if restaurer_commande(commande):
-        sauvegarder_commandes(commandes)
+    champs = restaurer_commande(commande)
+    if champs:
+        mettre_a_jour_commande(numero, champs)
     return redirect(url_for("admin_commandes"))
 
 
@@ -2957,19 +3025,19 @@ def modifier_quantite_ligne(commande, index, quantite_form):
         ligne["sous_total"] = prix_unitaire * nouvelle_quantite
 
     commande["total"] = sum(l["sous_total"] for l in commande["lignes"])
-    return True
+    return {"lignes": commande["lignes"], "total": commande["total"]}
 
 
 @app.route("/admin/commandes/<numero>/lignes/<int:index>/modifier", methods=["POST"])
 @admin_requis
 def admin_modifier_ligne_commande(numero, index):
-    commandes = charger_commandes()
-    commande = next((c for c in commandes if c["numero"] == numero), None)
+    commande = charger_commande(numero)
     if not commande:
         abort(404)
     if commande["statut"] in ("en_attente", "en_preparation", "en_livraison"):
-        if modifier_quantite_ligne(commande, index, request.form.get("quantite")):
-            sauvegarder_commandes(commandes)
+        champs = modifier_quantite_ligne(commande, index, request.form.get("quantite"))
+        if champs:
+            mettre_a_jour_commande(numero, champs)
     return redirect(url_for("admin_commandes"))
 
 
