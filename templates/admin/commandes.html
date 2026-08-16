@@ -36,7 +36,7 @@
         <tbody>
             {% for c in commandes %}
             <tr id="commande-{{ c.numero }}">
-                <td class="admin-col-numero">{{ loop.index }}</td>
+                <td class="admin-col-numero">{{ debut_index + loop.index }}</td>
                 <td>
                     <strong>{{ c.numero }}</strong><br>
                     <span class="admin-commande-contact">{{ c.date.replace('T', ' ') }}</span>
@@ -138,4 +138,16 @@
         </tbody>
     </table>
 </div>
+
+{% if total_pages is defined and total_pages > 1 %}
+<nav class="pagination" aria-label="Pagination">
+    {% if page > 1 %}
+    <a href="{{ url_for('admin_commandes', statut=statut_filtre, livreur=livreur_filtre, page=page-1) }}" class="pagination-lien">← Précédent</a>
+    {% endif %}
+    <span class="pagination-info">Page {{ page }} / {{ total_pages }} ({{ total_commandes }} commandes)</span>
+    {% if page < total_pages %}
+    <a href="{{ url_for('admin_commandes', statut=statut_filtre, livreur=livreur_filtre, page=page+1) }}" class="pagination-lien">Suivant →</a>
+    {% endif %}
+</nav>
+{% endif %}
 {% endblock %}

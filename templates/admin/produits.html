@@ -38,7 +38,7 @@
         <tbody>
             {% for p in produits %}
             <tr>
-                <td class="admin-col-numero">{{ loop.index }}</td>
+                <td class="admin-col-numero">{{ debut_index + loop.index }}</td>
                 <td><img src="{{ p.image|image_url }}" class="admin-miniature" alt="{{ p.nom }}"></td>
                 <td>
                     {{ p.nom }}<br>
@@ -72,4 +72,16 @@
         </tbody>
     </table>
 </div>
+
+{% if total_pages is defined and total_pages > 1 %}
+<nav class="pagination" aria-label="Pagination">
+    {% if page > 1 %}
+    <a href="{{ url_for('admin_produits', categorie=categorie_filtre, stock=stock_filtre, page=page-1) }}" class="pagination-lien">← Précédent</a>
+    {% endif %}
+    <span class="pagination-info">Page {{ page }} / {{ total_pages }} ({{ total_produits }} produits)</span>
+    {% if page < total_pages %}
+    <a href="{{ url_for('admin_produits', categorie=categorie_filtre, stock=stock_filtre, page=page+1) }}" class="pagination-lien">Suivant →</a>
+    {% endif %}
+</nav>
+{% endif %}
 {% endblock %}

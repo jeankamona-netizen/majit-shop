@@ -1579,27 +1579,68 @@ def accueil():
 def categorie(slug):
     if slug not in CATEGORIES:
         abort(404)
-    produits_categorie = [p for p in charger_produits() if p["categorie"] == slug and p.get("stock", 0) > 0]
-    publics = publics_presents_tries(produits_categorie)
 
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute(
+                "SELECT DISTINCT public FROM produits WHERE categorie = %s AND stock > 0",
+                (slug,),
+            )
+            publics_trouves = {ligne["public"] for ligne in cur.fetchall()}
+
+            cur.execute(
+                "SELECT DISTINCT sous_categorie FROM produits "
+                "WHERE categorie = %s AND stock > 0 AND sous_categorie IS NOT NULL",
+                (slug,),
+            )
+            sous_categories_trouvees = {ligne["sous_categorie"] for ligne in cur.fetchall()}
+    finally:
+        connexion.close()
+
+    publics = [pub for pub in ORDRE_PUBLICS if pub in publics_trouves]
     sous_categories_options = SOUS_CATEGORIES.get(slug, {})
-    sous_categories_presentes = [
-        sc for sc in sous_categories_options
-        if any(p.get("sous_categorie") == sc for p in produits_categorie)
-    ]
+    sous_categories_presentes = [sc for sc in sous_categories_options if sc in sous_categories_trouvees]
 
-    produits = produits_categorie
     public_filtre = request.args.get("public", "")
-    if public_filtre in PUBLICS:
-        produits = [p for p in produits if p.get("public", "unisexe") == public_filtre]
+    if public_filtre not in PUBLICS:
+        public_filtre = ""
 
     sous_categorie_filtre = request.args.get("sous_categorie", "")
-    if sous_categorie_filtre in sous_categories_presentes:
-        produits = [p for p in produits if p.get("sous_categorie") == sous_categorie_filtre]
-    else:
+    if sous_categorie_filtre not in sous_categories_presentes:
         sous_categorie_filtre = ""
 
-    produits_page, page, total_pages, total_produits = paginer(produits, request.args.get("page"))
+    conditions = ["categorie = %s", "stock > 0"]
+    valeurs = [slug]
+    if public_filtre:
+        conditions.append("public = %s")
+        valeurs.append(public_filtre)
+    if sous_categorie_filtre:
+        conditions.append("sous_categorie = %s")
+        valeurs.append(sous_categorie_filtre)
+    where_clause = " AND ".join(conditions)
+
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute(f"SELECT COUNT(*) AS n FROM produits WHERE {where_clause}", tuple(valeurs))
+            total_produits = cur.fetchone()["n"]
+
+            try:
+                page = max(1, int(request.args.get("page")))
+            except (TypeError, ValueError):
+                page = 1
+            total_pages = max(1, -(-total_produits // PRODUITS_PAR_PAGE))
+            page = min(page, total_pages)
+            debut = (page - 1) * PRODUITS_PAR_PAGE
+
+            cur.execute(
+                f"SELECT * FROM produits WHERE {where_clause} ORDER BY id LIMIT %s OFFSET %s",
+                tuple(valeurs) + (PRODUITS_PAR_PAGE, debut),
+            )
+            produits_page = [_produit_depuis_ligne(l) for l in cur.fetchall()]
+    finally:
+        connexion.close()
 
     return render_template(
         "categorie.html",
@@ -2466,59 +2507,120 @@ def admin_facture_supprimer(numero):
     return redirect(url_for("admin_facturation"))
 
 
+ADMIN_PAR_PAGE = 50
+
+
 @app.route("/admin/produits")
 @admin_requis
 def admin_produits():
-    produits = charger_produits()
     categorie_filtre = request.args.get("categorie", "")
-    if categorie_filtre and categorie_filtre in CATEGORIES:
-        produits = [p for p in produits if p["categorie"] == categorie_filtre]
+    if categorie_filtre not in CATEGORIES:
+        categorie_filtre = ""
     stock_filtre = request.args.get("stock", "")
+
+    conditions = []
+    valeurs = []
+    if categorie_filtre:
+        conditions.append("categorie = %s")
+        valeurs.append(categorie_filtre)
     if stock_filtre == "rupture":
-        produits = [p for p in produits if p.get("stock", 0) <= 0]
+        conditions.append("stock <= 0")
+    where_clause = (" WHERE " + " AND ".join(conditions)) if conditions else ""
+
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute(f"SELECT COUNT(*) AS n FROM produits{where_clause}", tuple(valeurs))
+            total_produits = cur.fetchone()["n"]
+
+            try:
+                page = max(1, int(request.args.get("page")))
+            except (TypeError, ValueError):
+                page = 1
+            total_pages = max(1, -(-total_produits // ADMIN_PAR_PAGE))
+            page = min(page, total_pages)
+            debut = (page - 1) * ADMIN_PAR_PAGE
+
+            cur.execute(
+                f"SELECT * FROM produits{where_clause} ORDER BY id LIMIT %s OFFSET %s",
+                tuple(valeurs) + (ADMIN_PAR_PAGE, debut),
+            )
+            produits = [_produit_depuis_ligne(l) for l in cur.fetchall()]
+    finally:
+        connexion.close()
+
     return render_template(
         "admin/produits.html",
         produits=produits,
         categories=CATEGORIES,
         categorie_filtre=categorie_filtre,
         stock_filtre=stock_filtre,
+        page=page,
+        total_pages=total_pages,
+        total_produits=total_produits,
+        debut_index=debut,
     )
 
 
 @app.route("/admin/commandes")
 @admin_requis
 def admin_commandes():
-    commandes = charger_commandes()
-    if any(not c.get("vue", True) for c in commandes):
-        # Marquage ciblé : une UPDATE sur les lignes non vues, jamais une
-        # réécriture complète de la table pour le simple affichage de la page.
-        connexion = obtenir_connexion()
-        try:
-            with connexion.cursor() as cur:
-                cur.execute("UPDATE commandes SET vue = 1 WHERE vue = 0")
-        finally:
-            connexion.close()
-        for c in commandes:
-            c["vue"] = True
+    # Marquage ciblé : une UPDATE sur les lignes non vues, jamais une
+    # réécriture complète de la table pour le simple affichage de la page.
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("UPDATE commandes SET vue = 1 WHERE vue = 0")
+    finally:
+        connexion.close()
+
+    statut_filtre = request.args.get("statut", "")
+    livreur_filtre = request.args.get("livreur", "")
+
+    conditions = []
+    valeurs = []
+    if statut_filtre == "sur_place":
+        conditions.append("numero LIKE %s")
+        valeurs.append("FAC%")
+    elif statut_filtre == "livree":
+        conditions.append("statut = %s AND numero NOT LIKE %s")
+        valeurs.append("livree")
+        valeurs.append("FAC%")
+    elif statut_filtre in ("en_attente", "en_preparation", "en_livraison", "annulee"):
+        conditions.append("statut = %s")
+        valeurs.append(statut_filtre)
+    if livreur_filtre:
+        conditions.append("livreur_numero = %s")
+        valeurs.append(livreur_filtre)
+    where_clause = (" WHERE " + " AND ".join(conditions)) if conditions else ""
+
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute(f"SELECT COUNT(*) AS n FROM commandes{where_clause}", tuple(valeurs))
+            total_commandes = cur.fetchone()["n"]
+
+            try:
+                page = max(1, int(request.args.get("page")))
+            except (TypeError, ValueError):
+                page = 1
+            total_pages = max(1, -(-total_commandes // ADMIN_PAR_PAGE))
+            page = min(page, total_pages)
+            debut = (page - 1) * ADMIN_PAR_PAGE
+
+            cur.execute(
+                f"SELECT * FROM commandes{where_clause} ORDER BY date DESC LIMIT %s OFFSET %s",
+                tuple(valeurs) + (ADMIN_PAR_PAGE, debut),
+            )
+            commandes = [_commande_depuis_ligne(l) for l in cur.fetchall()]
+    finally:
+        connexion.close()
 
     for c in commandes:
         for ligne in c["lignes"]:
             if ligne.get("prix_unitaire") is None and ligne.get("quantite"):
                 ligne["prix_unitaire"] = round(ligne["sous_total"] / ligne["quantite"])
 
-    statut_filtre = request.args.get("statut", "")
-    if statut_filtre == "sur_place":
-        commandes = [c for c in commandes if c["numero"].startswith("FAC")]
-    elif statut_filtre == "livree":
-        commandes = [c for c in commandes if c["statut"] == "livree" and not c["numero"].startswith("FAC")]
-    elif statut_filtre in ("en_attente", "en_preparation", "en_livraison", "annulee"):
-        commandes = [c for c in commandes if c["statut"] == statut_filtre]
-
-    livreur_filtre = request.args.get("livreur", "")
-    if livreur_filtre:
-        commandes = [c for c in commandes if c.get("livreur_numero") == livreur_filtre]
-
-    commandes = sorted(commandes, key=lambda c: c["date"], reverse=True)
     livreur_filtre_nom = None
     if livreur_filtre:
         livreur_objet = next((l for l in charger_livreurs() if l["numero"] == livreur_filtre), None)
@@ -2532,6 +2634,10 @@ def admin_commandes():
         livreur_filtre=livreur_filtre,
         livreur_filtre_nom=livreur_filtre_nom,
         taux_usd=obtenir_taux_usd(),
+        page=page,
+        total_pages=total_pages,
+        total_commandes=total_commandes,
+        debut_index=debut,
     )
 
 
