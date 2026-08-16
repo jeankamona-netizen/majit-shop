@@ -99,7 +99,9 @@ CREATE TABLE IF NOT EXISTS commandes (
     livreur_nom VARCHAR(255),
     INDEX idx_statut (statut),
     INDEX idx_date (date),
-    INDEX idx_livreur_numero (livreur_numero)
+    INDEX idx_livreur_numero (livreur_numero),
+    INDEX idx_statut_date (statut, date),
+    INDEX idx_livreur_date (livreur_numero, date)
     -- Pas de clé étrangère vers livreurs : commandes et livreurs sont chacun
     -- réécrits intégralement à chaque sauvegarde (voir sauvegarder_commandes
     -- / sauvegarder_livreurs dans app.py), ce qui déclencherait des

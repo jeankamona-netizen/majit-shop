@@ -3750,6 +3750,32 @@ def admin_migration_produits_auto_increment():
         connexion.close()
 
 
+@app.route("/admin/migrations/index-commandes-statut-livreur", methods=["POST"])
+@super_admin_requis
+def admin_migration_index_commandes():
+    """Phase 6 : index composites (statut, date) et (livreur_numero, date)
+    sur commandes. Les requetes filtrees de admin_commandes() (Phase 5)
+    utilisaient deja idx_statut / idx_livreur_numero pour le filtre mais
+    devaient ensuite trier en memoire (Using filesort) faute d'index
+    couvrant aussi date - confirme via EXPLAIN. Verifie via SHOW INDEX
+    avant de creer, idempotent."""
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SHOW INDEX FROM commandes")
+            cles_existantes = {ligne["Key_name"] for ligne in cur.fetchall()}
+            crees = []
+            if "idx_statut_date" not in cles_existantes:
+                cur.execute("CREATE INDEX idx_statut_date ON commandes (statut, date)")
+                crees.append("idx_statut_date")
+            if "idx_livreur_date" not in cles_existantes:
+                cur.execute("CREATE INDEX idx_livreur_date ON commandes (livreur_numero, date)")
+                crees.append("idx_livreur_date")
+        return {"index_crees": crees}
+    finally:
+        connexion.close()
+
+
 @app.route("/admin/coupons", methods=["GET", "POST"])
 @admin_requis
 def admin_coupons():
