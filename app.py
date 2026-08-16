@@ -223,6 +223,92 @@ def sauvegarder_produits(produits):
         connexion.close()
 
 
+def _valeur_colonne_produit(p, colonne):
+    if colonne == "images":
+        return json.dumps(p.get("images", []), ensure_ascii=False)
+    if colonne == "tailles":
+        return json.dumps(p.get("tailles", []), ensure_ascii=False)
+    if colonne == "couleurs":
+        return json.dumps(p.get("couleurs", []), ensure_ascii=False)
+    if colonne == "variantes":
+        return json.dumps(p.get("variantes", {}), ensure_ascii=False) if p.get("variantes") else None
+    if colonne == "sous_categorie":
+        return p.get("sous_categorie") or None
+    if colonne in ("reduction_debut", "reduction_fin"):
+        return p.get(colonne) or None
+    if colonne == "prix":
+        return p.get("prix", 0)
+    if colonne == "reduction":
+        return p.get("reduction", 0)
+    if colonne == "stock":
+        return p.get("stock", 0)
+    if colonne == "public":
+        return p.get("public", "unisexe")
+    if colonne == "vues":
+        return p.get("vues", 0)
+    if colonne == "image":
+        return p.get("image", "placeholder.jpg")
+    return p.get(colonne)
+
+
+def charger_produit(produit_id):
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SELECT * FROM produits WHERE id = %s", (produit_id,))
+            ligne = cur.fetchone()
+            return _produit_depuis_ligne(ligne) if ligne else None
+    finally:
+        connexion.close()
+
+
+def inserer_produit(p):
+    """INSERT ciblé d'un seul produit (Phase 4)."""
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SHOW COLUMNS FROM produits")
+            colonnes_existantes = {ligne["Field"] for ligne in cur.fetchall()}
+            colonnes_optionnelles = [c for c in COLONNES_PRODUITS_OPTIONNELLES if c in colonnes_existantes]
+            colonnes = [
+                "id", "nom", "categorie", "sous_categorie", "prix", "reduction", "image", "images",
+                "description", "tailles", "couleurs", "variantes", "stock", "public", "vues",
+            ] + colonnes_optionnelles
+            requete = "INSERT INTO produits ({}) VALUES ({})".format(
+                ", ".join(colonnes), ", ".join(["%s"] * len(colonnes))
+            )
+            cur.execute(requete, tuple(_valeur_colonne_produit(p, col) for col in colonnes))
+    finally:
+        connexion.close()
+
+
+def supprimer_produit(produit_id):
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("DELETE FROM produits WHERE id = %s", (produit_id,))
+    finally:
+        connexion.close()
+
+
+def mettre_a_jour_produit(produit_id, champs):
+    """UPDATE ciblé (Phase 4) : `champs` ne contient que les colonnes
+    réellement modifiées par l'appelant."""
+    if not champs:
+        return
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            colonnes = list(champs.keys())
+            requete = "UPDATE produits SET {} WHERE id = %s".format(
+                ", ".join(f"{col} = %s" for col in colonnes)
+            )
+            valeurs = [_valeur_colonne_produit(champs, col) for col in colonnes] + [produit_id]
+            cur.execute(requete, tuple(valeurs))
+    finally:
+        connexion.close()
+
+
 def incrementer_vues_produit(produit_id):
     connexion = obtenir_connexion()
     try:
@@ -1002,6 +1088,15 @@ def ajuster_stock_variante(produit, couleur, taille, delta):
         produit["stock"] = max(0, produit.get("stock", 0) + delta)
 
 
+def _champs_stock_produit(p):
+    """Champs à écrire après ajuster_stock_variante() : stock, et variantes
+    seulement si le produit utilise le système de variantes."""
+    champs = {"stock": p.get("stock", 0)}
+    if p.get("variantes"):
+        champs["variantes"] = p["variantes"]
+    return champs
+
+
 def reserver_stock_commande(lignes_panier):
     """
     Vérifie puis décrémente le stock de façon atomique pour toutes les
@@ -1288,12 +1383,11 @@ def marquer_en_preparation(commande):
 def annuler_commande(commande):
     if commande["statut"] not in ("en_attente", "en_preparation", "en_livraison"):
         return False
-    produits = charger_produits()
     for ligne in commande["lignes"]:
-        p = next((x for x in produits if x["id"] == ligne.get("produit_id")), None)
+        p = charger_produit(ligne.get("produit_id"))
         if p:
             ajuster_stock_variante(p, ligne.get("couleur"), ligne.get("taille"), ligne["quantite"])
-    sauvegarder_produits(produits)
+            mettre_a_jour_produit(p["id"], _champs_stock_produit(p))
     commande["statut"] = "annulee"
     commande["montant_verse"] = None
     return {"statut": commande["statut"], "montant_verse": commande["montant_verse"]}
@@ -1302,12 +1396,11 @@ def annuler_commande(commande):
 def restaurer_commande(commande):
     if commande["statut"] != "annulee":
         return False
-    produits = charger_produits()
     for ligne in commande["lignes"]:
-        p = next((x for x in produits if x["id"] == ligne.get("produit_id")), None)
+        p = charger_produit(ligne.get("produit_id"))
         if p:
             ajuster_stock_variante(p, ligne.get("couleur"), ligne.get("taille"), -ligne["quantite"])
-    sauvegarder_produits(produits)
+            mettre_a_jour_produit(p["id"], _champs_stock_produit(p))
     commande["statut"] = "en_attente"
     commande["montant_verse"] = None
     commande["livreur_numero"] = None
@@ -2363,12 +2456,11 @@ def admin_facture_supprimer(numero):
     if not facture or not facture["numero"].startswith("FAC"):
         abort(404)
 
-    produits = charger_produits()
     for ligne in facture["lignes"]:
-        p = next((x for x in produits if x["id"] == ligne.get("produit_id")), None)
+        p = charger_produit(ligne.get("produit_id"))
         if p:
             ajuster_stock_variante(p, ligne.get("couleur"), ligne.get("taille"), ligne["quantite"])
-    sauvegarder_produits(produits)
+            mettre_a_jour_produit(p["id"], _champs_stock_produit(p))
 
     supprimer_commande(numero)
     return redirect(url_for("admin_facturation"))
@@ -3010,11 +3102,10 @@ def modifier_quantite_ligne(commande, index, quantite_form):
 
     delta = ligne["quantite"] - nouvelle_quantite
     if delta > 0:
-        produits = charger_produits()
-        p = next((x for x in produits if x["id"] == ligne.get("produit_id")), None)
+        p = charger_produit(ligne.get("produit_id"))
         if p:
             ajuster_stock_variante(p, ligne.get("couleur"), ligne.get("taille"), delta)
-            sauvegarder_produits(produits)
+            mettre_a_jour_produit(p["id"], _champs_stock_produit(p))
 
     prix_unitaire = ligne.get("prix_unitaire") or (round(ligne["sous_total"] / ligne["quantite"]) if ligne["quantite"] else 0)
     if nouvelle_quantite == 0:
@@ -3824,17 +3915,20 @@ def admin_importer_lot_produits():
     with open(chemin, encoding="utf-8") as f:
         nouveaux = json.load(f)
 
-    produits = charger_produits()
-    ids_existants = {p["id"] for p in produits}
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SELECT id FROM produits")
+            ids_existants = {ligne["id"] for ligne in cur.fetchall()}
+    finally:
+        connexion.close()
+
     ajoutes = []
     for p in nouveaux:
         if p["id"] in ids_existants:
             continue
-        produits.append(p)
+        inserer_produit(p)
         ajoutes.append(p["id"])
-
-    if ajoutes:
-        sauvegarder_produits(produits)
 
     return {"ajoutes": ajoutes, "deja_presents": [p["id"] for p in nouveaux if p["id"] not in ajoutes]}
 
@@ -3843,7 +3937,6 @@ def admin_importer_lot_produits():
 @admin_requis
 def admin_ajouter_produit():
     if request.method == "POST":
-        produits = charger_produits()
         # Correctif 2.4 : id reserve atomiquement via AUTO_INCREMENT (ligne
         # placeholder stock=0, donc invisible au catalogue) au lieu de
         # max(id)+1 en Python - deux créations de produit concurrentes ne
@@ -3890,8 +3983,7 @@ def admin_ajouter_produit():
         if variantes:
             stock = sum(variantes.values())
 
-        nouveau_produit = {
-            "id": nouvel_id,
+        champs = {
             "nom": request.form.get("nom", "").strip(),
             "categorie": categorie_choisie,
             "sous_categorie": sous_categorie_choisie,
@@ -3908,8 +4000,7 @@ def admin_ajouter_produit():
             "tailles": tailles_liste,
             "variantes": variantes,
         }
-        produits.append(nouveau_produit)
-        sauvegarder_produits(produits)
+        mettre_a_jour_produit(nouvel_id, champs)
         return redirect(url_for("admin_produits"))
 
     return render_template(
@@ -3921,47 +4012,53 @@ def admin_ajouter_produit():
 @app.route("/admin/produits/<int:produit_id>/modifier", methods=["GET", "POST"])
 @admin_requis
 def admin_modifier_produit(produit_id):
-    produits = charger_produits()
-    produit_cible = next((p for p in produits if p["id"] == produit_id), None)
+    produit_cible = charger_produit(produit_id)
     if not produit_cible:
         abort(404)
 
     if request.method == "POST":
-        produit_cible["nom"] = request.form.get("nom", "").strip()
-        produit_cible["categorie"] = request.form.get("categorie")
+        categorie_choisie = request.form.get("categorie")
         sous_categorie_choisie = request.form.get("sous_categorie") or None
-        if sous_categorie_choisie not in SOUS_CATEGORIES.get(produit_cible["categorie"], {}):
+        if sous_categorie_choisie not in SOUS_CATEGORIES.get(categorie_choisie, {}):
             sous_categorie_choisie = None
-        produit_cible["sous_categorie"] = sous_categorie_choisie
-        produit_cible["prix"] = float(request.form.get("prix", 0) or 0)
         try:
-            produit_cible["reduction"] = max(0, min(90, int(request.form.get("reduction", 0) or 0)))
+            reduction = max(0, min(90, int(request.form.get("reduction", 0) or 0)))
         except ValueError:
-            produit_cible["reduction"] = 0
-        produit_cible["reduction_debut"] = request.form.get("reduction_debut", "").strip() or None
-        produit_cible["reduction_fin"] = request.form.get("reduction_fin", "").strip() or None
-        produit_cible["description"] = request.form.get("description", "").strip()
-        produit_cible["couleurs"] = parser_liste(request.form.get("couleurs", ""))
-        produit_cible["tailles"] = parser_liste(request.form.get("tailles", ""))
-        produit_cible["public"] = request.form.get("public") if request.form.get("public") in PUBLICS else "unisexe"
+            reduction = 0
         try:
-            produit_cible["stock"] = max(0, int(request.form.get("stock", 0) or 0))
+            stock = max(0, int(request.form.get("stock", 0) or 0))
         except ValueError:
-            produit_cible["stock"] = 0
-
-        variantes = parser_variantes(request.form, produit_cible["couleurs"], produit_cible["tailles"])
-        produit_cible["variantes"] = variantes
+            stock = 0
+        couleurs_liste = parser_liste(request.form.get("couleurs", ""))
+        tailles_liste = parser_liste(request.form.get("tailles", ""))
+        variantes = parser_variantes(request.form, couleurs_liste, tailles_liste)
         if variantes:
-            produit_cible["stock"] = sum(variantes.values())
+            stock = sum(variantes.values())
+
+        champs = {
+            "nom": request.form.get("nom", "").strip(),
+            "categorie": categorie_choisie,
+            "sous_categorie": sous_categorie_choisie,
+            "prix": float(request.form.get("prix", 0) or 0),
+            "reduction": reduction,
+            "reduction_debut": request.form.get("reduction_debut", "").strip() or None,
+            "reduction_fin": request.form.get("reduction_fin", "").strip() or None,
+            "description": request.form.get("description", "").strip(),
+            "couleurs": couleurs_liste,
+            "tailles": tailles_liste,
+            "public": request.form.get("public") if request.form.get("public") in PUBLICS else "unisexe",
+            "stock": stock,
+            "variantes": variantes,
+        }
 
         nom_image, photos_supplementaires = enregistrer_photos_produit(
             request.files.getlist("photos"), produit_id
         )
         if nom_image is not None:
-            produit_cible["image"] = nom_image
-            produit_cible["images"] = photos_supplementaires
+            champs["image"] = nom_image
+            champs["images"] = photos_supplementaires
 
-        sauvegarder_produits(produits)
+        mettre_a_jour_produit(produit_id, champs)
         return redirect(url_for("admin_produits"))
 
     return render_template(
@@ -3973,24 +4070,22 @@ def admin_modifier_produit(produit_id):
 @app.route("/admin/produits/<int:produit_id>/supprimer", methods=["POST"])
 @admin_requis
 def admin_supprimer_produit(produit_id):
-    produits = [p for p in charger_produits() if p["id"] != produit_id]
-    sauvegarder_produits(produits)
+    supprimer_produit(produit_id)
     return redirect(url_for("admin_produits"))
 
 
 @app.route("/admin/produits/<int:produit_id>/reapprovisionner", methods=["POST"])
 @admin_requis
 def admin_reapprovisionner_produit(produit_id):
-    produits = charger_produits()
-    produit_cible = next((p for p in produits if p["id"] == produit_id), None)
+    produit_cible = charger_produit(produit_id)
     if not produit_cible:
         abort(404)
     try:
         quantite_ajoutee = max(0, int(request.form.get("quantite_ajoutee", 0) or 0))
     except ValueError:
         quantite_ajoutee = 0
-    produit_cible["stock"] = produit_cible.get("stock", 0) + quantite_ajoutee
-    sauvegarder_produits(produits)
+    nouveau_stock = produit_cible.get("stock", 0) + quantite_ajoutee
+    mettre_a_jour_produit(produit_id, {"stock": nouveau_stock})
     journaliser("stock", f"Réapprovisionnement produit {produit_id} (+{quantite_ajoutee})")
 
     destination = request.referrer
