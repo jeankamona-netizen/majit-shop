@@ -181,8 +181,15 @@ COLONNES_PRODUITS_OPTIONNELLES = ["reduction_debut", "reduction_fin"]
 
 
 def sauvegarder_produits(produits):
+    # Filet de sécurité (correctif 2.3) : DELETE + réinsertion complète dans
+    # une seule transaction explicite, pour ne jamais laisser la table vide
+    # si le process crashe/timeout au milieu de la réécriture (autocommit=True
+    # validerait le DELETE seul, avant même la première réinsertion). Ce n'est
+    # qu'un filet, pas une solution de performance/concurrence — la vraie
+    # correction est la migration vers des écritures ciblées (Phase 4).
     connexion = obtenir_connexion()
     try:
+        connexion.autocommit(False)
         with connexion.cursor() as cur:
             cur.execute("SHOW COLUMNS FROM produits")
             colonnes_existantes = {ligne["Field"] for ligne in cur.fetchall()}
@@ -207,7 +214,12 @@ def sauvegarder_produits(produits):
                     p.get("stock", 0), p.get("public", "unisexe"), p.get("vues", 0),
                 ] + [p.get(c) or None for c in colonnes_optionnelles]
                 cur.execute(requete, tuple(valeurs))
+        connexion.commit()
+    except Exception:
+        connexion.rollback()
+        raise
     finally:
+        connexion.autocommit(True)
         connexion.close()
 
 
@@ -290,8 +302,12 @@ def _valeur_colonne_commande(c, colonne):
 
 
 def sauvegarder_commandes(commandes):
+    # Filet de sécurité (correctif 2.3) : voir le commentaire equivalent
+    # dans sauvegarder_produits() - meme raisonnement, meme pattern deja
+    # utilise dans reserver_stock_commande().
     connexion = obtenir_connexion()
     try:
+        connexion.autocommit(False)
         with connexion.cursor() as cur:
             cur.execute("SHOW COLUMNS FROM commandes")
             colonnes_existantes = {ligne["Field"] for ligne in cur.fetchall()}
@@ -305,7 +321,12 @@ def sauvegarder_commandes(commandes):
             cur.execute("DELETE FROM commandes")
             for c in commandes:
                 cur.execute(requete, tuple(_valeur_colonne_commande(c, col) for col in colonnes))
+        connexion.commit()
+    except Exception:
+        connexion.rollback()
+        raise
     finally:
+        connexion.autocommit(True)
         connexion.close()
 
 
@@ -2294,9 +2315,16 @@ def admin_produits():
 def admin_commandes():
     commandes = charger_commandes()
     if any(not c.get("vue", True) for c in commandes):
+        # Marquage ciblé : une UPDATE sur les lignes non vues, jamais une
+        # réécriture complète de la table pour le simple affichage de la page.
+        connexion = obtenir_connexion()
+        try:
+            with connexion.cursor() as cur:
+                cur.execute("UPDATE commandes SET vue = 1 WHERE vue = 0")
+        finally:
+            connexion.close()
         for c in commandes:
             c["vue"] = True
-        sauvegarder_commandes(commandes)
 
     for c in commandes:
         for ligne in c["lignes"]:
