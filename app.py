@@ -2042,8 +2042,8 @@ def admin_tableau_de_bord():
     commandes_jour_boutique = [c for c in commandes_jour_toutes if c["numero"].startswith("FAC")]
     ventes_jour_en_ligne = sum(c.get("total", 0) for c in commandes_jour_en_ligne)
     ventes_jour_boutique = sum(c.get("total", 0) for c in commandes_jour_boutique)
-    ventes_jour_total = ventes_jour_en_ligne + ventes_jour_boutique
     frais_livraison_jour = sum(c.get("frais_livraison") or 0 for c in commandes_jour_en_ligne)
+    ventes_jour_total = ventes_jour_en_ligne + ventes_jour_boutique + frais_livraison_jour
 
     produits_par_id = {p["id"]: p for p in produits}
     courbes_categories, legende_categories, labels_jours_categories, ticks_axe_y_categories, hauteur_graphique, largeur_graphique = donnees_ventes_par_categorie(
