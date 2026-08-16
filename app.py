@@ -330,16 +330,34 @@ def sauvegarder_commandes(commandes):
         connexion.close()
 
 
+def prochain_numero_sequence(prefixe):
+    """Incremente atomiquement le compteur associe a `prefixe` (ex.
+    "MJT260816") et retourne la nouvelle valeur. INSERT ... ON DUPLICATE
+    KEY UPDATE est atomique au niveau ligne en InnoDB : deux appels
+    concurrents pour le meme prefixe ne peuvent jamais obtenir la meme
+    valeur, contrairement a l'ancien "len(commandes_du_jour) + 1"."""
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute(
+                "INSERT INTO compteurs (cle, valeur) VALUES (%s, 1) "
+                "ON DUPLICATE KEY UPDATE valeur = LAST_INSERT_ID(valeur + 1)",
+                (prefixe,),
+            )
+            cur.execute("SELECT LAST_INSERT_ID() AS valeur")
+            return cur.fetchone()["valeur"]
+    finally:
+        connexion.close()
+
+
 def generer_numero_commande():
     prefixe = f"MJT{date.today().strftime('%y%m%d')}"
-    commandes_du_jour = [c for c in charger_commandes() if c["numero"].startswith(prefixe)]
-    return f"{prefixe}{len(commandes_du_jour) + 1}"
+    return f"{prefixe}{prochain_numero_sequence(prefixe)}"
 
 
 def generer_numero_facture():
     prefixe = f"FAC{date.today().strftime('%y%m%d')}"
-    factures_du_jour = [c for c in charger_commandes() if c["numero"].startswith(prefixe)]
-    return f"{prefixe}{len(factures_du_jour) + 1}"
+    return f"{prefixe}{prochain_numero_sequence(prefixe)}"
 
 
 def generer_tracking_token():
@@ -3404,6 +3422,69 @@ def admin_migration_creer_hierarchie_geographique():
         connexion.close()
 
 
+@app.route("/admin/migrations/creer-table-compteurs", methods=["POST"])
+@super_admin_requis
+def admin_migration_creer_table_compteurs():
+    """Correctif 2.2 : table de compteurs pour generer les numeros de
+    commande/facture de facon atomique (INSERT ... ON DUPLICATE KEY
+    UPDATE), au lieu de charger toute la table commandes pour compter.
+    Amorce le compteur du jour a partir du plus grand numero deja
+    existant pour ne jamais entrer en collision avec des commandes
+    creees avant cette migration. Idempotent : ne fait jamais reculer
+    un compteur deja amorce (GREATEST)."""
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS compteurs (
+                    cle VARCHAR(20) PRIMARY KEY,
+                    valeur INT NOT NULL DEFAULT 0
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                """
+            )
+
+            compteurs_amorces = {}
+            for type_prefixe in ("MJT", "FAC"):
+                prefixe = f"{type_prefixe}{date.today().strftime('%y%m%d')}"
+                cur.execute("SELECT numero FROM commandes WHERE numero LIKE %s", (f"{prefixe}%",))
+                max_sequence = 0
+                for ligne in cur.fetchall():
+                    suffixe = ligne["numero"][len(prefixe):]
+                    if suffixe.isdigit():
+                        max_sequence = max(max_sequence, int(suffixe))
+                cur.execute(
+                    "INSERT INTO compteurs (cle, valeur) VALUES (%s, %s) "
+                    "ON DUPLICATE KEY UPDATE valeur = GREATEST(valeur, %s)",
+                    (prefixe, max_sequence, max_sequence),
+                )
+                compteurs_amorces[prefixe] = max_sequence
+
+        return {"table_prete": True, "compteurs_amorces": compteurs_amorces}
+    finally:
+        connexion.close()
+
+
+@app.route("/admin/migrations/produits-id-auto-increment", methods=["POST"])
+@super_admin_requis
+def admin_migration_produits_auto_increment():
+    """Correctif 2.4 : produits.id passe en AUTO_INCREMENT (verifie via
+    SHOW COLUMNS avant d'alterer, idempotent). N'affecte aucune donnee
+    existante - les id actuels sont conserves, MySQL reprend le compteur
+    a partir du plus grand id present."""
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SHOW COLUMNS FROM produits WHERE Field = 'id'")
+            colonne = cur.fetchone()
+            deja_auto_increment = "auto_increment" in (colonne.get("Extra") or "").lower()
+            if not deja_auto_increment:
+                cur.execute("ALTER TABLE produits MODIFY id INT AUTO_INCREMENT")
+        return {"deja_auto_increment": deja_auto_increment, "modifie": not deja_auto_increment}
+    finally:
+        connexion.close()
+
+
 @app.route("/admin/coupons", methods=["GET", "POST"])
 @admin_requis
 def admin_coupons():
@@ -3695,7 +3776,20 @@ def admin_importer_lot_produits():
 def admin_ajouter_produit():
     if request.method == "POST":
         produits = charger_produits()
-        nouvel_id = max((p["id"] for p in produits), default=0) + 1
+        # Correctif 2.4 : id reserve atomiquement via AUTO_INCREMENT (ligne
+        # placeholder stock=0, donc invisible au catalogue) au lieu de
+        # max(id)+1 en Python - deux créations de produit concurrentes ne
+        # peuvent plus jamais obtenir le meme id.
+        connexion = obtenir_connexion()
+        try:
+            with connexion.cursor() as cur:
+                cur.execute(
+                    "INSERT INTO produits (id, nom, categorie, prix, image, stock) "
+                    "VALUES (NULL, '', '', 0, 'placeholder.jpg', 0)"
+                )
+                nouvel_id = cur.lastrowid
+        finally:
+            connexion.close()
 
         try:
             reduction = max(0, min(90, int(request.form.get("reduction", 0) or 0)))

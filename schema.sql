@@ -33,6 +33,11 @@ CREATE TABLE IF NOT EXISTS gestionnaires (
     date_creation VARCHAR(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS compteurs (
+    cle VARCHAR(20) PRIMARY KEY,
+    valeur INT NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS journal_activite (
     id INT AUTO_INCREMENT PRIMARY KEY,
     date VARCHAR(30) NOT NULL,
@@ -41,7 +46,7 @@ CREATE TABLE IF NOT EXISTS journal_activite (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS produits (
-    id INT PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     nom VARCHAR(255) NOT NULL,
     categorie VARCHAR(50) NOT NULL,
     sous_categorie VARCHAR(50),
