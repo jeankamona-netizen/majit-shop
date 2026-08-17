@@ -740,7 +740,10 @@ def charger_zones_livraison(actives_seulement=False):
     connexion = obtenir_connexion()
     try:
         with connexion.cursor() as cur:
-            requete = "SELECT id, nom, frais, actif FROM zones_livraison"
+            cur.execute("SHOW COLUMNS FROM zones_livraison LIKE 'ville_id'")
+            colonnes_geo = cur.fetchone() is not None
+            colonnes = "id, nom, frais, actif" + (", ville_id, commune_id" if colonnes_geo else "")
+            requete = f"SELECT {colonnes} FROM zones_livraison"
             if actives_seulement:
                 requete += " WHERE actif = 1"
             requete += " ORDER BY nom"
@@ -749,6 +752,36 @@ def charger_zones_livraison(actives_seulement=False):
             for z in zones:
                 z["frais"] = float(z["frais"])
                 z["actif"] = bool(z["actif"])
+                z.setdefault("ville_id", None)
+                z.setdefault("commune_id", None)
+            return zones
+    except pymysql.err.ProgrammingError:
+        return []
+    finally:
+        connexion.close()
+
+
+def charger_zones_livraison_pour(ville_id, commune_id=None):
+    """Zones actives pertinentes pour une ville (et, si fournie, une commune
+    precise) : zones a l'echelle de la ville entiere (commune_id NULL) et
+    zones specifiques a cette commune. Les zones sans ville_id assignee
+    n'apparaissent jamais ici (voir migration ajouter-colonnes-geo-zones-
+    livraison) - elles doivent d'abord etre reassignees dans l'admin."""
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SHOW COLUMNS FROM zones_livraison LIKE 'ville_id'")
+            if not cur.fetchone():
+                return []
+            cur.execute(
+                "SELECT id, nom, frais, ville_id, commune_id FROM zones_livraison "
+                "WHERE actif = 1 AND ville_id = %s AND (commune_id IS NULL OR commune_id = %s) "
+                "ORDER BY (commune_id IS NULL), nom",
+                (ville_id, commune_id),
+            )
+            zones = list(cur.fetchall())
+            for z in zones:
+                z["frais"] = float(z["frais"])
             return zones
     except pymysql.err.ProgrammingError:
         return []
@@ -892,6 +925,20 @@ def api_communes():
     q = request.args.get("q", "").strip()
     resultats = charger_communes(ville_id, recherche=q or None)
     return {"resultats": [{"id": c["id"], "nom": c["nom"]} for c in resultats]}
+
+
+@app.route("/api/zones-livraison")
+def api_zones_livraison():
+    try:
+        ville_id = int(request.args.get("ville_id", ""))
+    except (TypeError, ValueError):
+        return {"resultats": []}
+    try:
+        commune_id = int(request.args.get("commune_id", ""))
+    except (TypeError, ValueError):
+        commune_id = None
+    resultats = charger_zones_livraison_pour(ville_id, commune_id)
+    return {"resultats": [{"id": z["id"], "nom": z["nom"], "frais": z["frais"]} for z in resultats]}
 
 
 def charger_coupons():
@@ -1859,11 +1906,18 @@ def commander():
             if erreur_geo:
                 erreurs["province"] = erreur_geo
 
-        zones_actives = charger_zones_livraison(actives_seulement=True)
         zone_choisie = None
         zone_id_form = request.form.get("zone_livraison_id", "").strip()
         if zone_id_form:
-            zone_choisie = next((z for z in zones_actives if str(z["id"]) == zone_id_form), None)
+            # La zone doit correspondre à la ville/commune revalidées en base
+            # ci-dessus (province_obj/ville_obj/commune_obj) — jamais aux
+            # ids envoyés par le client seuls, pour éviter qu'une zone d'une
+            # autre ville ne soit appliquée par erreur ou manipulation.
+            zones_pertinentes = (
+                charger_zones_livraison_pour(ville_obj["id"], commune_obj["id"])
+                if ville_obj and commune_obj else []
+            )
+            zone_choisie = next((z for z in zones_pertinentes if str(z["id"]) == zone_id_form), None)
             if not zone_choisie:
                 erreurs["zone_livraison"] = "Zone de livraison invalide, merci de réessayer."
         frais_livraison = zone_choisie["frais"] if zone_choisie else 0
@@ -1962,7 +2016,6 @@ def commander():
         categories=CATEGORIES,
         erreurs=erreurs,
         valeurs=request.form,
-        zones=charger_zones_livraison(actives_seulement=True),
     )
 
 
@@ -3776,6 +3829,41 @@ def admin_migration_index_commandes():
         connexion.close()
 
 
+@app.route("/admin/migrations/ajouter-colonnes-geo-zones-livraison", methods=["POST"])
+@super_admin_requis
+def admin_migration_ajouter_colonnes_geo_zones_livraison():
+    """Relie chaque zone de livraison a une ville (obligatoire a terme) et,
+    optionnellement, a une commune precise - pour que le checkout ne
+    propose plus que les zones cohérentes avec la ville/commune choisie
+    par le client. Les zones existantes gardent ville_id/commune_id NULL
+    tant qu'elles n'ont pas ete reassignees manuellement dans l'admin :
+    elles disparaissent alors des menus du checkout jusque-la (choix
+    explicite), sans jamais bloquer la commande (repli "Non précisée")."""
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute("SHOW COLUMNS FROM zones_livraison")
+            colonnes_existantes = {ligne["Field"] for ligne in cur.fetchall()}
+            ajoutees = []
+            if "ville_id" not in colonnes_existantes:
+                cur.execute("ALTER TABLE zones_livraison ADD COLUMN ville_id INT NULL")
+                cur.execute(
+                    "ALTER TABLE zones_livraison ADD CONSTRAINT fk_zones_livraison_ville "
+                    "FOREIGN KEY (ville_id) REFERENCES villes(id)"
+                )
+                ajoutees.append("ville_id")
+            if "commune_id" not in colonnes_existantes:
+                cur.execute("ALTER TABLE zones_livraison ADD COLUMN commune_id INT NULL")
+                cur.execute(
+                    "ALTER TABLE zones_livraison ADD CONSTRAINT fk_zones_livraison_commune "
+                    "FOREIGN KEY (commune_id) REFERENCES communes(id)"
+                )
+                ajoutees.append("commune_id")
+        return {"colonnes_ajoutees": ajoutees}
+    finally:
+        connexion.close()
+
+
 @app.route("/admin/coupons", methods=["GET", "POST"])
 @admin_requis
 def admin_coupons():
@@ -3848,6 +3936,38 @@ def admin_supprimer_coupon(coupon_id):
     return redirect(url_for("admin_coupons"))
 
 
+def _valider_ville_commune_zone(ville_id_form, commune_id_form):
+    """Valide côté serveur la ville (obligatoire) et la commune (optionnelle,
+    doit appartenir à la ville) soumises pour une zone de livraison. Retourne
+    (ville_id, commune_id) ou lève ValueError avec un message explicite."""
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            try:
+                ville_id = int(ville_id_form)
+            except (TypeError, ValueError):
+                raise ValueError("Merci de sélectionner une ville.")
+            cur.execute("SELECT id FROM villes WHERE id = %s AND actif = 1", (ville_id,))
+            if not cur.fetchone():
+                raise ValueError("Ville invalide.")
+
+            commune_id = None
+            if commune_id_form:
+                try:
+                    commune_id = int(commune_id_form)
+                except (TypeError, ValueError):
+                    raise ValueError("Commune invalide.")
+                cur.execute(
+                    "SELECT id FROM communes WHERE id = %s AND ville_id = %s AND actif = 1",
+                    (commune_id, ville_id),
+                )
+                if not cur.fetchone():
+                    raise ValueError("Cette commune n'appartient pas à la ville sélectionnée.")
+            return ville_id, commune_id
+    finally:
+        connexion.close()
+
+
 @app.route("/admin/zones-livraison", methods=["GET", "POST"])
 @admin_requis
 def admin_zones_livraison():
@@ -3858,11 +3978,19 @@ def admin_zones_livraison():
         except ValueError:
             frais = 0
         if nom:
+            try:
+                ville_id, commune_id = _valider_ville_commune_zone(
+                    request.form.get("ville_id"), request.form.get("commune_id")
+                )
+            except ValueError as erreur:
+                return redirect(url_for("admin_zones_livraison", erreur_zone=str(erreur)))
             connexion = obtenir_connexion()
             try:
                 with connexion.cursor() as cur:
                     cur.execute(
-                        "INSERT INTO zones_livraison (nom, frais, actif) VALUES (%s, %s, 1)", (nom, frais)
+                        "INSERT INTO zones_livraison (nom, frais, actif, ville_id, commune_id) "
+                        "VALUES (%s, %s, 1, %s, %s)",
+                        (nom, frais, ville_id, commune_id),
                     )
             finally:
                 connexion.close()
@@ -3902,6 +4030,20 @@ def admin_zones_livraison():
         })
     total_genere = sum(s["montant_genere"] for s in stats_zones)
 
+    connexion = obtenir_connexion()
+    try:
+        with connexion.cursor() as cur:
+            cur.execute(
+                "SELECT v.id, v.nom, p.nom AS province_nom FROM villes v "
+                "JOIN provinces p ON v.province_id = p.id "
+                "WHERE v.actif = 1 ORDER BY p.nom, v.nom"
+            )
+            villes = cur.fetchall()
+            cur.execute("SELECT id, nom, ville_id FROM communes WHERE actif = 1 ORDER BY nom")
+            communes = cur.fetchall()
+    finally:
+        connexion.close()
+
     return render_template(
         "admin/zones_livraison.html",
         zones=zones,
@@ -3910,6 +4052,9 @@ def admin_zones_livraison():
         periode=periode,
         stats_zones=stats_zones,
         total_genere=total_genere,
+        villes=villes,
+        communes=communes,
+        erreur_zone=request.args.get("erreur_zone"),
     )
 
 
@@ -3922,11 +4067,18 @@ def admin_modifier_zone_livraison(zone_id):
     except ValueError:
         frais = 0
     actif = 1 if request.form.get("actif") == "on" else 0
+    try:
+        ville_id, commune_id = _valider_ville_commune_zone(
+            request.form.get("ville_id"), request.form.get("commune_id")
+        )
+    except ValueError as erreur:
+        return redirect(url_for("admin_zones_livraison", erreur_zone=str(erreur)))
     connexion = obtenir_connexion()
     try:
         with connexion.cursor() as cur:
             cur.execute(
-                "UPDATE zones_livraison SET nom=%s, frais=%s, actif=%s WHERE id=%s", (nom, frais, actif, zone_id)
+                "UPDATE zones_livraison SET nom=%s, frais=%s, actif=%s, ville_id=%s, commune_id=%s WHERE id=%s",
+                (nom, frais, actif, ville_id, commune_id, zone_id),
             )
     finally:
         connexion.close()

@@ -51,13 +51,34 @@
 <div class="admin-facturation-grille">
     <div class="admin-facturation-ajout">
         <h2 class="admin-section-titre">Ajouter une zone</h2>
-        <form method="post" action="{{ url_for('admin_zones_livraison') }}" class="admin-formulaire">
+        {% if erreur_zone %}<p class="commande-erreur">{{ erreur_zone }}</p>{% endif %}
+        <form method="post" action="{{ url_for('admin_zones_livraison') }}" class="admin-formulaire zone-formulaire">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <label for="nom">Nom de la zone</label>
             <input type="text" id="nom" name="nom" placeholder="Ex. Gombe, Kintambo..." required>
 
             <label for="frais">Frais de livraison (CDF)</label>
             <input type="number" id="frais" name="frais" min="0" step="1" value="0" required>
+
+            <label for="ville_id">Ville</label>
+            <select id="ville_id" name="ville_id" class="zone-ville-select" required>
+                <option value="" selected disabled>Choisir une ville…</option>
+                {% for province_nom, villes_province in villes|groupby('province_nom') %}
+                <optgroup label="{{ province_nom }}">
+                    {% for v in villes_province %}
+                    <option value="{{ v.id }}">{{ v.nom }}</option>
+                    {% endfor %}
+                </optgroup>
+                {% endfor %}
+            </select>
+
+            <label for="commune_id">Commune (optionnel — laisser vide pour toute la ville)</label>
+            <select id="commune_id" name="commune_id" class="zone-commune-select">
+                <option value="">Toute la ville</option>
+                {% for c in communes %}
+                <option value="{{ c.id }}" data-ville-id="{{ c.ville_id }}">{{ c.nom }}</option>
+                {% endfor %}
+            </select>
 
             <button type="submit">Ajouter la zone</button>
         </form>
@@ -72,6 +93,8 @@
                     <tr>
                         <th>Nom</th>
                         <th>Frais</th>
+                        <th>Ville</th>
+                        <th>Commune</th>
                         <th>Statut</th>
                         <th></th>
                     </tr>
@@ -82,10 +105,31 @@
                         <td>
                             <form method="post" action="{{ url_for('admin_modifier_zone_livraison', zone_id=z.id) }}" class="admin-ligne-qte">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <input type="text" name="nom" value="{{ z.nom }}" style="width: 10rem;">
+                                <input type="text" name="nom" value="{{ z.nom }}" style="width: 9rem;">
+                                {% if not z.ville_id %}<br><span class="commande-erreur" style="font-size:0.75rem;">⚠️ Aucune ville assignée</span>{% endif %}
                         </td>
                         <td>
-                                <input type="number" name="frais" min="0" step="1" value="{{ z.frais|round|int }}" style="width: 7rem;">
+                                <input type="number" name="frais" min="0" step="1" value="{{ z.frais|round|int }}" style="width: 6rem;">
+                        </td>
+                        <td>
+                                <select name="ville_id" class="zone-ville-select" required style="width: 9rem;">
+                                    <option value="" {{ 'selected' if not z.ville_id else '' }} disabled>Choisir…</option>
+                                    {% for province_nom, villes_province in villes|groupby('province_nom') %}
+                                    <optgroup label="{{ province_nom }}">
+                                        {% for v in villes_province %}
+                                        <option value="{{ v.id }}" {{ 'selected' if z.ville_id == v.id else '' }}>{{ v.nom }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                    {% endfor %}
+                                </select>
+                        </td>
+                        <td>
+                                <select name="commune_id" class="zone-commune-select" style="width: 9rem;">
+                                    <option value="">Toute la ville</option>
+                                    {% for c in communes %}
+                                    <option value="{{ c.id }}" data-ville-id="{{ c.ville_id }}" {{ 'selected' if z.commune_id == c.id else '' }}>{{ c.nom }}</option>
+                                    {% endfor %}
+                                </select>
                         </td>
                         <td>
                                 <label style="display:flex; align-items:center; gap:0.3rem; font-size:0.85rem;">
@@ -110,4 +154,29 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+(function () {
+    function filtrerCommunes(selectVille) {
+        var conteneur = selectVille.closest("form") || selectVille.closest(".zone-formulaire") || document;
+        var selectCommune = conteneur.querySelector(".zone-commune-select");
+        if (!selectCommune) return;
+        var villeId = selectVille.value;
+        var valeurActuelle = selectCommune.value;
+        var uneCorrespond = false;
+        Array.prototype.forEach.call(selectCommune.options, function (option) {
+            if (!option.dataset.villeId) return; // "Toute la ville"
+            var correspond = option.dataset.villeId === villeId;
+            option.hidden = !correspond;
+            if (correspond && option.value === valeurActuelle) uneCorrespond = true;
+        });
+        if (!uneCorrespond) selectCommune.value = "";
+    }
+
+    document.querySelectorAll(".zone-ville-select").forEach(function (select) {
+        filtrerCommunes(select);
+        select.addEventListener("change", function () { filtrerCommunes(select); });
+    });
+})();
+</script>
 {% endblock %}

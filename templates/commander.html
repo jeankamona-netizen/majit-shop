@@ -50,16 +50,12 @@
                 <p id="commune_erreur_geo" class="commande-erreur" hidden></p>
                 {% if erreurs.commune %}<p class="commande-erreur">{{ erreurs.commune }}</p>{% endif %}
 
-                {% if zones %}
                 <label for="zone_livraison_id">Zone de livraison</label>
-                <select id="zone_livraison_id" name="zone_livraison_id" data-total-articles="{{ total|round|int }}">
-                    <option value="" {{ 'selected' if not valeurs.get('zone_livraison_id') else '' }}>Non précisée (frais à confirmer)</option>
-                    {% for z in zones %}
-                    <option value="{{ z.id }}" data-frais="{{ z.frais|round|int }}" {{ 'selected' if valeurs.get('zone_livraison_id') == z.id|string else '' }}>{{ z.nom }} — {{ z.frais|cdf }}</option>
-                    {% endfor %}
+                <select id="zone_livraison_id" name="zone_livraison_id" data-total-articles="{{ total|round|int }}" data-zone-initiale="{{ valeurs.get('zone_livraison_id', '') }}" disabled>
+                    <option value="" selected>Non précisée (frais à confirmer)</option>
                 </select>
+                <p class="commande-note">Sélectionnez votre commune pour voir les zones de livraison disponibles.</p>
                 {% if erreurs.zone_livraison %}<p class="commande-erreur">{{ erreurs.zone_livraison }}</p>{% endif %}
-                {% endif %}
 
                 <label for="adresse">Adresse précise (avenue, référence...)</label>
                 <textarea id="adresse" name="adresse" rows="3" required>{{ valeurs.get('adresse', '') }}</textarea>
@@ -130,6 +126,44 @@
         document.getElementById(champ + "_erreur_geo").hidden = true;
     }
 
+    function reinitialiserZones() {
+        var select = document.getElementById("zone_livraison_id");
+        select.innerHTML = "";
+        var optionVide = document.createElement("option");
+        optionVide.value = "";
+        optionVide.textContent = "Non précisée (frais à confirmer)";
+        optionVide.selected = true;
+        select.appendChild(optionVide);
+    }
+
+    function chargerZonesLivraison(villeId, communeId) {
+        var select = document.getElementById("zone_livraison_id");
+        if (!villeId || !communeId) {
+            reinitialiserZones();
+            select.disabled = true;
+            select.dispatchEvent(new Event("change"));
+            return;
+        }
+        var url = "{{ url_for('api_zones_livraison') }}?ville_id=" + encodeURIComponent(villeId) + "&commune_id=" + encodeURIComponent(communeId);
+        fetch(url).then(function (r) { return r.json(); }).then(function (data) {
+            reinitialiserZones();
+            var zoneInitiale = select.dataset.zoneInitiale;
+            (data.resultats || []).forEach(function (z) {
+                var option = document.createElement("option");
+                option.value = z.id;
+                option.dataset.frais = Math.round(z.frais);
+                option.textContent = z.nom + " — " + Math.round(z.frais).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " CDF";
+                if (zoneInitiale && String(z.id) === zoneInitiale) option.selected = true;
+                select.appendChild(option);
+            });
+            select.disabled = false;
+            select.dispatchEvent(new Event("change"));
+        }).catch(function () {
+            reinitialiserZones();
+            select.disabled = true;
+        });
+    }
+
     var champProvince = creerAutocompletionGeo({
         input: document.getElementById("province_texte"),
         hidden: document.getElementById("province_id"),
@@ -166,8 +200,11 @@
             var villeId = document.getElementById("ville_id").value;
             return villeId ? { ville_id: villeId } : null;
         },
-        onSelect: function () { masquerErreurGeo("commune"); verifierPret(); },
-        onClear: function () { masquerErreurGeo("commune"); verifierPret(); },
+        onSelect: function () {
+            masquerErreurGeo("commune"); verifierPret();
+            chargerZonesLivraison(document.getElementById("ville_id").value, document.getElementById("commune_id").value);
+        },
+        onClear: function () { masquerErreurGeo("commune"); verifierPret(); reinitialiserZones(); document.getElementById("zone_livraison_id").disabled = true; },
         onRecherche: function (resultats, texte) {
             if (texte && resultats.length === 0) afficherErreurGeo("commune", texte);
             else masquerErreurGeo("commune");
@@ -188,6 +225,8 @@
     function communeReinitialiser() {
         champCommune.desactiver("Sélectionnez d'abord une ville");
         masquerErreurGeo("commune");
+        reinitialiserZones();
+        document.getElementById("zone_livraison_id").disabled = true;
     }
 
     // Restaure la sélection après un rechargement suite à une erreur de
@@ -201,6 +240,7 @@
             communeReactiver();
             if (etatInitial.commune.id) {
                 champCommune.definir(etatInitial.commune.texte, etatInitial.commune.id);
+                chargerZonesLivraison(etatInitial.ville.id, etatInitial.commune.id);
             }
         }
     }

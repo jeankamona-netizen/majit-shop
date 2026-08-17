@@ -136,11 +136,15 @@ CREATE TABLE IF NOT EXISTS parametres (
     taux_usd DECIMAL(10,2) NOT NULL DEFAULT 2800
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ville_id/commune_id référencent villes/communes (déclarées plus bas) :
+-- les contraintes FOREIGN KEY sont ajoutées après ces tables, voir plus bas.
 CREATE TABLE IF NOT EXISTS zones_livraison (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nom VARCHAR(150) NOT NULL,
     frais DECIMAL(12,2) NOT NULL DEFAULT 0,
-    actif TINYINT(1) NOT NULL DEFAULT 1
+    actif TINYINT(1) NOT NULL DEFAULT 1,
+    ville_id INT NULL,
+    commune_id INT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Hiérarchie géographique RDC (province > ville > commune), data-driven :
@@ -174,6 +178,13 @@ CREATE TABLE IF NOT EXISTS communes (
     INDEX idx_communes_nom (nom),
     FOREIGN KEY (ville_id) REFERENCES villes(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- zones_livraison.ville_id/commune_id : une zone s'applique à une ville
+-- entière (commune_id NULL) ou à une commune précise ; permet au checkout de
+-- ne proposer que des zones cohérentes avec la ville/commune du client.
+ALTER TABLE zones_livraison
+    ADD CONSTRAINT fk_zones_livraison_ville FOREIGN KEY (ville_id) REFERENCES villes(id),
+    ADD CONSTRAINT fk_zones_livraison_commune FOREIGN KEY (commune_id) REFERENCES communes(id);
 
 CREATE TABLE IF NOT EXISTS coupons (
     id INT AUTO_INCREMENT PRIMARY KEY,
