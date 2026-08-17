@@ -16,7 +16,7 @@
         </div>
         <div class="dash-legende-canaux dash-legende-jour">
             {% for s in segments_jour %}
-            <span><i class="dash-puce" style="background:{{ s.couleur }};"></i> {{ s.label }} — {{ s.valeur }}</span>
+            <span><i class="dash-puce" style="background:{{ s.couleur }};"></i> {{ s.label }} : {{ s.valeur }}</span>
             {% endfor %}
         </div>
     </a>
@@ -30,9 +30,9 @@
             <span class="dash-anneau-valeur dash-anneau-valeur-petit">{{ ventes_jour_total|cdf }}</span>
         </div>
         <div class="dash-legende-canaux">
-            <span><i class="dash-puce dash-puce-violet"></i> En ligne — {{ ventes_jour_en_ligne|cdf }}</span>
-            <span><i class="dash-puce dash-puce-gris"></i> Boutique — {{ ventes_jour_boutique|cdf }}</span>
-            <span><i class="dash-puce" style="background:#0369a1;"></i> Frais de livraison — {{ frais_livraison_jour|cdf }}</span>
+            <span><i class="dash-puce dash-puce-violet"></i> En ligne : {{ ventes_jour_en_ligne|cdf }}</span>
+            <span><i class="dash-puce dash-puce-gris"></i> Boutique : {{ ventes_jour_boutique|cdf }}</span>
+            <span><i class="dash-puce" style="background:#0369a1;"></i> Frais de livraison : {{ frais_livraison_jour|cdf }}</span>
         </div>
     </a>
 
@@ -45,7 +45,7 @@
             <span class="dash-anneau-valeur">{{ nb_produits }}</span>
         </div>
         <div class="dash-legende-canaux">
-            <span><i class="dash-puce" style="background:{{ '#c0392b' if nb_rupture else '#22c55e' }};"></i> Articles en rupture — {{ nb_rupture }}</span>
+            <span><i class="dash-puce" style="background:{{ '#c0392b' if nb_rupture else '#22c55e' }};"></i> Articles en rupture : {{ nb_rupture }}</span>
         </div>
     </a>
 
@@ -58,8 +58,8 @@
             <span class="dash-anneau-valeur">{{ nb_commandes_livrees + nb_commandes_livrees_boutique }}</span>
         </div>
         <div class="dash-legende-canaux">
-            <span><i class="dash-puce dash-puce-violet"></i> En ligne — {{ nb_commandes_livrees }}</span>
-            <span><i class="dash-puce dash-puce-gris"></i> Boutique — {{ nb_commandes_livrees_boutique }}</span>
+            <span><i class="dash-puce dash-puce-violet"></i> En ligne : {{ nb_commandes_livrees }}</span>
+            <span><i class="dash-puce dash-puce-gris"></i> Boutique : {{ nb_commandes_livrees_boutique }}</span>
         </div>
     </a>
 </div>
@@ -73,9 +73,9 @@
         <div class="dash-revenu-valeur">{{ chiffre_affaires_total|cdf }}</div>
         <span class="dash-pastille">En ligne + boutique + frais de livraison, ce mois-ci</span>
         <div class="dash-revenu-sous-totaux">
-            <span><i class="dash-puce dash-puce-violet"></i> En ligne — {{ chiffre_affaires_en_ligne|cdf }}</span>
-            <span><i class="dash-puce dash-puce-gris"></i> Facturation (boutique) — {{ chiffre_affaires_boutique|cdf }}</span>
-            <span><i class="dash-puce" style="background:#0369a1;"></i> Frais de livraison — {{ frais_livraison_mois|cdf }}</span>
+            <span><i class="dash-puce dash-puce-violet"></i> En ligne : {{ chiffre_affaires_en_ligne|cdf }}</span>
+            <span><i class="dash-puce dash-puce-gris"></i> Facturation (boutique) : {{ chiffre_affaires_boutique|cdf }}</span>
+            <span><i class="dash-puce" style="background:#0369a1;"></i> Frais de livraison : {{ frais_livraison_mois|cdf }}</span>
         </div>
     </a>
 
