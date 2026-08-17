@@ -18,10 +18,10 @@
                 <input type="text" id="nom" name="nom" value="{{ valeurs.get('nom', '') }}" required>
                 {% if erreurs.nom %}<p class="commande-erreur">{{ erreurs.nom }}</p>{% endif %}
 
-                <label for="telephone_local">Téléphone</label>
+                <label for="telephone_indicatif">Téléphone</label>
                 <div class="telephone-champ">
-                    <span class="telephone-prefixe">+243</span>
-                    <input type="tel" id="telephone_local" inputmode="numeric" autocomplete="off" placeholder="991 698 826" maxlength="10" required>
+                    <select id="telephone_indicatif" class="telephone-indicatif-select" aria-label="Indicatif du pays"></select>
+                    <input type="tel" id="telephone_local" inputmode="numeric" autocomplete="off" placeholder="991 698 826" maxlength="14" required>
                 </div>
                 <input type="hidden" id="telephone" name="telephone" value="{{ valeurs.get('telephone', '') }}">
                 {% if erreurs.telephone %}<p class="commande-erreur">{{ erreurs.telephone }}</p>{% endif %}
@@ -247,27 +247,53 @@
     verifierPret();
 })();
 </script>
+<script src="{{ url_for('static', filename='js/indicatifs-pays.js') }}"></script>
 <script>
 (function () {
+    var select = document.getElementById("telephone_indicatif");
     var local = document.getElementById("telephone_local");
     var hidden = document.getElementById("telephone");
 
+    // RDC en tête de INDICATIFS_PAYS : premier de la liste, sélectionné par
+    // défaut tant qu'aucune valeur postée ne dit le contraire.
+    INDICATIFS_PAYS.forEach(function (pays) {
+        var option = document.createElement("option");
+        option.value = pays.indicatif;
+        option.textContent = drapeauDepuisIso(pays.iso) + " +" + pays.indicatif + " — " + pays.nom;
+        select.appendChild(option);
+    });
+
     function actualiserTelephone() {
-        var chiffres = local.value.replace(/\D/g, "").slice(0, 10);
+        var chiffres = local.value.replace(/\D/g, "").slice(0, 14);
         if (local.value !== chiffres) local.value = chiffres;
         // Le 0 initial est une convention d'écriture locale (ex. 0991698826) ;
-        // il ne fait pas partie du numéro une fois l'indicatif +243 ajouté.
+        // il ne fait pas partie du numéro une fois l'indicatif ajouté.
         var sansZeroInitial = chiffres.replace(/^0/, "");
-        hidden.value = sansZeroInitial ? "+243" + sansZeroInitial : "";
+        hidden.value = sansZeroInitial ? "+" + select.value + sansZeroInitial : "";
     }
 
-    // Pré-remplit le champ visible à partir de la valeur postée (rechargement
-    // après une erreur de validation qui ne concerne pas le téléphone).
-    var valeurInitiale = hidden.value || "";
-    local.value = valeurInitiale.replace(/^\+243/, "").replace(/\D/g, "").slice(0, 10);
+    // Pré-remplit à partir de la valeur postée (rechargement après une erreur
+    // de validation qui ne concerne pas le téléphone) : retrouve l'indicatif
+    // en cherchant la correspondance la plus longue d'abord (ex. "+1809..."
+    // doit être reconnu avant le simple "+1").
+    var valeurInitiale = (hidden.value || "").replace(/^\+/, "");
+    var indicatifTrouve = "243";
+    if (valeurInitiale) {
+        var indicatifsTries = INDICATIFS_PAYS.map(function (p) { return p.indicatif; })
+            .sort(function (a, b) { return b.length - a.length; });
+        for (var i = 0; i < indicatifsTries.length; i++) {
+            if (valeurInitiale.indexOf(indicatifsTries[i]) === 0) {
+                indicatifTrouve = indicatifsTries[i];
+                break;
+            }
+        }
+    }
+    select.value = indicatifTrouve;
+    local.value = valeurInitiale.slice(indicatifTrouve.length).replace(/\D/g, "").slice(0, 14);
     actualiserTelephone();
 
     local.addEventListener("input", actualiserTelephone);
+    select.addEventListener("change", actualiserTelephone);
 })();
 </script>
 <script src="{{ url_for('static', filename='js/position.js') }}"></script>
